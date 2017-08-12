@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+const os = require('os');
+const path = require('path');
+const chalk = require('chalk');
+const pkg = require(path.resolve(__dirname, '..', 'package.json'));
+
+const execute = argv => {
+  Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
+    .then(() => process.exit(0))
+    .catch(err => {
+      console.error(chalk.red(`Unexpected error: ${err.stack || err.message || err}`));
+      process.exit(1);
+    });
+};
+
+const yargs = require('yargs')
+  .version(pkg.version)
+  .option('profile', {
+    description: 'Profile to use, stores authentication and config credentials',
+    default: path.join(os.homedir(), '.miixrc'),
+  })
+  .command('login', 'Authenticates your machine with Mixer', {}, execute)
+  .command('logout', 'Clears your Mixer profile from this machine', {}, execute)
+  .command('whoami', 'Prints your Mixer username and ID', {}, execute)
+  .help()
+  .demandCommand().argv;
