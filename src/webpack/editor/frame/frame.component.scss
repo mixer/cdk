@@ -1,0 +1,95 @@
+@mixin phone($vertical) {
+  position: relative;
+  border-radius: 24px;
+  background: #000;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+  }
+
+  &::before {
+    border-radius: 5px;
+    background: #666;
+    width: 5px;
+    height: 5px;
+    top: 18px;
+    border: 2px solid #333;
+
+    @if $vertical {
+      right: 18px;
+    } @else {
+      left: 18px;
+    }
+  }
+
+  &::after {
+    background: #292728;
+    border-radius: 4px;
+
+    @if $vertical {
+      top: 22px;
+      width: 64px;
+      height: 8px;
+      left: 50%;
+      margin-left: -32px;
+    } @else {
+      height: 64px;
+      width: 8px;
+      top: 50%;
+      margin-top: -32px;
+    }
+  }
+}
+
+.device {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+
+
+  &[data-orientation='1'][data-frame='phone'] .frame {
+    @include phone(true);
+  }
+  &[data-orientation='0'][data-frame='phone'] .frame {
+    @include phone(false);
+  }
+}
+
+.block {
+  position: absolute;
+
+  &-video,
+  &-chat {
+    background: #000;
+
+    &::before {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+    }
+  }
+
+  &-video::before {
+    content: 'Video';
+  }
+
+  &-chat::before {
+    content: 'Chat';
+  }
+}
+
+.frame-backdrop {
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+}

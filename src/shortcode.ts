@@ -1,42 +1,12 @@
-import { Response } from 'node-fetch';
+import {
+  ShortCodeAccessDeniedError,
+  ShortCodeExpireError,
+  ShortCodeUnexpectedError,
+} from './errors';
 import { delay, Fetcher, IRequester } from './util';
 
 // note: this is a functional port of the Python version here:
 // https://github.com/mixer/interactive-python/blob/master/interactive_python/oauth.py
-
-/**
- * OAuthError is the error type thrown when anything goes wrong in shortcode oauth.
- */
-export class ShortCodeError extends Error {}
-
-/**
- * ShortCodeUnexpectedError is raised when we get an unexpected status code
- * from Mixer.
- */
-export class ShortCodeUnexpectedError extends ShortCodeError {
-  constructor(public readonly res: Response) {
-    super(`Unexpected status code ${res.status} ${res.statusText} from ${res.url}`);
-  }
-}
-
-/**
- * ShortCodeExpireError is raised from waitForAccept() if the shortcode expires
- * before the user accepts it. Callers should handle this error.
- */
-export class ShortCodeExpireError extends ShortCodeError {
-  constructor() {
-    super('Shortcode handle has expired');
-  }
-}
-
-/**
- * Exception raised when the user denies access to the client in shortcode OAuth.
- */
-export class ShortCodeAccessDeniedError extends ShortCodeError {
-  constructor() {
-    super('User has denied access');
-  }
-}
 
 export interface IShortcodeCreateResponse {
   code: string;

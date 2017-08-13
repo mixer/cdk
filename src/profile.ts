@@ -2,8 +2,9 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
-import { IOAuthTokenData, OAuthClient, OAuthTokens, ShortCodeExpireError } from './shortcode';
-import { wrapErr } from './util';
+import { ShortCodeExpireError } from './errors';
+import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
+import { exists, readFile, wrapErr } from './util';
 import writer from './writer';
 
 interface IProfile {
@@ -120,31 +121,24 @@ export class Profile {
    * it was able to do so successfully.
    */
   private async tryLoadFile(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      fs.exists(this.file, exists => {
-        if (!exists) {
-          resolve(false);
-          return;
+    return exists(this.file).then(ok => {
+      if (!ok) {
+        return false;
+      }
+
+      return readFile(this.file).then(contents => {
+        try {
+          this.profile = yaml.safeLoad(contents);
+        } catch (err) {
+          throw wrapErr(err, `Error parsing profile from ${this.file}`);
         }
 
-        fs.readFile(this.file, (err, contents) => {
-          if (err) {
-            reject(err);
-          }
-
-          try {
-            this.profile = yaml.safeLoad(contents.toString('utf8'));
-          } catch (err) {
-            throw wrapErr(err, `Error parsing profile from ${this.file}`);
-          }
-
-          this.tokensObj = new OAuthTokens({
-            ...this.profile.tokens,
-            expiresAt: new Date(this.profile.tokens.expiresAt),
-          });
-
-          resolve(true);
+        this.tokensObj = new OAuthTokens({
+          ...this.profile.tokens,
+          expiresAt: new Date(this.profile.tokens.expiresAt),
         });
+
+        return true;
       });
     });
   }

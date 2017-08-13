@@ -1,0 +1,25 @@
+<div class="device"
+  [attr.data-frame]="device?.frame"
+  [attr.data-orientation]="'' + orientation"
+  [style.width.px]="containerSize?.width"
+  [style.height.px]="containerSize?.height">
+  <div class="frame"></div>
+  <div class="block"
+    *ngFor="let block of stubBlocks"
+    [class.block-video]="block.type === 'video'"
+    [class.block-chat]="block.type === 'chat'"
+    [style.top.px]="block.y"
+    [style.left.px]="block.x"
+    [style.width.px]="block.width"
+    [style.height.px]="block.height">
+  </div>
+  <div class="block frame-backdrop"
+    [style.background]="background"
+    [style.top.px]="controlBlock?.y"
+    [style.left.px]="controlBlock?.x"
+    [style.width.px]="controlBlock?.width"
+    [style.height.px]="controlBlock?.height">
+    <iframe src="/" frameborder="0" class="frame"></iframe>
+  </div>
+</div>
+

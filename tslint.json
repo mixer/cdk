@@ -19,6 +19,7 @@
     "no-var-requires": false,
     "newline-before-return": false,
     "match-default-export-name": false,
+    "prefer-for-of": false,
 
     // Prettier-incompatible or prettier-handled rules
     "align": false,

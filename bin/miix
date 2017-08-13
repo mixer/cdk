@@ -5,6 +5,8 @@ const path = require('path');
 const chalk = require('chalk');
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
+const { findPackageJson } = require('../dist/src/npm');
+
 const execute = argv => {
   Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
@@ -20,8 +22,26 @@ const yargs = require('yargs')
     description: 'Profile to use, stores authentication and config credentials',
     default: path.join(os.homedir(), '.miixrc'),
   })
+  .option('project', {
+    description: 'Path to your interactive project',
+    default: path.dirname(findPackageJson(process.cwd())),
+  })
   .command('login', 'Authenticates your machine with Mixer', {}, execute)
   .command('logout', 'Clears your Mixer profile from this machine', {}, execute)
   .command('whoami', 'Prints your Mixer username and ID', {}, execute)
+  .command(
+    'serve',
+    'Boots up an interactive development server.',
+    argv =>
+      argv
+        .usage('miix serve [-- <webpack-dev-server args>]')
+        .example('miix serve', 'Boot a server on http://localhost:8080')
+        .example(
+          'miix serve -- --port=1234',
+          'Pass in custom webpack-dev-server arguments (see webpack-dev-server --help)'
+        ),
+    execute
+  )
+  .strict()
   .help()
   .demandCommand().argv;

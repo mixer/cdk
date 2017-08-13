@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tslint.json",
+  "rules": {
+    "promise-function-async": false,
+    "no-stateless-class": false,
+    "no-import-side-effect": false
+  }
+}
