@@ -326,25 +326,19 @@ class RPC extends EventEmitter {
   constructor() {
     super();
 
-    window.addEventListener('message', message => {
-      const packet: RPCMessage<any> = JSON.parse(message.data);
-      if (packet.type === 'method') {
-        this.emit(packet.method, packet);
-        return;
+    window.addEventListener('message', ev => {
+      const packet: RPCMessage<any> = ev.data;
+      switch (packet.type) {
+        case 'method':
+          this.emit(packet.method, packet);
+          break;
+        case 'reply':
+          this.handleReply(packet);
+          break;
+        default:
+        // Ignore. We can get postmessage from other sources (webpack in
+        // development), we don't want to error.
       }
-
-      const handler = this.calls[packet.id];
-      if (!handler) {
-        return;
-      }
-
-      if (packet.error) {
-        handler(objToError(packet.error), null);
-      } else {
-        handler(null, packet.result);
-      }
-
-      delete this.calls[packet.id];
     });
 
     this.call('ready', {}, false);
@@ -386,8 +380,23 @@ class RPC extends EventEmitter {
     });
   }
 
+  private handleReply(packet: IRPCReply<any>) {
+    const handler = this.calls[packet.id];
+    if (!handler) {
+      return;
+    }
+
+    if (packet.error) {
+      handler(objToError(packet.error), null);
+    } else {
+      handler(null, packet.result);
+    }
+
+    delete this.calls[packet.id];
+  }
+
   private post(message: RPCMessage<any>) {
-    postMessage(JSON.stringify(message), RPC.origin);
+    window.top.postMessage(message, RPC.origin);
   }
 }
 

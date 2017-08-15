@@ -1,1 +1,9 @@
-@import '../../../node_modules/@angular/material/prebuilt-themes/deeppurple-amber';
+@import '~@angular/material/theming';
+@import '../declarations';
+
+@include mat-core();
+@include angular-material-typography(mat-typography-config(
+  $font-family: '#{$font-family-sans-serif}'
+));
+
+// @include mat-core-theme($candy-app-theme)

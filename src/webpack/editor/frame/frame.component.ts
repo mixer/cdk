@@ -6,8 +6,11 @@ import {
   ElementRef,
   HostListener,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+
+import '../util/takeUntilDestroyed';
 
 import { IFrameState } from '../redux/frame';
 import { IProject } from '../redux/project';
@@ -32,7 +35,7 @@ const backgrounds = [
   styleUrls: ['./frame.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FrameComponent implements OnDestroy {
+export class FrameComponent implements OnInit, OnDestroy {
   /**
    * Padding in all directions within the frame.
    */
@@ -64,15 +67,17 @@ export class FrameComponent implements OnDestroy {
   /**
    * Device "frame" to display.
    */
-  private state: IFrameState;
+  public state: IFrameState;
 
   constructor(
     private el: ElementRef,
     private cdRef: ChangeDetectorRef,
-    ngRedux: NgRedux<IProject>,
+    private ngRedux: NgRedux<IProject>,
     private sanitizer: DomSanitizer,
-  ) {
-    ngRedux.select('frame').subscribe((frame: IFrameState) => {
+  ) {}
+
+  public ngOnInit() {
+    this.ngRedux.select('frame').takeUntilDestroyed(this).subscribe((frame: IFrameState) => {
       this.state = frame;
       this.refreshBlocks();
     });

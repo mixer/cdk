@@ -11,4 +11,3 @@ import 'zone.js/dist/zone';
 
 // Evil extensions:
 import 'bluefill';
-import './util/takeUntilDestroyed';

@@ -14,7 +14,7 @@ import { Action, IProject } from '../redux/project';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HostComponent {
-  public selectedDevice = this.ngRedux.select<number>(['frame', 'device']);
+  public selectedDevice = this.ngRedux.select<number>(['frame', 'chosenDevice']);
   public devices = devices;
 
   constructor(private ngRedux: NgRedux<IProject>) {}

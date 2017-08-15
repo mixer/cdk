@@ -71,20 +71,21 @@ class DesktopDevice implements IDevice {
     // default chat sidebar to its scaled size.
     const [width, height] = fitRatio(16 / 9, availableWidth, availableHeight);
     const chatWidth = 350 / 1920 * availableWidth;
+    const videoHeight = (width - chatWidth) * 9 / 16;
 
     return [
       {
         x: 0,
         y: 0,
         width: width - chatWidth,
-        height: width * 9 / 16,
+        height: videoHeight,
         type: 'video',
       },
       {
         x: 0,
-        y: 0,
+        y: videoHeight,
         width: width - chatWidth,
-        height,
+        height: height - videoHeight,
         type: 'controls',
       },
       {

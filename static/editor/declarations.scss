@@ -1,0 +1,16 @@
+$font-family-sans-serif: 'Lato', sans-serif;
+$font-family-mono: 'Roboto Mono', monospace;
+
+$color-primary: #0078d7;
+$color-primary2: #df158a;
+$color-highlight: #00bcf2;
+$color-spark: #ffcc31;
+$color-danger: #fe5353;
+$color-success: #14ab57;
+$color-lab: #a6cd2f;
+$color-white: #fff;
+$color-tainted-white: #e4eef2;
+
+@function asset($name) {
+  @return '__miix_static/#{$name}';
+}

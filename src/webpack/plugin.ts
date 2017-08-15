@@ -150,16 +150,18 @@ export class MixerPlugin {
   public apply(compiler: any) {
     compiler.plugin('emit', async (compilation: any, callback: any) => {
       try {
-        const homepage = await this.homeRenderer.render(compiler);
-        compilation.assets['index.html'] = contentsToAsset(homepage);
-
-        await this.addFiles(compilation, {
-          'mixer.js': path.resolve(__dirname, 'stdlib/mixer.min.js'),
-          'editor.html': path.resolve(staticPath, 'editor/index.html'),
-          'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
-          'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
-        });
-        await this.addStaticAssets(compilation);
+        await Promise.all([
+          this.homeRenderer.render(compiler).then(result => {
+            compilation.assets['index.html'] = contentsToAsset(result);
+          }),
+          this.addFiles(compilation, {
+            'mixer.js': path.resolve(__dirname, 'stdlib/mixer.min.js'),
+            'editor.html': path.resolve(staticPath, 'editor/index.html'),
+            'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
+            'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
+          }),
+          this.addStaticAssets(compilation),
+        ]);
       } catch (e) {
         callback(e);
         return;
