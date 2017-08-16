@@ -93,7 +93,9 @@ export class FrameComponent implements OnInit, OnDestroy {
       state => state,
     )
       .takeUntilDestroyed(this)
-      .subscribe(state => this.refreshBlocks(state));
+      .subscribe(state => {
+        this.refreshBlocks(state);
+      });
   }
 
   public ngOnDestroy() {

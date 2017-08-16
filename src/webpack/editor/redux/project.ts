@@ -90,7 +90,7 @@ export class ProjectService {
 }
 
 function compare(from: IProject, to: IProject): patch.Operation[] {
-  return patch.compare({ ...from, history: <any> null }, { ...to, history: <any> null });
+  return patch.compare({ ...from, history: <any>null }, { ...to, history: <any>null });
 }
 
 /**

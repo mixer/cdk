@@ -1,8 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { HttpModule } from '@angular/http';
 import { FormsModule } from '@angular/forms';
-import { MdButtonModule, MdIconModule, MdInputModule, MdSelectModule, MdTooltipModule } from '@angular/material';
+import { HttpModule } from '@angular/http';
+import {
+  MdButtonModule,
+  MdIconModule,
+  MdInputModule,
+  MdSelectModule,
+  MdTooltipModule,
+} from '@angular/material';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';

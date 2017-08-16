@@ -1,4 +1,10 @@
-import { AfterContentInit, ChangeDetectionStrategy, Component,ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterContentInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 
 import 'codemirror/addon/fold/brace-fold';
 import 'codemirror/addon/fold/foldcode';
@@ -17,21 +23,25 @@ CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   } catch (err) {
     const parts = /^(.+) at line ([0-9]+) column ([0-9]+)/.exec(err.message);
     if (!parts) {
-      return [{
-        message: err.message,
-        severity: 'error',
-        from: CodeMirror.Pos(0, 0),
-        to: CodeMirror.Pos(contents.split('\n').length, 0),
-      }];
+      return [
+        {
+          message: err.message,
+          severity: 'error',
+          from: CodeMirror.Pos(0, 0),
+          to: CodeMirror.Pos(contents.split('\n').length, 0),
+        },
+      ];
     }
 
     const [, message, line, column] = parts;
-    return [{
-      message,
-      severity: 'error',
-      from: CodeMirror.Pos(Number(line) - 1, Number(column)),
-      to: CodeMirror.Pos(Number(line), 0),
-    }];
+    return [
+      {
+        message,
+        severity: 'error',
+        from: CodeMirror.Pos(Number(line) - 1, Number(column)),
+        to: CodeMirror.Pos(Number(line), 0),
+      },
+    ];
   }
 
   return [];
@@ -47,13 +57,12 @@ CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CodeComponent implements AfterContentInit {
-  @ViewChild('target')
-  public target: ElementRef;
+  @ViewChild('target') public target: ElementRef;
 
   public ngAfterContentInit() {
     CodeMirror.fromTextArea(
       this.target.nativeElement,
-      <CodeMirror.EditorConfiguration> {
+      <CodeMirror.EditorConfiguration>{
         theme: 'monokai',
         mode: 'text/javascript',
         lineNumbers: true,
@@ -61,8 +70,8 @@ export class CodeComponent implements AfterContentInit {
         foldGutter: true,
         styleActiveLine: true,
         lint: true,
-        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-      }
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+      },
     );
   }
 }
