@@ -1,19 +1,26 @@
-import { NgRedux } from '@angular-redux/store';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
-  HostListener,
   OnDestroy,
   OnInit,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs/Observable';
 
+import 'rxjs/add/observable/combineLatest';
+import 'rxjs/add/observable/fromEvent';
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/startWith';
 import '../util/takeUntilDestroyed';
 
 import { IFrameState } from '../redux/frame';
-import { IProject } from '../redux/project';
+import { IProject, ProjectService } from '../redux/project';
 import { devices, IBlock } from './devices';
 
 /**
@@ -55,11 +62,6 @@ export class FrameComponent implements OnInit, OnDestroy {
   public controlsBlock: IBlock;
 
   /**
-   * Size of the container of controls.
-   */
-  public containerSize: { width: number; height: number };
-
-  /**
    * List of blocks *other than* the control block for the current device.
    */
   public stubBlocks: IBlock[];
@@ -67,45 +69,51 @@ export class FrameComponent implements OnInit, OnDestroy {
   /**
    * Device "frame" to display.
    */
-  public state: IFrameState;
+  public state = this.store.select('frame');
+
+  /**
+   * The currently selected device.
+   */
+  public device = this.state.map(s => devices[s.chosenDevice]);
 
   constructor(
     private el: ElementRef,
     private cdRef: ChangeDetectorRef,
-    private ngRedux: NgRedux<IProject>,
+    private project: ProjectService,
+    private store: Store<IProject>,
     private sanitizer: DomSanitizer,
   ) {}
 
   public ngOnInit() {
-    this.ngRedux.select('frame').takeUntilDestroyed(this).subscribe((frame: IFrameState) => {
-      this.state = frame;
-      this.refreshBlocks();
-    });
+    Observable.combineLatest(
+      this.state.distinctUntilChanged(
+        (a, b) => a.chosenDevice === b.chosenDevice && a.orientation === b.orientation,
+      ),
+      Observable.fromEvent(window, 'resize').debounceTime(5).startWith(null),
+      state => state,
+    )
+      .takeUntilDestroyed(this)
+      .subscribe(state => this.refreshBlocks(state));
   }
 
   public ngOnDestroy() {
     /* noop */
   }
 
-  @HostListener('window:resize')
-  public onResize() {
-    if (this.state) {
-      this.refreshBlocks();
-    }
-  }
-
-  private refreshBlocks() {
+  private refreshBlocks(state: IFrameState) {
     const el = (<HTMLElement>this.el.nativeElement).getBoundingClientRect();
-    const blocks = devices[this.state.chosenDevice].display(
+    const blocks = devices[state.chosenDevice].display(
       el.width - 2 * FrameComponent.padding,
       el.height - 2 * FrameComponent.padding,
-      this.state.orientation,
+      state.orientation,
     );
 
-    this.containerSize = {
-      width: blocks.reduce((max, b) => Math.max(max, b.width + b.x), 0),
-      height: blocks.reduce((max, b) => Math.max(max, b.height + b.y), 0),
-    };
+    if (!state.dimensionsManuallySet) {
+      this.project.setDeviceDisplayedSize(
+        blocks.reduce((max, b) => Math.max(max, b.width + b.x), 0),
+        blocks.reduce((max, b) => Math.max(max, b.height + b.y), 0),
+      );
+    }
 
     const controlBlock = blocks.find(b => b.type === 'controls');
     if (!controlBlock) {

@@ -2,8 +2,13 @@
 @import '../declarations';
 
 @include mat-core();
+
 @include angular-material-typography(mat-typography-config(
   $font-family: '#{$font-family-sans-serif}'
 ));
 
-// @include mat-core-theme($candy-app-theme)
+$base-theme: mat-dark-theme(
+  mat-palette($mat-blue),
+  mat-palette($mat-purple)
+);
+@include angular-material-theme($base-theme);

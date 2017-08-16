@@ -1,8 +1,8 @@
-import { NgRedux } from '@angular-redux/store';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { MdIconRegistry } from '@angular/material';
 
-import { devices } from '../frame/devices';
-import { Action, IProject } from '../redux/project';
+const availableIcons = ['rocket', 'screen-rotation', 'undo', 'redo'];
 
 /**
  * The host component holds the arrangement of macroscopic editor components.
@@ -14,15 +14,12 @@ import { Action, IProject } from '../redux/project';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HostComponent {
-  public selectedDevice = this.ngRedux.select<number>(['frame', 'chosenDevice']);
-  public devices = devices;
-
-  constructor(private ngRedux: NgRedux<IProject>) {}
-
-  public chooseDevice(index: number) {
-    this.ngRedux.dispatch({
-      type: Action.Frame.Select,
-      index: index,
+  constructor(icons: MdIconRegistry, sanitizer: DomSanitizer) {
+    availableIcons.forEach(icon => {
+      icons.addSvgIcon(
+        icon,
+        sanitizer.bypassSecurityTrustResourceUrl(`./__miix_static/${icon}.svg`),
+      );
     });
   }
 }

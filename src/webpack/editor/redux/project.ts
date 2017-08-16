@@ -1,137 +1,191 @@
+import { Injectable } from '@angular/core';
+import { ActionReducer, Store } from '@ngrx/store';
+import * as patch from 'fast-json-patch';
+
+import * as Code from './code';
 import * as Frame from './frame';
-import { Action as ReduxAction } from 'redux';
 
-export interface IBoundReducer<S> {
-  type: any;
-  property: keyof IProject;
-  reducer(lastState: S, action: ReduxAction): S;
+const enum Action {
+  Undo = 'UNDO',
+  Redo = 'REDO',
 }
 
-/**
- * Holy typescript! The general idea of this is to create an object to delegate
- * to a nested reducer. The reducer operates on a `property` of the generate
- * IProperty structure. You pass the enum of `state`s that the nested reducer
- * takes care of, as well as the reducer function.
- *
- * Consumers can call the reducer by applying what appear to be top-level
- * actions, like `Action.Frame.Select`, and they'll get dispatched down
- * to the nested reducer automatically.
- */
-function bindReducer<T, K extends keyof IProject>(
-  property: K,
-  state: T,
-  reducerFn: (lastState: IProject[K], action: ReduxAction) => IProject[K],
-): { [key in keyof T]: IBoundReducer<IProject[K]> } {
-  const output: { [key in keyof T]?: IBoundReducer<IProject[K]> } = {};
-  Object.keys(state).forEach((key: keyof T) => {
-    output[key] = { reducer: reducerFn, property, type: state[key] };
-  });
+const undoableActions = [
+  Frame.Action.Rotate,
+  Frame.Action.Select,
+  Code.Action.SetState, // so they aren't ever undoing something on a screen they can't see
+  Code.Action.SetParticipant,
+  Code.Action.SetControls,
+];
 
-  return <any>output;
+/**
+ * Undo/redo history.
+ */
+export interface IHistoryState {
+  behind: patch.Operation[][];
+  ahead: patch.Operation[][];
 }
-
-/**
- * InstrinicActions are handled at a top-level in the project's reducer
- * (reduceInstrinic) rather than delegating to a nested reducer.
- */
-const enum InstrinsicAction {
-  Back,
-  Forwards,
-}
-
-/**
- * Nested enum of actions that can be executed in the editor.
- */
-export const Action = {
-  // tslint:disable-line
-  Frame: bindReducer('frame', Frame.Action, Frame.reducer),
-  History: {
-    Back: InstrinsicAction.Back,
-    Forwards: InstrinsicAction.Forwards,
-  },
-};
 
 /**
  * IProject is the application state for the project.
  */
 export interface IProject {
-  history: IProject[];
-  historyPtr: number;
+  history: IHistoryState;
   frame: Frame.IFrameState;
 }
 
-export const initialState: IProject = {
-  history: [],
-  historyPtr: 0,
-  frame: Frame.defaultState,
-};
-
 /**
- * Number of items we'll keep in the Redux history.
+ * ProjectService provides notation on the IProject state.
  */
-const maxHistoryLength = 500;
+@Injectable()
+export class ProjectService {
+  constructor(private store: Store<IProject>) {}
 
-/**
- * reduceIntrinsic handles top-level macroscopic actions as
- * defined in InstrinicAction.
- */
-function reduceIntrinsic(lastState: IProject, action: { type: InstrinsicAction }): IProject {
-  switch (action.type) {
-    case InstrinsicAction.Back:
-      if (lastState.historyPtr > 0) {
-        return {
-          ...lastState.history[lastState.historyPtr - 1],
-          history: lastState.history,
-          historyPtr: lastState.historyPtr - 1,
-        };
-      }
-      break;
-    case InstrinsicAction.Forwards:
-      if (lastState.historyPtr < lastState.history.length) {
-        return {
-          ...lastState.history[lastState.historyPtr + 1],
-          history: lastState.history,
-          historyPtr: lastState.historyPtr - 1,
-        };
-      }
-      break;
+  // History actions ----------------------------------------------------------
+
+  /**
+   * Steps back in history.
+   */
+  public undo() {
+    this.store.dispatch({ type: Action.Undo });
   }
 
-  return lastState;
+  /**
+   * Moves forwards in history.
+   */
+  public redo() {
+    this.store.dispatch({ type: Action.Redo });
+  }
+
+  // Frame actions ------------------------------------------------------------
+
+  /**
+   * Change the selected device.
+   */
+  public chooseDevice(deviceIndex: number) {
+    this.store.dispatch({ type: Frame.Action.Select, index: deviceIndex });
+  }
+
+  /**
+   * Rotate the device.
+   */
+  public rotateDevice() {
+    this.store.dispatch({ type: Frame.Action.Rotate });
+  }
+
+  /**
+   * Manually override the device dimensions, called by the user.
+   */
+  public resizeDevice(width?: number, height?: number) {
+    this.store.dispatch({ type: Frame.Action.SetDimensions, width, height, isManual: true });
+  }
+
+  /**
+   * Sets the displayed dimensions of the device. Called automatically when
+   * the device is changed or the window is resized.
+   */
+  public setDeviceDisplayedSize(width: number, height: number) {
+    this.store.dispatch({ type: Frame.Action.SetDimensions, width, height, isManual: false });
+  }
+}
+
+function compare(from: IProject, to: IProject): patch.Operation[] {
+  return patch.compare({ ...from, history: <any> null }, { ...to, history: <any> null });
 }
 
 /**
- * reduceBound dispatches an action for a bound, nested reducer. It pushes
- * the changed state to the project's history.
+ * Maximum amount of history states to keep/
  */
-function reduceBound(lastState: IProject, action: { type: IBoundReducer<any> }): IProject {
-  const nested = action.type;
-  const adjust = Math.max(0, lastState.historyPtr - maxHistoryLength);
+const maxHistoryRecords = 500;
+
+function moveHistory(project: IProject, direction: Action.Undo | Action.Redo): IProject {
+  const { ahead, behind } = project.history;
+
+  if (direction === Action.Undo && behind.length > 0) {
+    const next = patch.applyPatch(patch.deepClone(project), behind[behind.length - 1]).newDocument;
+    next.history = {
+      ahead: ahead.concat([compare(next, project)]),
+      behind: behind.slice(0, -1),
+    };
+
+    return next;
+  }
+
+  if (direction === Action.Redo && ahead.length > 0) {
+    const prev = patch.applyPatch(patch.deepClone(project), ahead[ahead.length - 1]).newDocument;
+    prev.history = {
+      behind: behind.concat([compare(prev, project)]),
+      ahead: ahead.slice(0, -1),
+    };
+
+    return prev;
+  }
+
+  return project;
+}
+
+function storeHistory(previous: IProject, next: IProject, action: any): IProject {
+  if (undoableActions.indexOf(action.type) === -1) {
+    return next;
+  }
+
+  const adjust = Math.max(0, next.history.behind.length - maxHistoryRecords);
 
   return {
-    ...lastState,
-    [nested.property]: nested.reducer(lastState[nested.property], { ...action, type: nested.type }),
-    historyPtr: lastState.historyPtr + 1 - adjust,
-    history: lastState.history
-      .slice(adjust, lastState.historyPtr)
-      .concat({ ...lastState, history: [] }), // wipe history to avoid ^2 memory usage
+    ...next,
+    history: {
+      ahead: [],
+      behind: next.history.behind
+        .slice(adjust, maxHistoryRecords)
+        .concat([compare(next, previous)]),
+    },
   };
 }
 
-export function reducer(
-  lastState: IProject,
-  action: { type: IBoundReducer<any> | InstrinsicAction },
-): IProject {
-  const nested = action.type;
+/**
+ * Initial state of the project.
+ */
+const initialState: IProject = {
+  history: {
+    ahead: [],
+    behind: [],
+  },
+  frame: {
+    chosenDevice: 0,
+    width: -1,
+    height: -1,
+    dimensionsManuallySet: false,
+    orientation: Frame.Orientation.Portrait,
+  },
+};
 
-  if (typeof nested === 'number') {
-    return reduceIntrinsic(lastState, <{ type: InstrinsicAction }>action);
-  }
-
-  // Skip things that don't duck into bound reducers.
-  if (typeof nested.reducer !== 'function' || typeof nested.property !== 'string') {
-    return lastState;
-  }
-
-  return reduceBound(lastState, <{ type: IBoundReducer<any> }>action);
+/**
+ * historyReducer is a metareducer that enabled undo/redo history on the state.
+ */
+export function historyReducer(
+  reducer: ActionReducer<IProject, any>,
+): ActionReducer<IProject, any> {
+  return (project = initialState, action) => {
+    switch (action.type) {
+      case Action.Undo:
+        return moveHistory(project, Action.Undo);
+      case Action.Redo:
+        return moveHistory(project, Action.Redo);
+      default:
+        return storeHistory(project, reducer(project, action), action);
+    }
+  };
 }
+
+/**
+ * ngrx store reducers.
+ */
+export const reducers: { [key in keyof IProject]?: Function } = {
+  frame: Frame.reducer,
+  history: (s: IProject) => s,
+};
+
+/**
+ * ngrx metareducers
+ */
+export const metaReducers = [historyReducer];

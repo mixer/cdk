@@ -1,10 +1,6 @@
-<md-select
-  placeholder="Device"
-  [ngModel]="selectedDevice | async"
-  (ngModelChange)="chooseDevice($event)">
-  <md-option *ngFor="let device of devices; let i = index" [value]="i">
-    {{ device.displayName }}
-  </md-option>
-</md-select>
-{{ selectedDevice | async | json }}
-<editor-frame></editor-frame>
+<editor-nav></editor-nav>
+
+<div class="content">
+  <editor-code></editor-code>
+  <editor-frame></editor-frame>
+</div>

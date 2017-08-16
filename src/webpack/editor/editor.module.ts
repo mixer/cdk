@@ -1,15 +1,18 @@
-import { NgRedux, NgReduxModule } from '@angular-redux/store'; // <- New
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { HttpModule } from '@angular/http';
 import { FormsModule } from '@angular/forms';
-import { MdButtonModule, MdInputModule, MdSelectModule } from '@angular/material';
+import { MdButtonModule, MdIconModule, MdInputModule, MdSelectModule, MdTooltipModule } from '@angular/material';
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { StoreModule } from '@ngrx/store';
 
+import { CodeComponent } from './code/code.component';
 import { FrameComponent } from './frame/frame.component';
 import { HostComponent } from './host/host.component';
-import { initialState, IProject, reducer } from './redux/project';
+import { NavComponent } from './nav/nav.component';
+import { metaReducers, ProjectService, reducers } from './redux/project';
 
 require('../../../static/editor/style.scss');
 
@@ -21,18 +24,19 @@ require('../../../static/editor/style.scss');
     BrowserAnimationsModule,
     BrowserModule,
     CommonModule,
+    HttpModule,
     FormsModule,
     MdButtonModule,
+    MdIconModule,
     MdInputModule,
     MdSelectModule,
-    NgReduxModule,
+    MdTooltipModule,
+    StoreModule.forRoot(reducers, { metaReducers }),
   ],
-  declarations: [FrameComponent, HostComponent],
+  declarations: [CodeComponent, FrameComponent, HostComponent, NavComponent],
+  providers: [ProjectService],
   bootstrap: [HostComponent],
 })
-export class AppModule {
-  constructor(ngRedux: NgRedux<IProject>) {
-    ngRedux.configureStore(reducer, initialState);
-  }
-}
+export class AppModule {}
+
 platformBrowserDynamic().bootstrapModule(AppModule); // tslint:disable-line

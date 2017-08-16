@@ -175,6 +175,7 @@ export class MixerPlugin {
     const mapping: { [assetName: string]: string } = {};
     const editorAssets = path.resolve(staticPath, 'editor/assets');
     glob.sync(path.resolve(staticPath, 'editor/assets/**/*')).forEach(file => {
+      compilation.fileDependencies.push(file);
       const relative = path.relative(editorAssets, file);
       mapping[`${devAssetPrefix}/${relative}`] = file;
     });
@@ -187,6 +188,7 @@ export class MixerPlugin {
       Object.keys(files).map(async assetName =>
         fileToAsset(files[assetName]).then(asset => {
           compilation.assets[assetName] = asset;
+          compilation.fileDependencies.push(files[assetName]);
         }),
       ),
     ).then(() => undefined);

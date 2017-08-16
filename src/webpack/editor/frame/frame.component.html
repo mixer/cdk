@@ -1,8 +1,8 @@
 <div class="device"
-  [attr.data-frame]="device?.frame"
-  [attr.data-orientation]="'' + state.orientation"
-  [style.width.px]="containerSize?.width"
-  [style.height.px]="containerSize?.height">
+  [attr.data-frame]="(device | async)?.frame"
+  [attr.data-orientation]="(state | async)?.orientation"
+  [style.width.px]="(state | async)?.width"
+  [style.height.px]="(state | async)?.height">
   <div class="frame"></div>
   <div class="block"
     *ngFor="let block of stubBlocks"
@@ -14,12 +14,12 @@
     [style.height.px]="block.height">
   </div>
   <div class="block frame-backdrop"
-    [style.background]="background"
+    [style.background-image]="background"
     [style.top.px]="controlsBlock?.y"
     [style.left.px]="controlsBlock?.x"
     [style.width.px]="controlsBlock?.width"
     [style.height.px]="controlsBlock?.height">
-    <iframe src="/" frameborder="0" class="frame"></iframe>
+    <iframe src="/" frameborder="0"></iframe>
   </div>
 </div>
 

@@ -1,0 +1,89 @@
+@import '../../../../static/editor/declarations';
+
+:host {
+  @include layout-row-center();
+  height: $dimension-navbar-height;
+  background: $color-primary;
+}
+
+.logo {
+  display: block;
+  width: $dimension-navbar-height;
+  height: $dimension-navbar-height;
+  background: url(asset('merge-white.svg')) center center no-repeat;
+  background-size: $dimension-navbar-height / 2;
+}
+
+.nav {
+  @include layout-row-center();
+  &, li {
+    margin: 0;
+    padding: 0;
+  }
+
+
+  li {
+    @include swift-ease-out('background', 'color');
+
+    display: inline-block;
+    padding: 6px 12px;
+    outline: 0 !important;
+    list-style-type: none;
+    color: rgba(#fff, 0.75);
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 300;
+    margin: 0 $dimension-gutter-md;
+    background: transparent;
+
+    &.active, &:hover {
+      background: #000;
+      color: #fff;
+    }
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.sizing {
+  @include layout-row-center();
+  color: #fff;
+  margin-bottom: -21px;
+
+  md-input-container,
+  md-select {
+    margin: 0 $dimension-gutter-md;
+  }
+
+  md-select {
+    width: 200px;
+    // hack for https://github.com/angular/material2/issues/2124
+    margin-bottom: 3px;
+  }
+
+  md-input-container {
+    width: 100px;
+  }
+
+  .times {
+    font-weight: 200;
+    color: rgba(#fff, 0.5);
+  }
+}
+
+.tools {
+  button {
+    margin: 0 $dimension-gutter-sm;
+  }
+}
+
+md-icon::ng-deep > svg {
+  fill: #fff;
+
+  button[disabled] & {
+    fill: rgba(#fff, 0.5);
+  }
+}

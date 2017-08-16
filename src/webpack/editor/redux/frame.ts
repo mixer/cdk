@@ -3,8 +3,8 @@
  * Landscape is the default orientation.
  */
 export const enum Orientation {
-  Landscape,
-  Portrait,
+  Landscape = 'landscape',
+  Portrait = 'portrait',
 }
 
 /**
@@ -12,39 +12,45 @@ export const enum Orientation {
  */
 export interface IFrameState {
   chosenDevice: number;
-  widthOverride: number;
-  heightOverride: number;
+  width: number;
+  height: number;
+  dimensionsManuallySet: boolean;
   orientation: Orientation;
 }
 
-export const defaultState: IFrameState = {
-  chosenDevice: 0,
-  widthOverride: -1,
-  heightOverride: -1,
-  orientation: Orientation.Landscape,
-};
-
-export enum Action {
-  Select,
-  OverrideDimensions,
+export const enum Action {
+  Select = 'FRAME_SELECT',
+  SetDimensions = 'FRAME_SET_DIMENSIONS',
+  Rotate = 'FRAME_ROTATE',
 }
 
-export function reducer(lastState: IFrameState, action: any): IFrameState {
+export function reducer(state: IFrameState, action: any): IFrameState {
   switch (action.type) {
     case Action.Select:
       return {
         chosenDevice: action.index,
-        widthOverride: -1,
-        heightOverride: -1,
+        width: -1,
+        height: -1,
+        dimensionsManuallySet: false,
         orientation: Orientation.Landscape,
       };
-    case Action.OverrideDimensions:
+    case Action.SetDimensions:
       return {
-        ...lastState,
-        widthOverride: action.width,
-        heightOverride: action.height,
+        ...state,
+        dimensionsManuallySet: action.isManual,
+        width: action.width || state.width,
+        height: action.height || state.height,
+      };
+    case Action.Rotate:
+      return {
+        ...state,
+        dimensionsManuallySet: false,
+        orientation:
+          state.orientation === Orientation.Landscape
+            ? Orientation.Portrait
+            : Orientation.Landscape,
       };
     default:
-      return lastState;
+      return state;
   }
 }

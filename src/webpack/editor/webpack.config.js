@@ -8,7 +8,6 @@ paths.static = path.resolve(paths.root, 'static/editor');
 paths.globalStyles = path.resolve(paths.static, 'style.scss');
 
 module.exports = {
-  devtool: 'source-map',
   context: __dirname,
   entry: {
     main: path.resolve(__dirname, 'editor.module.ts'),

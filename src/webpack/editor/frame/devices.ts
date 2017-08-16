@@ -152,21 +152,21 @@ class MobileDevice implements IDevice {
       ];
     }
 
-    const videoHeight = this.width * 9 / 16;
+    const videoHeight = this.height * 9 / 16;
 
     return [
       {
         x: 0,
         y: 0,
-        width: this.width,
+        width: this.height,
         height: videoHeight,
         type: 'video',
       },
       {
         x: 0,
         y: videoHeight,
-        width: this.width,
-        height: this.height - videoHeight,
+        width: this.height,
+        height: this.width - videoHeight,
         type: 'controls',
       },
     ];
