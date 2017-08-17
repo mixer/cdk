@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs/Observable';
 
-import { devices } from '../frame/devices';
+import { devices, IDevice } from '../frame/devices';
+import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
 
 /**
@@ -14,9 +16,9 @@ import { IProject, ProjectService } from '../redux/project';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavComponent {
-  public frame = this.store.select('frame');
+  public frame: Observable<IFrameState> = this.store.select('frame');
   public canRotate = this.frame.map(s => devices[s.chosenDevice].canRotate);
-  public devices = devices;
+  public devices: ReadonlyArray<IDevice> = devices;
 
   public canUndo = this.store.select(s => s.history.behind.length > 0);
   public canRedo = this.store.select(s => s.history.ahead.length > 0);

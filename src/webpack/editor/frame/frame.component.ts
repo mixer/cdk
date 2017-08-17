@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
@@ -21,7 +21,7 @@ import '../util/takeUntilDestroyed';
 
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
-import { devices, IBlock } from './devices';
+import { devices, IBlock, IDevice } from './devices';
 
 /**
  * One random background is chosen eac
@@ -51,7 +51,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   /**
    * Background to display behind the frame.
    */
-  public readonly background = this.sanitizer.bypassSecurityTrustStyle(
+  public readonly background: SafeStyle = this.sanitizer.bypassSecurityTrustStyle(
     `url('${backgrounds[Math.floor(backgrounds.length * Math.random())]}')`, // tslint:disable-line
   );
 
@@ -74,7 +74,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   /**
    * The currently selected device.
    */
-  public device = this.state.map(s => devices[s.chosenDevice]);
+  public device: Observable<IDevice> = this.state.map(s => devices[s.chosenDevice]);
 
   constructor(
     private el: ElementRef,

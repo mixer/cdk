@@ -1,5 +1,10 @@
 import { EventEmitter } from 'eventemitter3';
 
+import { IPackageConfig } from '../metadata/package';
+
+export * from '../metadata/decoration';
+export * from '../metadata/package';
+
 /**
  * Layout contains type definitions for various layout primitives.
  */
@@ -538,17 +543,6 @@ export function asset(...path: string[]): string {
   // For now this is fairly stub-ish, it serves as an injection point if we
   // decide to change how assets are delivered in the future.
   return `./${path.map(segment => segment.replace(/^\/+|\/+$/, '')).join('/')}`;
-}
-
-/**
- * IPackageConfig describes the configuration you write in the "interactive"
- * section of your package.json. It's injected automatically when your
- * controls boot.
- */
-export interface IPackageConfig {
-  display: {
-    mode: 'fixed-grid' | 'flex';
-  };
 }
 
 export const packageConfig: IPackageConfig = <any>null; // overridden by the MixerPlugin
