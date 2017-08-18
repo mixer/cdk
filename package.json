@@ -52,6 +52,7 @@
     "@types/glob": "^5.0.30",
     "@types/joi": "^10.4.1",
     "@types/js-yaml": "^3.9.0",
+    "@types/json5": "0.0.29",
     "@types/mocha": "^2.2.41",
     "@types/node-fetch": "^1.6.7",
     "@types/sinon": "^2.3.3",

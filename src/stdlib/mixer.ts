@@ -1,7 +1,11 @@
 import { EventEmitter } from 'eventemitter3';
 
 import { IPackageConfig } from '../metadata/package';
+import { IRPCMethod, IRPCReply, objToError, RPC } from './rpc';
+import { IVideoPositionOptions } from './typings';
 
+export { RPCError } from './rpc';
+export * from './typings';
 export * from '../metadata/decoration';
 export * from '../metadata/package';
 
@@ -47,6 +51,7 @@ export namespace Layout {
     size: 'large' | 'medium' | 'small';
     width: number;
     height: number;
+    minWidth: number;
   }
 
   /**
@@ -55,16 +60,19 @@ export namespace Layout {
   export const gridLayouts: ReadonlyArray<Readonly<IGridDefinition>> = [
     {
       size: 'large',
+      minWidth: 900,
       width: 80,
       height: 20,
     },
     {
       size: 'medium',
+      minWidth: 540,
       width: 45,
       height: 25,
     },
     {
       size: 'small',
+      minWidth: 0,
       width: 30,
       height: 40,
     },
@@ -79,10 +87,34 @@ export namespace Layout {
   }
 
   /**
+   * Represents a single CSS rule value. If a number is given it's assumed
+   * that it's supposed to be in pixels ("px" will be appended to it).
+   * See {@link IContainer} for details.
+   */
+  export type Style = string | number;
+
+  /**
+   * StyleRules is a set of CSS rules. Media queries can be nested in it.
+   * See {@link IContainer} for details.
+   */
+  export type StyleRules = { [key: string]: Style | { [mediaQuery: string]: Style } };
+
+  /**
+   * See {@link IContainer} for details on how this works.
+   */
+  export type ContainerChild = IContainer | IControlChild | 'video';
+
+  /**
    * IContainer is an element that contains controls in the `flex` layout
    * mode. It can contain child containers or IDs of controls, as well as
-   * free-form CSS styles styles or media queries to be passed into Radium
-   * {@link http://formidable.com/open-source/radium/}. For example:
+   * free-form CSS styles styles or media queries. CSS styles may be
+   * camelCased and media queries can be passed in the form
+   * `(max-width: 123px)` with further nested rules.
+   *
+   * Classes will be applied to the container and can be used to reference the
+   * contained in your own code or stylesheets.
+   *
+   * For example:
    *
    * ```
    * {
@@ -97,16 +129,21 @@ export namespace Layout {
    *       "styles": {
    *         "display": "flex",
    *         "justifyContent": "center",
-   *         "alignItems": "center"
+   *         "alignItems": "center",
+   *         "flex-direction": column",
+   *         "(max-width: 300px)": {
+   *           "flex-direction": row",
+   *         }
    *       }
    *     }
    *   ]
    * }
    * ```
    */
-  export class IContainer {
-    public children?: (IContainer | IControlChild | 'video')[];
-    public styles?: { [key: string]: string | number };
+  export interface IContainer {
+    readonly class?: string[];
+    readonly children?: ContainerChild[];
+    readonly styles?: StyleRules;
   }
 }
 
@@ -134,8 +171,7 @@ export interface IControl {
 
   /**
    * Styles when using the `flex` display mode. See Layout.IContainer for
-   * a description and brief example. These are passed into Radium
-   * {@link http://formidable.com/open-source/radium/}.
+   * a description and brief example..
    */
   readonly styles?: { [key: string]: string | number };
 }
@@ -273,139 +309,11 @@ export interface IReady {
   readonly isReady: boolean;
 }
 
-/**
- * An InteractiveError can be thrown in socket.call() if bad input is
- * passed to the service. See the Interactive protocol doc for an enumaration
- * of codes and messages: https://dev.mixer.com/reference/interactive/protocol/protocol.pdf
- */
-export class InteractiveError extends Error {
-  constructor(
-    public readonly code: number,
-    public readonly message: string,
-    public readonly path?: string[],
-  ) {
-    super(`Error #${code}: ${message}`);
-  }
-}
-
-function objToError(obj: { code: number; message: string; path?: string[] }) {
-  return new InteractiveError(obj.code, obj.message, obj.path);
-}
-
-type RPCMessage<T> = IRPCMethod<T> | IRPCReply<T>;
-
-interface IRPCMethod<T> {
-  type: 'method';
-  id: number;
-  method: string;
-  discard?: boolean;
-  params: T;
-}
-
-interface IRPCReply<T> {
-  type: 'reply';
-  id: number;
-  result: T;
-  error?: {
-    code: number;
-    message: string;
-    path?: string[];
-  };
-}
-
 // these are the same right now, but may diverge:
 interface IInteractiveRPCMethod<T> extends IRPCMethod<T> {} // tslint:disable-line
 interface IInteractiveRPCReply<T> extends IRPCReply<T> {} // tslint:disable-line
 
-/**
- * Primitive postMessage based RPC for the controls to interact with the
- * parent frame.
- */
-class RPC extends EventEmitter {
-  private static origin = '*'; // todo(connor4312): do we need to restrict this?
-  private callCounter = 0;
-  private calls: {
-    [id: number]: (err: null | InteractiveError, result: any) => void;
-  } = Object.create(null);
-
-  constructor() {
-    super();
-
-    window.addEventListener('message', ev => {
-      const packet: RPCMessage<any> = ev.data;
-      switch (packet.type) {
-        case 'method':
-          this.emit(packet.method, packet);
-          break;
-        case 'reply':
-          this.handleReply(packet);
-          break;
-        default:
-        // Ignore. We can get postmessage from other sources (webpack in
-        // development), we don't want to error.
-      }
-    });
-
-    this.call('ready', {}, false);
-  }
-
-  public expose<T>(method: string, handler: (params: T) => Promise<any> | any) {
-    this.on(method, (data: IRPCMethod<T>) => {
-      if (data.discard) {
-        handler(data.params);
-        return;
-      }
-
-      Promise.resolve(handler(data.params)).then(result => {
-        // tslint:disable-line
-        this.post({
-          type: 'reply',
-          id: data.id,
-          result,
-        });
-      });
-    });
-  }
-
-  public call(method: string, params: object, waitForReply: boolean): Promise<object> | void {
-    const id = this.callCounter++;
-    this.post({ type: 'method', id, params, method, discard: !waitForReply });
-    if (!waitForReply) {
-      return;
-    }
-
-    return new Promise((resolve, reject) => {
-      this.calls[id] = (err, res) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(res);
-        }
-      };
-    });
-  }
-
-  private handleReply(packet: IRPCReply<any>) {
-    const handler = this.calls[packet.id];
-    if (!handler) {
-      return;
-    }
-
-    if (packet.error) {
-      handler(objToError(packet.error), null);
-    } else {
-      handler(null, packet.result);
-    }
-
-    delete this.calls[packet.id];
-  }
-
-  private post(message: RPCMessage<any>) {
-    window.top.postMessage(message, RPC.origin);
-  }
-}
-
-const rpc = new RPC();
+const rpc = new RPC(window.top);
 
 /**
  * Attaches a handler function that will be triggered when the call comes in.
@@ -467,47 +375,6 @@ export class Socket extends EventEmitter {
 }
 
 /**
- * IVideoPositionOptions are passed into display.moveVideo() to change
- * where the video is shown on the screen.
- */
-export interface IVideoPositionOptions {
-  /**
-   * Position of the video on screen as in pixels..
-   * If omitted, it's not modified.
-   */
-  x?: number;
-
-  /**
-   * Position of the video on screen as in pixels.
-   * If omitted, it's not modified.
-   */
-  y?: number;
-
-  /**
-   * Width of the video on screen as in pixels.
-   * If omitted, it's not modified.
-   */
-  width?: number;
-
-  /**
-   * Height of the video on screen as in pixels.
-   * If omitted, it's not modified.
-   */
-  height?: number;
-
-  /**
-   * Duration of the movement easing in milliseconds. Defaults to 0.
-   */
-  duration?: number;
-
-  /**
-   * CSS easing function. Defaults to 'linear'.
-   * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transition-timing-function
-   */
-  easing?: string;
-}
-
-/**
  * Display modified the display of interactive controls.
  */
 export class Display {
@@ -543,6 +410,15 @@ export function asset(...path: string[]): string {
   // For now this is fairly stub-ish, it serves as an injection point if we
   // decide to change how assets are delivered in the future.
   return `./${path.map(segment => segment.replace(/^\/+|\/+$/, '')).join('/')}`;
+}
+
+/**
+ * Called by the MState automatically when all hooks are set up. This signals
+ * to Mixer that the controls have been bound and are ready to start taking
+ * Interactive calls.
+ */
+export function isLoaded() {
+  rpc.call('controlsReady', {}, false);
 }
 
 export const packageConfig: IPackageConfig = <any>null; // overridden by the MixerPlugin

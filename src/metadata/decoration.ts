@@ -3,22 +3,22 @@
  */
 export interface IDimensions {
   /**
-   * x position (percent from 0 to 100)
+   * x position, in pixels
    */
   x: number;
 
   /**
-   * y position (percent from 0 to 100)
+   * y position, in pixels
    */
   y: number;
 
   /**
-   * control width (percent from 0 to 100)
+   * control width, in pixels
    */
   width: number;
 
   /**
-   * control height (percent from 0 to 100)
+   * control height, in pixels
    */
   height: number;
 }
@@ -189,7 +189,7 @@ export interface IInputDescriptor extends IInputOptions {
  * controls and scenes, and can return them given control kinds or scene IDs.
  */
 export class Registry {
-  private defaultScene: ISceneDescriptor;
+  private defaultScene: ISceneDescriptor | undefined;
   private scenes: { [id: string]: ISceneDescriptor } = Object.create(null);
   private controls: { [id: string]: IControlDescriptor } = Object.create(null);
 
@@ -216,25 +216,51 @@ export class Registry {
 
   /**
    * Returns the Control descriptor for a control of the given kind, or
-   * undefined if it's not found.
+   * thows if it's not found.
    */
-  public getControl(kind: string): Readonly<IControlDescriptor> | undefined {
-    return this.controls[kind];
+  public getControl(kind: string): Readonly<IControlDescriptor> {
+    const control = this.controls[kind];
+    if (!control) {
+      throw new Error(
+        `No control was found for kind "${kind}"! If you have a class already, ` +
+          `make sure you're passing it to the Registry.register() function.`,
+      );
+    }
+
+    return control;
   }
 
   /**
    * Returns the Scene descriptor for the given scene ID, returning the
-   * default scene if a specific handler wasn't found.
+   * default scene if a specific handler wasn't found. Throws if no default
+   * scene is present and the specific ID is not registered.
    */
   public getScene(id: string): Readonly<ISceneDescriptor> {
-    return this.scenes[id] || this.defaultScene;
+    const scene = this.scenes[id] || this.defaultScene;
+    if (!scene) {
+      throw new Error(
+        `No scene class was found for scene ID "${id}" and no default scene was ` +
+          `registered! If you have a default handler, make sure you pass it to the ` +
+          `Registry.register() function, or create a specific class for this scene.`,
+      );
+    }
+
+    return scene;
   }
 
   /**
    * Returns inputs defined on the given control instance.
    */
-  public getInputs(control: any): ReadonlyArray<Readonly<IInputDescriptor>> {
-    return control[inputsMetaKey] || [];
+  public getInputs(control: object): ReadonlyArray<Readonly<IInputDescriptor>> {
+    const inputs = (<any>control.constructor)[inputsMetaKey];
+    if (!inputs) {
+      throw new Error(
+        `Tried to get inputs on ${control.constructor.name}, but it isn't a ` +
+          `@Scene or @Control object!`,
+      );
+    }
+
+    return inputs;
   }
 
   private registerScene(scene: Function, options: ISceneOptions) {
@@ -266,6 +292,17 @@ export class Registry {
   }
 }
 
+function ensureInputsDefined(ctor: Function): IInputDescriptor[] {
+  const loose: any = ctor;
+  let value = loose[inputsMetaKey];
+  if (!value) {
+    value = [];
+    Object.defineProperty(ctor, inputsMetaKey, { value });
+  }
+
+  return value;
+}
+
 /**
  * Scene is a decorator you can use to designate a class as a Scene. See
  * documentation on {@link ISceneOptions} for more info.
@@ -273,6 +310,7 @@ export class Registry {
 export function Scene(options: ISceneOptions = { default: true }) {
   return (ctor: Function) => {
     Object.defineProperty(ctor, sceneMetaKey, { value: options });
+    ensureInputsDefined(ctor);
   };
 }
 
@@ -283,6 +321,7 @@ export function Scene(options: ISceneOptions = { default: true }) {
 export function Control(options: IControlOptions) {
   return (ctor: Function) => {
     Object.defineProperty(ctor, controlMetaKey, { value: options });
+    ensureInputsDefined(ctor);
   };
 }
 /**
@@ -290,8 +329,12 @@ export function Control(options: IControlOptions) {
  * Interactive studio and settable for Preact components. See the
  * {@link IInputOptions} for more info.
  */
-export function Input(_options: IInputOptions = {}) {
-  return (_host: object, _propertyName: string): void => {
-    // noop, this is entirely compile-time / statically analyzed
+export function Input(options: IInputOptions = {}) {
+  return (host: object, propertyName: string): void => {
+    const inputs = ensureInputsDefined(host.constructor);
+    inputs.push({
+      ...options,
+      propertyName,
+    });
   };
 }
