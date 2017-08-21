@@ -1,0 +1,10 @@
+@import '../../node_modules/normalize.css/normalize';
+
+@import './declarations';
+@import './styles/codemirror';
+@import './styles/ng-material';
+
+body {
+  background: url(asset('background.png')) #2e2e2e;
+  font-family: $font-family-sans-serif;
+}

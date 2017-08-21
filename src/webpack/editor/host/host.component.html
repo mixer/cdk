@@ -1,0 +1,6 @@
+<editor-nav></editor-nav>
+
+<div class="content">
+  <editor-code [style.width.%]="editorWidth | async"></editor-code>
+  <editor-frame [style.width.%]="100 - (editorWidth | async)"></editor-frame>
+</div>
