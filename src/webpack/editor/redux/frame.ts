@@ -24,6 +24,14 @@ export const enum Action {
   Rotate = 'FRAME_ROTATE',
 }
 
+export const initialState = {
+  chosenDevice: 0,
+  width: -1,
+  height: -1,
+  dimensionsManuallySet: false,
+  orientation: Orientation.Portrait,
+};
+
 export function reducer(state: IFrameState, action: any): IFrameState {
   switch (action.type) {
     case Action.Select:

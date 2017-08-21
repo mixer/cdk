@@ -17,7 +17,7 @@ import { IProject, ProjectService } from '../redux/project';
 })
 export class NavComponent {
   public frame: Observable<IFrameState> = this.store.select('frame');
-  public canRotate = this.frame.map(s => devices[s.chosenDevice].canRotate);
+  public isMobile = this.frame.map(s => devices[s.chosenDevice].isMobile);
   public devices: ReadonlyArray<IDevice> = devices;
 
   public canUndo = this.store.select(s => s.history.behind.length > 0);
