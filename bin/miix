@@ -11,7 +11,8 @@ const execute = argv => {
   Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
     .catch(err => {
-      console.error(chalk.red(`Unexpected error: ${err.stack || err.message || err}`));
+      const message = String(err.stack || err.message || err);
+      console.error(err.dontColor ? message : chalk.red(message));
       process.exit(1);
     });
 };
@@ -42,6 +43,7 @@ const yargs = require('yargs')
         ),
     execute
   )
+  .command('debug-metadata', 'Displays project metadata', {}, execute)
   .strict()
   .help()
   .demandCommand().argv;

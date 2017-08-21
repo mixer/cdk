@@ -3,7 +3,8 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import { MixerPluginError } from '../errors';
-import { mustLoadPackageJson } from '../npm';
+import { createPackage } from '../metadata/metadata';
+import { getProjectPath } from '../npm';
 import { readFile, wrapErr } from '../util';
 
 // webpack typings are pretty much useless here :(
@@ -46,21 +47,13 @@ class HomepageRenderer {
   constructor(private readonly filepath: string) {}
 
   public async render(compiler: any): Promise<string> {
-    let { filepath } = this;
-    if (path.resolve(filepath) === path.normalize(filepath)) {
-      filepath = path.relative(compiler.options.output.path, filepath);
+    const projectPath = getProjectPath(compiler.options.output.path);
+    if (!projectPath) {
+      throw new Error('Could not find your project path, are you missing a package.json?');
     }
 
-    const og = await readFile(filepath);
-    const config = mustLoadPackageJson(compiler.options.output.path);
-
-    let parsed: parse5.AST.HtmlParser2.Document;
-    try {
-      parsed = <parse5.AST.HtmlParser2.Document>parse5.parse(og);
-    } catch (e) {
-      throw wrapErr(e, 'Could not parse HTML from your homeage');
-    }
-
+    const packaged = await createPackage(projectPath);
+    const parsed = await this.getDocument(compiler);
     const head = <parse5.AST.HtmlParser2.ParentNode>this.findNode(parsed, ['html', 'head']);
     if (!head) {
       throw new MixerPluginError('Your homepage is missing a <head> section!');
@@ -76,10 +69,25 @@ class HomepageRenderer {
     this.append(
       head,
       `<script src="./mixer.js"></script>`,
-      `<script>mixer.packageConfig=${JSON.stringify(config.interactive)}</script>`,
+      `<script>mixer.packageConfig=${JSON.stringify(packaged)}</script>`,
     );
 
     return parse5.serialize(parsed);
+  }
+
+  private async getDocument(compiler: any) {
+    let { filepath } = this;
+    if (path.resolve(filepath) === path.normalize(filepath)) {
+      filepath = path.relative(compiler.options.output.path, filepath);
+    }
+
+    const og = await readFile(filepath);
+
+    try {
+      return <parse5.AST.HtmlParser2.Document>parse5.parse(og);
+    } catch (e) {
+      throw wrapErr(e, 'Could not parse HTML from your homeage');
+    }
   }
 
   private append(parent: parse5.AST.HtmlParser2.Node, ...elements: string[]) {
@@ -150,16 +158,18 @@ export class MixerPlugin {
   public apply(compiler: any) {
     compiler.plugin('emit', async (compilation: any, callback: any) => {
       try {
-        const homepage = await this.homeRenderer.render(compiler);
-        compilation.assets['index.html'] = contentsToAsset(homepage);
-
-        await this.addFiles(compilation, {
-          'mixer.js': path.resolve(__dirname, 'stdlib/mixer.min.js'),
-          'editor.html': path.resolve(staticPath, 'editor/index.html'),
-          'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
-          'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
-        });
-        await this.addStaticAssets(compilation);
+        await Promise.all([
+          this.homeRenderer.render(compiler).then(result => {
+            compilation.assets['index.html'] = contentsToAsset(result);
+          }),
+          this.addFiles(compilation, {
+            'mixer.js': path.resolve(__dirname, '../stdlib/mixer.min.js'),
+            'editor.html': path.resolve(staticPath, 'editor/index.html'),
+            'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
+            'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
+          }),
+          this.addStaticAssets(compilation),
+        ]);
       } catch (e) {
         callback(e);
         return;
@@ -173,6 +183,7 @@ export class MixerPlugin {
     const mapping: { [assetName: string]: string } = {};
     const editorAssets = path.resolve(staticPath, 'editor/assets');
     glob.sync(path.resolve(staticPath, 'editor/assets/**/*')).forEach(file => {
+      compilation.fileDependencies.push(file);
       const relative = path.relative(editorAssets, file);
       mapping[`${devAssetPrefix}/${relative}`] = file;
     });
@@ -185,6 +196,7 @@ export class MixerPlugin {
       Object.keys(files).map(async assetName =>
         fileToAsset(files[assetName]).then(asset => {
           compilation.assets[assetName] = asset;
+          compilation.fileDependencies.push(files[assetName]);
         }),
       ),
     ).then(() => undefined);

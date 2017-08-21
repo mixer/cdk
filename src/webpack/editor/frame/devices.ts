@@ -31,17 +31,12 @@ export interface IDevice {
   /**
    * Returns whether the device can be rotated.
    */
-  readonly canRotate: boolean;
+  readonly isMobile: boolean;
 
   /**
    * Friendly name displayed to users.
    */
   readonly displayName: string;
-
-  /**
-   * Whether the controls handle placement of the video in this device/mobile.
-   */
-  readonly controlsPlaceVideo: boolean;
 
   /**
    * Display returns blocks for the device.
@@ -51,7 +46,7 @@ export interface IDevice {
 
 function fitRatio(ratio: number, width: number, height: number): [number, number] {
   if (width > height * ratio) {
-    return [height * ratio, width];
+    return [height * ratio, height];
   }
 
   return [width, width / ratio];
@@ -62,9 +57,8 @@ function fitRatio(ratio: number, width: number, height: number): [number, number
  */
 class DesktopDevice implements IDevice {
   public readonly frame = 'none';
-  public readonly canRotate = false;
+  public readonly isMobile = false;
   public readonly displayName = 'Web View (16:9)';
-  public readonly controlsPlaceVideo = true;
 
   public display(availableWidth: number, availableHeight: number): IBlock[] {
     // The goal here is to pretend the scene is 1080p, then scale the 350px
@@ -73,13 +67,6 @@ class DesktopDevice implements IDevice {
     const chatWidth = 350 / 1920 * availableWidth;
 
     return [
-      {
-        x: 0,
-        y: 0,
-        width: width - chatWidth,
-        height: width * 9 / 16,
-        type: 'video',
-      },
       {
         x: 0,
         y: 0,
@@ -103,9 +90,8 @@ class DesktopDevice implements IDevice {
  */
 class FullscreenDevice implements IDevice {
   public readonly frame = 'none';
-  public readonly canRotate = false;
+  public readonly isMobile = false;
   public readonly displayName = 'Full Screen (16:9)';
-  public readonly controlsPlaceVideo = true;
 
   public display(availableWidth: number, availableHeight: number): IBlock[] {
     // The goal here is to pretend the scene is 1080p, then scale the 350px
@@ -129,8 +115,7 @@ class FullscreenDevice implements IDevice {
  */
 class MobileDevice implements IDevice {
   public readonly frame = 'phone';
-  public readonly canRotate = true;
-  public readonly controlsPlaceVideo = false;
+  public readonly isMobile = true;
 
   constructor(
     public readonly displayName: string,
@@ -151,21 +136,21 @@ class MobileDevice implements IDevice {
       ];
     }
 
-    const videoHeight = this.width * 9 / 16;
+    const videoHeight = this.height * 9 / 16;
 
     return [
       {
         x: 0,
         y: 0,
-        width: this.width,
+        width: this.height,
         height: videoHeight,
         type: 'video',
       },
       {
         x: 0,
         y: videoHeight,
-        width: this.width,
-        height: this.height - videoHeight,
+        width: this.height,
+        height: this.width - videoHeight,
         type: 'controls',
       },
     ];

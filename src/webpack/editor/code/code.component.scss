@@ -1,9 +1,8 @@
 @import '../../../../static/editor/declarations';
 
-.content {
-  position: fixed;
-  top: $dimension-navbar-height;
+:host {
+  position: absolute;
+  top: 0;
   left: 0;
-  right: 0;
   bottom: 0;
 }
