@@ -2,17 +2,18 @@ import * as patch from 'fast-json-patch';
 import { parse } from 'json5';
 import { Observable } from 'rxjs/Observable';
 
+import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeAll';
 
 import { ICodeState } from '../../redux/code';
-import { mapSet, omit } from '../../util/ds';
+import { mapSet, omit, setSub } from '../../util/ds';
 
 export interface ICall {
   method: string;
-  data: object;
+  params: object;
 }
 
 /**
@@ -29,18 +30,25 @@ export abstract class Source<T> {
     const prop = this.sourceProp();
 
     return src
-      .map(state => {
+      .map(state => (<string[]>state[prop]).join('\n'))
+      .distinctUntilChanged()
+      .map(text => {
         try {
-          return parse((<string[]>state[prop]).join('\n'));
+          return parse(text);
         } catch (e) {
           return null;
         }
       })
       .filter(s => !!s)
       .map(parsed => {
-        const calls = this.compare(this.lastSrc, parsed);
+        if (this.lastSrc) {
+          const calls = this.compare(this.lastSrc, parsed);
+          this.lastSrc = parsed;
+          return calls;
+        }
+
         this.lastSrc = parsed;
-        return calls;
+        return [this.createPacket(this.lastSrc)];
       });
   }
 
@@ -88,6 +96,7 @@ export interface IResourceComparatorOptions<T> {
 export class ResourceComparator<T> {
   private nested: { [K in keyof T]?: ResourceComparator<T[K]> } = Object.create(null);
   private nestedKeys: (keyof T)[] = [];
+
   constructor(private readonly opts: IResourceComparatorOptions<T>) {
     this.nestedKeys = <(keyof T)[]>Object.keys(opts.nested || {});
 
@@ -151,15 +160,17 @@ export class ResourceComparator<T> {
           destroy.add(id!);
           break;
         case 'remove':
-          if (prop !== undefined) {
+          if (prop === undefined || prop === this.opts.id) {
+            destroy.add(id!);
+          } else {
             update.add(id!);
-            break;
           }
-          destroy.add(id!);
           break;
         case 'add':
           if (prop === undefined) {
             create.add(op.value[this.opts.id]);
+          } else if (prop === this.opts.id) {
+            create.add(op.value);
           } else {
             update.add(id!);
           }
@@ -172,17 +183,17 @@ export class ResourceComparator<T> {
     });
 
     let calls: (ICall | ICall[])[] = [];
-    if (create.size) {
-      calls = calls.concat(
-        this.opts.create(mapSet(create, id => <T>next.find(x => this.id(x) === id)), context),
-      );
-    }
-    if (update.size) {
-      const resources = mapSet(update, id => <T>next.find(x => this.id(x) === id));
-      calls = calls.concat(this.opts.update(resources.map(r => omit(r, this.nestedKeys)), context));
-    }
     if (destroy.size) {
       calls = calls.concat(mapSet(destroy, id => this.opts.destroy(id, context)));
+    }
+    if (create.size) {
+      const toCreate = mapSet(create, id => <T>next.find(x => this.id(x) === id));
+      calls = calls.concat(this.opts.create(toCreate, context));
+    }
+    if (update.size) {
+      const toUpdate = setSub(update, destroy, create);
+      const resources = mapSet(toUpdate, id => <T>next.find(x => this.id(x) === id));
+      calls = calls.concat(this.opts.update(resources.map(r => omit(r, this.nestedKeys)), context));
     }
 
     return calls.reduce<ICall[]>((acc, c) => acc.concat(c), []);

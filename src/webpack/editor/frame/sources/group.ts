@@ -10,15 +10,15 @@ export class GroupSource extends Source<IGroup[]> {
     id: 'groupID',
     create: groups => ({
       method: 'onGroupCreate',
-      data: { groups },
+      params: { groups },
     }),
     update: groups => ({
       method: 'onGroupUpdate',
-      data: { groups },
+      params: { groups },
     }),
     destroy: groupID => ({
       method: 'onGroupDelete',
-      data: { groupID, reassignGroupID: 'default' },
+      params: { groupID, reassignGroupID: 'default' },
     }),
   });
 
@@ -42,7 +42,7 @@ export class GroupSource extends Source<IGroup[]> {
   protected createPacket(source: IGroup[]): ICall {
     return {
       method: 'onGroupCreate',
-      data: { groups: source },
+      params: { groups: source },
     };
   }
 }

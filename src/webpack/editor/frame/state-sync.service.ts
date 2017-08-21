@@ -1,6 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import * as json5 from 'json5';
 import { Observable } from 'rxjs/Observable';
 import { devices, IDevice } from './devices';
 
@@ -12,23 +11,9 @@ import { IVideoPositionOptions } from '../../../stdlib/mixer';
 import { RPC } from '../../../stdlib/rpc';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
-
-interface ICachedState {
-  participant?: object;
-  groups?: object;
-  controls?: object;
-}
-
-/**
- * Tries to parse the data as json5, returning undefined if it fails.
- */
-function tryParseJson5(data: string[]): object | undefined {
-  try {
-    return json5.parse(data.join('\n'));
-  } catch (e) {
-    return undefined;
-  }
-}
+import { ControlsSource } from './sources/controls';
+import { GroupSource } from './sources/group';
+import { ParticipantSource } from './sources/participant';
 
 const enum State {
   Loading,
@@ -45,21 +30,19 @@ const enum State {
 export class StateSyncService implements OnDestroy {
   private rpc: RPC;
   private state = State.Loading;
-  private lastValidState: ICachedState = {};
+  private sources = [new ControlsSource(), new GroupSource(), new ParticipantSource()];
   private lastDevice: IDevice;
   private videoSizeSubj = new MemorizingSubject<IVideoPositionOptions>();
 
   constructor(store: Store<IProject>) {
-    store.select('code').takeUntilDestroyed(this).subscribe(state => {
-      this.lastValidState = {
-        participant: tryParseJson5(state.participant),
-        groups: tryParseJson5(state.groups),
-        controls: tryParseJson5(state.controls),
-      };
-
-      if (this.state === State.AwaitingValid) {
-        this.sendInitialState();
-      }
+    this.sources.forEach(source => {
+      source.getEvents(store.select('code')).takeUntilDestroyed(this).subscribe(calls => {
+        if (this.state === State.AwaitingValid) {
+          this.sendInitialState();
+        } else if (this.state === State.Ready) {
+          this.sendInteractive(...calls);
+        }
+      });
     });
 
     store.select('frame').takeUntilDestroyed(this).subscribe(state => {
@@ -75,8 +58,8 @@ export class StateSyncService implements OnDestroy {
     this.rpc.expose('controlsReady', () => {
       this.sendInitialState();
     });
-    this.rpc.expose<IVideoPositionOptions>('moveVideo', params => {
-      this.videoSizeSubj.next(params);
+    this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
+      this.videoSizeSubj.next(data);
     });
     Observable.fromEvent(frame, 'loaded').takeUntilDestroyed(this).subscribe(() => {
       this.state = State.Loading;
@@ -98,43 +81,21 @@ export class StateSyncService implements OnDestroy {
   }
 
   /**
-   * Returns if all cached participant/groups/controls state is valid.
-   */
-  private allCachedStateValid() {
-    const state = this.lastValidState;
-    return !Object.keys(state).some((k: keyof typeof state) => !state[k]);
-  }
-
-  /**
    * Sends down the initial/current controls state, fired when the controls
    * first call `controlsReady`.
    */
   private sendInitialState() {
-    if (!this.allCachedStateValid()) {
+    const create = this.sources.map(src => src.getCreatePacket());
+    if (create.some(packet => packet === undefined)) {
       this.state = State.AwaitingValid;
       return;
     }
 
-    const state = this.lastValidState;
     this.updateSettings();
-    this.sendInteractive(
-      {
-        method: 'onSceneCreate',
-        params: { scenes: state.controls },
-      },
-      {
-        method: 'onGroupCreate',
-        params: { groups: state.groups },
-      },
-      {
-        method: 'onParticipantJoin',
-        params: { participants: [state.participant] },
-      },
-      {
-        method: 'onReady',
-        params: { isReady: true },
-      },
-    );
+    this.sendInteractive(...create.map(call => call!), {
+      method: 'onReady',
+      params: { isReady: true },
+    });
 
     this.state = State.Ready;
   }
@@ -154,6 +115,8 @@ export class StateSyncService implements OnDestroy {
   }
 
   private sendInteractive(...packets: { method: string; params: object }[]): void {
-    packets.forEach(packet => this.rpc.call('recieveInteractivePacket', packet, false));
+    packets.forEach(packet => {
+      this.rpc.call('recieveInteractivePacket', packet, false);
+    });
   }
 }

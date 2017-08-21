@@ -10,30 +10,30 @@ export class ControlsSource extends Source<IScene[]> {
     id: 'sceneID',
     create: scenes => ({
       method: 'onSceneCreate',
-      data: { scenes },
+      params: { scenes },
     }),
     update: scenes => ({
       method: 'onSceneUpdate',
-      data: { scenes },
+      params: { scenes },
     }),
     destroy: sceneID => ({
       method: 'onSceneDelete',
-      data: { sceneID, reassignSceneID: 'default' },
+      params: { sceneID, reassignSceneID: 'default' },
     }),
     nested: {
       controls: {
         id: 'controlID',
         create: (controls, scene: IScene) => ({
           method: 'onControlCreate',
-          data: { controls, sceneID: scene.sceneID },
+          params: { controls, sceneID: scene.sceneID },
         }),
         update: (controls, scene: IScene) => ({
           method: 'onControlUpdate',
-          data: { controls, sceneID: scene.sceneID },
+          params: { controls, sceneID: scene.sceneID },
         }),
         destroy: (controlID, scene: IScene) => ({
           method: 'onControlDelete',
-          data: {
+          params: {
             sceneID: scene.sceneID,
             controls: [{ controlID }],
           },
@@ -62,7 +62,7 @@ export class ControlsSource extends Source<IScene[]> {
   protected createPacket(source: IScene[]): ICall {
     return {
       method: 'onSceneCreate',
-      data: { scenes: source },
+      params: { scenes: source },
     };
   }
 }

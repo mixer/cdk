@@ -13,7 +13,7 @@ export class ParticipantSource extends Source<IParticipant> {
     return [
       {
         method: 'onParticipantUpdate',
-        data: [next],
+        params: { participants: [next] },
       },
     ];
   }
@@ -31,7 +31,7 @@ export class ParticipantSource extends Source<IParticipant> {
   protected createPacket(source: IParticipant): ICall {
     return {
       method: 'onParticipantJoin',
-      data: source,
+      params: { participants: [source] },
     };
   }
 }

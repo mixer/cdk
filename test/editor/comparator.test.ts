@@ -61,7 +61,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(simpleFixture, fixtureWithTopCustomProp)).to.deep.equal([
       {
         method: 'onSceneUpdate',
-        data: { scenes: [{ sceneID: 'scene1', foo: 'bar' }] },
+        params: { scenes: [{ sceneID: 'scene1', foo: 'bar' }] },
       },
     ]);
   });
@@ -70,7 +70,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(simpleFixture, fixtureWithNestedCustomProp)).to.deep.equal([
       {
         method: 'onControlUpdate',
-        data: {
+        params: {
           sceneID: 'scene1',
           controls: fixtureWithNestedCustomProp[0].controls,
         },
@@ -82,7 +82,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(fixtureWithModifiedTopCustomProp, fixtureWithTopCustomProp)).to.deep.equal([
       {
         method: 'onSceneUpdate',
-        data: { scenes: [{ sceneID: 'scene1', foo: 'bar' }] },
+        params: { scenes: [{ sceneID: 'scene1', foo: 'bar' }] },
       },
     ]);
   });
@@ -91,7 +91,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(simpleFixture, fixtureWithNoControls)).to.deep.equal([
       {
         method: 'onControlDelete',
-        data: { sceneID: 'scene1', controls: [{ controlID: 'control1' }] },
+        params: { sceneID: 'scene1', controls: [{ controlID: 'control1' }] },
       },
     ]);
   });
@@ -100,7 +100,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(fixtureWithNoControls, simpleFixture)).to.deep.equal([
       {
         method: 'onControlCreate',
-        data: { sceneID: 'scene1', controls: simpleFixture[0].controls },
+        params: { sceneID: 'scene1', controls: simpleFixture[0].controls },
       },
     ]);
   });
@@ -109,7 +109,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(simpleFixture, emptyFixture)).to.deep.equal([
       {
         method: 'onSceneDelete',
-        data: { sceneID: 'scene1', reassignSceneID: 'default' },
+        params: { sceneID: 'scene1', reassignSceneID: 'default' },
       },
     ]);
   });
@@ -118,7 +118,7 @@ describe('ResourceComparator', () => {
     expect(src.compare(emptyFixture, simpleFixture)).to.deep.equal([
       {
         method: 'onSceneCreate',
-        data: { scenes: [simpleFixture[0]] },
+        params: { scenes: [simpleFixture[0]] },
       },
     ]);
   });

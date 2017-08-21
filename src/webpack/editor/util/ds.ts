@@ -24,3 +24,14 @@ export function omit<T>(obj: T, values: (keyof T)[]): T {
 
   return output;
 }
+
+export function setSub<T>(source: Set<T>, ...subs: Set<T>[]): Set<T> {
+  const out = new Set<T>();
+  source.forEach(key => {
+    if (!subs.some(s => s.has(key))) {
+      out.add(key);
+    }
+  });
+
+  return out;
+}
