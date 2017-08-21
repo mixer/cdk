@@ -110,6 +110,7 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
         return;
       }
 
+      isTriggeringChange = true;
       this.store.dispatch({
         type: stateToUpdateAction[this.codeState],
         data: cm.getValue().split('\n'),

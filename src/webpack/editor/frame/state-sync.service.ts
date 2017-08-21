@@ -1,15 +1,15 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
+import * as json5 from 'json5';
 import { Observable } from 'rxjs/Observable';
-import { IVideoPositionOptions } from '../../../../std';
-import { MemorizingSubject } from '../util/memorizingSubject';
 
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import * as json5 from 'json5';
+import { IVideoPositionOptions } from '../../../stdlib/mixer';
 import { RPC } from '../../../stdlib/rpc';
+import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
 
 interface ICachedState {

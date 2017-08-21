@@ -13,7 +13,7 @@
 
 <div class="spacer"></div>
 
-<button md-icon-button [disabled]="!(canRotate | async)" (click)="rotateDevice()">
+<button md-icon-button [disabled]="!(isMobile | async)" (click)="rotateDevice()">
   <md-icon svgIcon="screen-rotation"></md-icon>
 </button>
 

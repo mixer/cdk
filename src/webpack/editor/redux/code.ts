@@ -70,6 +70,7 @@ const initialParticipant = `{
   connectedAt: ${Date.now()},
   disabled: false,
   groupID: 'default',
+  sparks: 500,
 }`;
 
 const initialGroups = `[
@@ -87,13 +88,30 @@ const initialControls = `[
         controlID: 'my_first_button',
         kind: 'button',
         text: 'My First Button',
+        cost: 100,
+        progress: 0.5,
+        disabled: true,
         grids: [
           {
             width: 10,
             height: 8,
             size: 'large',
             x: 0,
-            y: 0
+            y: 0,
+          }
+        ]
+      },
+      {
+        controlID: 'my_awesome_joystick',
+        kind: 'joystick',
+        disabled: true,
+        grids: [
+          {
+            width: 7,
+            height: 7,
+            size: 'large',
+            x: 11,
+            y: 0,
           }
         ]
       }
