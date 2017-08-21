@@ -97,7 +97,7 @@ describe('ResourceComparator', () => {
   });
 
   it('adds deep resources', () => {
-    expect(src.compare(fixtureWithNoControls, simpleFixture )).to.deep.equal([
+    expect(src.compare(fixtureWithNoControls, simpleFixture)).to.deep.equal([
       {
         method: 'onControlCreate',
         data: { sceneID: 'scene1', controls: simpleFixture[0].controls },

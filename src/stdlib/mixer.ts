@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { parse } from 'querystring';
+import { ISettings } from './mixer';
 
 import { IPackageConfig } from '../metadata/package';
 import { IRPCMethod, IRPCReply, objToError, RPC } from './rpc';
@@ -90,7 +90,16 @@ export class Socket extends EventEmitter {
 /**
  * Display modified the display of interactive controls.
  */
-export class Display {
+export class Display extends EventEmitter {
+  private lastSettings: ISettings;
+
+  constructor() {
+    super();
+    rpc.expose('updateSettings', (settings: ISettings) => {
+      this.lastSettings = settings;
+      this.emit('settings', settings);
+    });
+  }
   /**
    * Hides the controls and displays a loading spinner, optionally
    * with a custom message. This is useful for transitioning. If called
@@ -113,6 +122,19 @@ export class Display {
   public moveVideo(options: IVideoPositionOptions): void {
     rpc.call('moveVideo', options, false);
   }
+
+  /**
+   * Returns the current display settings.
+   */
+  public getSettings(): ISettings | undefined {
+    return this.lastSettings;
+  }
+
+  public on(event: 'settings', handler: (ev: ISettings) => void): this;
+  public on(event: string, handler: (...args: any[]) => void): this {
+    super.on(event, handler);
+    return this;
+  }
 }
 
 /**
@@ -132,35 +154,6 @@ export function asset(...path: string[]): string {
  */
 export function isLoaded() {
   rpc.call('controlsReady', {}, false);
-}
-
-/**
- * ISettings are settings specific to each run of the custom controls. They're
- * different in that was from the packageConfig, which is a 'global' constant
- * for every user. The settings contain some data about where the controls
- * are displayed and the client displaying them.
- */
-export interface ISettings {
-  /**
-   * The user's current language setting, as defined in BCP47:
-   * http://www.ietf.org/rfc/bcp/bcp47.txt. This is generally
-   * `<language>[-<locale>]`. For example, `en`, `en-US`.
-   */
-  language: string;
-
-  /**
-   * Whether the controls are displayed in a mobile viewport/display/app.
-   */
-  isMobile: string;
-}
-
-/**
- * Returns the current application settings.
- */
-export function getSettings(): ISettings {
-  const parsed = parse(window.location.search.slice(1));
-  parsed.isMobile = parsed.isMobile === 'true';
-  return parsed;
 }
 
 export const packageConfig: IPackageConfig = <any>null; // overridden by the MixerPlugin

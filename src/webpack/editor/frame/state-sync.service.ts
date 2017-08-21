@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as json5 from 'json5';
 import { Observable } from 'rxjs/Observable';
+import { devices, IDevice } from './devices';
 
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
@@ -45,6 +46,7 @@ export class StateSyncService implements OnDestroy {
   private rpc: RPC;
   private state = State.Loading;
   private lastValidState: ICachedState = {};
+  private lastDevice: IDevice;
   private videoSizeSubj = new MemorizingSubject<IVideoPositionOptions>();
 
   constructor(store: Store<IProject>) {
@@ -57,6 +59,13 @@ export class StateSyncService implements OnDestroy {
 
       if (this.state === State.AwaitingValid) {
         this.sendInitialState();
+      }
+    });
+
+    store.select('frame').takeUntilDestroyed(this).subscribe(state => {
+      this.lastDevice = devices[state.chosenDevice];
+      if (this.state === State.Ready) {
+        this.updateSettings();
       }
     });
   }
@@ -107,6 +116,7 @@ export class StateSyncService implements OnDestroy {
     }
 
     const state = this.lastValidState;
+    this.updateSettings();
     this.sendInteractive(
       {
         method: 'onSceneCreate',
@@ -127,6 +137,20 @@ export class StateSyncService implements OnDestroy {
     );
 
     this.state = State.Ready;
+  }
+
+  /**
+   * Pushes an settings update to the frame.
+   */
+  private updateSettings() {
+    this.rpc.call(
+      'updateSettings',
+      {
+        language: navigator.language,
+        placesVideo: !this.lastDevice.isMobile,
+      },
+      false,
+    );
   }
 
   private sendInteractive(...packets: { method: string; params: object }[]): void {

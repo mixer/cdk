@@ -7,9 +7,8 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl, SafeStyle } from '@angular/platform-browser';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
-import * as qs from 'querystring';
 import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/observable/combineLatest';
@@ -82,11 +81,6 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   public device: Observable<IDevice> = this.state.map(s => devices[s.chosenDevice]);
 
   /**
-   * URL for the iframe to display
-   */
-  public frameUrl: SafeResourceUrl = this.sanitizer.bypassSecurityTrustResourceUrl('about:blank');
-
-  /**
    * The nested iframe containing the control.
    */
   @ViewChild('iframe') public iframe: ElementRef;
@@ -146,13 +140,6 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
 
     this.stubBlocks = blocks.filter(b => b.type !== 'controls');
     this.controlsBlock = controlBlock;
-
-    const queryString = qs.stringify({
-      isMobile: device.isMobile,
-      language: navigator.language,
-    });
-    this.frameUrl = this.sanitizer.bypassSecurityTrustResourceUrl(`/?${queryString}`);
-
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
   }

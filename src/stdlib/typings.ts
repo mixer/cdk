@@ -356,3 +356,24 @@ export interface IInput {
 export interface IReady {
   readonly isReady: boolean;
 }
+
+/**
+ * ISettings are settings specific to each run of the custom controls. They're
+ * different in that was from the packageConfig, which is a 'global' constant
+ * for every user. The settings contain some data about where the controls
+ * are displayed and the client displaying them.
+ */
+export interface ISettings {
+  /**
+   * The user's current language setting, as defined in BCP47:
+   * http://www.ietf.org/rfc/bcp/bcp47.txt. This is generally
+   * `<language>[-<locale>]`. For example, `en`, `en-US`.
+   */
+  language: string;
+
+  /**
+   * Whether the video is included in and placed by the control area. On
+   * mobile layouts, this will generally be false.
+   */
+  placesVideo: boolean;
+}
