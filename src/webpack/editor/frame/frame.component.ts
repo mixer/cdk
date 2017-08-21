@@ -1,18 +1,20 @@
 import {
+  AfterContentInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
-  OnInit,
+  ViewChild,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/observable/combineLatest';
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/map';
@@ -21,7 +23,8 @@ import '../util/takeUntilDestroyed';
 
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
-import { devices, IBlock } from './devices';
+import { devices, IBlock, IDevice } from './devices';
+import { StateSyncService } from './state-sync.service';
 
 /**
  * One random background is chosen eac
@@ -41,8 +44,9 @@ const backgrounds = [
   templateUrl: './frame.component.html',
   styleUrls: ['./frame.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [StateSyncService],
 })
-export class FrameComponent implements OnInit, OnDestroy {
+export class FrameComponent implements AfterContentInit, OnDestroy {
   /**
    * Padding in all directions within the frame.
    */
@@ -51,7 +55,7 @@ export class FrameComponent implements OnInit, OnDestroy {
   /**
    * Background to display behind the frame.
    */
-  public readonly background = this.sanitizer.bypassSecurityTrustStyle(
+  public readonly background: SafeStyle = this.sanitizer.bypassSecurityTrustStyle(
     `url('${backgrounds[Math.floor(backgrounds.length * Math.random())]}')`, // tslint:disable-line
   );
 
@@ -74,7 +78,12 @@ export class FrameComponent implements OnInit, OnDestroy {
   /**
    * The currently selected device.
    */
-  public device = this.state.map(s => devices[s.chosenDevice]);
+  public device: Observable<IDevice> = this.state.map(s => devices[s.chosenDevice]);
+
+  /**
+   * The nested iframe containing the control.
+   */
+  @ViewChild('iframe') public iframe: ElementRef;
 
   constructor(
     private el: ElementRef,
@@ -82,20 +91,26 @@ export class FrameComponent implements OnInit, OnDestroy {
     private project: ProjectService,
     private store: Store<IProject>,
     private sanitizer: DomSanitizer,
+    public sync: StateSyncService,
   ) {}
 
-  public ngOnInit() {
+  public ngAfterContentInit() {
     Observable.combineLatest(
       this.state.distinctUntilChanged(
         (a, b) => a.chosenDevice === b.chosenDevice && a.orientation === b.orientation,
       ),
+      this.store.select('code').map(c => c.width).distinctUntilChanged(),
+      this.store.select('code').map(c => c.state).distinctUntilChanged(),
       Observable.fromEvent(window, 'resize').debounceTime(5).startWith(null),
       state => state,
     )
+      .delay(1)
       .takeUntilDestroyed(this)
       .subscribe(state => {
         this.refreshBlocks(state);
       });
+
+    this.sync.bind((<HTMLIFrameElement>this.iframe.nativeElement).contentWindow);
   }
 
   public ngOnDestroy() {
@@ -104,7 +119,8 @@ export class FrameComponent implements OnInit, OnDestroy {
 
   private refreshBlocks(state: IFrameState) {
     const el = (<HTMLElement>this.el.nativeElement).getBoundingClientRect();
-    const blocks = devices[state.chosenDevice].display(
+    const device = devices[state.chosenDevice];
+    const blocks = device.display(
       el.width - 2 * FrameComponent.padding,
       el.height - 2 * FrameComponent.padding,
       state.orientation,
@@ -112,8 +128,8 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     if (!state.dimensionsManuallySet) {
       this.project.setDeviceDisplayedSize(
-        blocks.reduce((max, b) => Math.max(max, b.width + b.x), 0),
-        blocks.reduce((max, b) => Math.max(max, b.height + b.y), 0),
+        Math.round(blocks.reduce((max, b) => Math.max(max, b.width + b.x), 0)),
+        Math.round(blocks.reduce((max, b) => Math.max(max, b.height + b.y), 0)),
       );
     }
 
@@ -124,7 +140,6 @@ export class FrameComponent implements OnInit, OnDestroy {
 
     this.stubBlocks = blocks.filter(b => b.type !== 'controls');
     this.controlsBlock = controlBlock;
-
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
   }

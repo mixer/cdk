@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActionReducer, Store } from '@ngrx/store';
 import * as patch from 'fast-json-patch';
+import { CodeState } from './code';
 
 import * as Code from './code';
 import * as Frame from './frame';
@@ -32,6 +33,7 @@ export interface IHistoryState {
 export interface IProject {
   history: IHistoryState;
   frame: Frame.IFrameState;
+  code: Code.ICodeState;
 }
 
 /**
@@ -86,6 +88,15 @@ export class ProjectService {
    */
   public setDeviceDisplayedSize(width: number, height: number) {
     this.store.dispatch({ type: Frame.Action.SetDimensions, width, height, isManual: false });
+  }
+
+  // Code actions -------------------------------------------------------------
+
+  /**
+   * Updates the controls tab/state.
+   */
+  public setCodeState(state: CodeState) {
+    this.store.dispatch({ type: Code.Action.SetState, state });
   }
 }
 
@@ -150,13 +161,8 @@ const initialState: IProject = {
     ahead: [],
     behind: [],
   },
-  frame: {
-    chosenDevice: 0,
-    width: -1,
-    height: -1,
-    dimensionsManuallySet: false,
-    orientation: Frame.Orientation.Portrait,
-  },
+  frame: Frame.initialState,
+  code: Code.initialState,
 };
 
 /**
@@ -182,6 +188,7 @@ export function historyReducer(
  */
 export const reducers: { [key in keyof IProject]?: Function } = {
   frame: Frame.reducer,
+  code: Code.reducer,
   history: (s: IProject) => s,
 };
 

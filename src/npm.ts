@@ -38,6 +38,15 @@ export function mustLoadPackageJson(dir: string): any {
 }
 
 /**
+ * Returns the base path of a project nested in the given directory (the
+ * folder containing the package.json).
+ */
+export function getProjectPath(dir: string): string | undefined {
+  const json = findPackageJson(dir);
+  return json ? path.dirname(json) : undefined;
+}
+
+/**
  * Finds where the given dependency is installed.
  */
 export function getDependencyPath(name: string): string {

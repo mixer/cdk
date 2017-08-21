@@ -3,8 +3,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
+import { Store } from '@ngrx/store';
+import * as CodeMirror from 'codemirror';
+import * as json5 from 'json5';
 
 import 'codemirror/addon/fold/brace-fold';
 import 'codemirror/addon/fold/foldcode';
@@ -12,10 +16,11 @@ import 'codemirror/addon/fold/foldgutter';
 import 'codemirror/addon/lint/lint';
 import 'codemirror/addon/selection/active-line';
 import 'codemirror/mode/javascript/javascript';
+import 'rxjs/add/operator/filter';
+import '../util/takeUntilDestroyed';
 
-import * as CodeMirror from 'codemirror';
-
-const json5 = require('json5');
+import { CodeState, MaxEditableState, stateToProp, stateToUpdateAction } from '../redux/code';
+import { IProject } from '../redux/project';
 
 CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   try {
@@ -56,22 +61,65 @@ CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   styleUrls: ['./code.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CodeComponent implements AfterContentInit {
+export class CodeComponent implements AfterContentInit, OnDestroy {
+  /**
+   * Target CodeMirror text box.
+   */
   @ViewChild('target') public target: ElementRef;
 
+  /**
+   * Current code editor state
+   */
+  private codeState: CodeState;
+
+  constructor(private readonly store: Store<IProject>) {}
+
   public ngAfterContentInit() {
-    CodeMirror.fromTextArea(
+    const cm = CodeMirror.fromTextArea(
       this.target.nativeElement,
       <CodeMirror.EditorConfiguration>{
         theme: 'monokai',
         mode: 'text/javascript',
         lineNumbers: true,
-        tabSize: 4,
+        tabSize: 2,
         foldGutter: true,
         styleActiveLine: true,
         lint: true,
         gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
       },
     );
+
+    let isTriggeringChange = false;
+
+    this.store
+      .select('code')
+      .takeUntilDestroyed(this)
+      .filter(() => !isTriggeringChange)
+      .subscribe(code => {
+        const contents = (<any>code)[stateToProp[code.state]];
+        if (code.state <= MaxEditableState) {
+          this.codeState = code.state;
+          isTriggeringChange = true;
+          cm.setValue(contents.join('\n'));
+          isTriggeringChange = false;
+        }
+      });
+
+    cm.on('changes', () => {
+      if (isTriggeringChange) {
+        return;
+      }
+
+      isTriggeringChange = true;
+      this.store.dispatch({
+        type: stateToUpdateAction[this.codeState],
+        data: cm.getValue().split('\n'),
+      });
+      isTriggeringChange = false;
+    });
+  }
+
+  public ngOnDestroy() {
+    /* noop */
   }
 }

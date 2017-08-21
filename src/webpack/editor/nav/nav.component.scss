@@ -16,31 +16,14 @@
 
 .nav {
   @include layout-row-center();
+
   &, li {
     margin: 0;
     padding: 0;
   }
 
-
   li {
-    @include swift-ease-out('background', 'color');
-
-    display: inline-block;
-    padding: 6px 12px;
-    outline: 0 !important;
     list-style-type: none;
-    color: rgba(#fff, 0.75);
-    text-decoration: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 300;
-    margin: 0 $dimension-gutter-md;
-    background: transparent;
-
-    &.active, &:hover {
-      background: #000;
-      color: #fff;
-    }
   }
 }
 

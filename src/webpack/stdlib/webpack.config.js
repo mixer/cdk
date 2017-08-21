@@ -2,9 +2,9 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-  entry: [path.resolve(__dirname, 'mixer.ts')],
+  entry: [path.resolve(__dirname, '../../stdlib/mixer.ts')],
   output: {
-    path: path.resolve(__dirname, '../../../dist/src/webpack/stdlib'),
+    path: path.resolve(__dirname, '../../../dist/src/stdlib'),
     filename: 'mixer.min.js',
     libraryTarget: 'var',
     library: 'mixer',
@@ -17,7 +17,12 @@ module.exports = {
       {
         test: /\.ts?$/,
         exclude: /node_modules/,
-        loaders: ['awesome-typescript-loader'],
+        loaders: [
+          {
+            loader: 'awesome-typescript-loader',
+            query: { configFileName: path.resolve(__dirname, 'tsconfig.json') },
+          },
+        ],
       },
     ],
   },

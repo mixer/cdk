@@ -17,6 +17,7 @@ import { StoreModule } from '@ngrx/store';
 import { CodeComponent } from './code/code.component';
 import { FrameComponent } from './frame/frame.component';
 import { HostComponent } from './host/host.component';
+import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
 import { metaReducers, ProjectService, reducers } from './redux/project';
 
@@ -39,7 +40,7 @@ require('../../../static/editor/style.scss');
     MdTooltipModule,
     StoreModule.forRoot(reducers, { metaReducers }),
   ],
-  declarations: [CodeComponent, FrameComponent, HostComponent, NavComponent],
+  declarations: [CodeComponent, CodeNavComponent, FrameComponent, HostComponent, NavComponent],
   providers: [ProjectService],
   bootstrap: [HostComponent],
 })
