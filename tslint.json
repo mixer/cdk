@@ -19,6 +19,8 @@
     "no-var-requires": false,
     "newline-before-return": false,
     "match-default-export-name": false,
+    "prefer-for-of": false,
+    "no-non-null-assertion": false,
 
     // Prettier-incompatible or prettier-handled rules
     "align": false,
@@ -42,7 +44,7 @@
         "method-regex": "^[a-z][\\w\\d]+$",
         "private-method-regex": "^[a-z][\\w\\d]+$",
         "static-method-regex": "^[a-z][\\w\\d]+$",
-        "function-regex": "^[a-z][\\w\\d]+$"
+        "function-regex": "^[a-zA-Z][\\w\\d]+$"
     }],
     "insecure-random": false,
     "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"], // for unused params

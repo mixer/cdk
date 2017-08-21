@@ -1,10 +1,42 @@
+import * as fs from 'fs';
 import nodeFetch, { RequestInit, Response } from 'node-fetch';
+
+/**
+ * Promisified fs.readFile
+ */
+export async function readFile(file: string): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    fs.readFile(file, 'utf8', (err, contents) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(contents);
+      }
+    });
+  });
+}
+
+/**
+ * Promisified fs.exists
+ */
+export async function exists(file: string): Promise<boolean> {
+  return new Promise<boolean>(resolve => {
+    fs.exists(file, resolve);
+  });
+}
 
 /**
  * Returns a promise that resolves after the given duration.
  */
 export async function delay(duration: number): Promise<void> {
   return new Promise<void>(resolve => setTimeout(resolve, duration)); // tslint:disable-line
+}
+
+/**
+ * Returns a promise that never resolves.
+ */
+export async function never(): Promise<never> {
+  return new Promise<never>(() => {}); // tslint:disable-line
 }
 
 /**
