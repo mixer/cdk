@@ -119,7 +119,8 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
 
   private refreshBlocks(state: IFrameState) {
     const el = (<HTMLElement>this.el.nativeElement).getBoundingClientRect();
-    const blocks = devices[state.chosenDevice].display(
+    const device = devices[state.chosenDevice];
+    const blocks = device.display(
       el.width - 2 * FrameComponent.padding,
       el.height - 2 * FrameComponent.padding,
       state.orientation,
@@ -139,7 +140,6 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
 
     this.stubBlocks = blocks.filter(b => b.type !== 'controls');
     this.controlsBlock = controlBlock;
-
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
   }
