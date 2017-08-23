@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MdDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
 import { devices, IDevice } from '../frame/devices';
+import { LaunchDialogComponent } from '../launch-dialog/launch-dialog.component';
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
 
@@ -23,7 +25,11 @@ export class NavComponent {
   public canUndo = this.store.select(s => s.history.behind.length > 0);
   public canRedo = this.store.select(s => s.history.ahead.length > 0);
 
-  constructor(private project: ProjectService, private store: Store<IProject>) {}
+  constructor(
+    private project: ProjectService,
+    private store: Store<IProject>,
+    private dialog: MdDialog,
+  ) {}
 
   public chooseDevice(index: number) {
     this.project.chooseDevice(index);
@@ -47,5 +53,11 @@ export class NavComponent {
 
   public redo() {
     this.project.redo();
+  }
+
+  public connect() {
+    this.dialog.open(LaunchDialogComponent).afterClosed().subscribe(_result => {
+      // todo(connor4312): 08/22 left off
+    });
   }
 }

@@ -10,8 +10,8 @@ export class ShortCodeError extends Error {}
  * from Mixer.
  */
 export class ShortCodeUnexpectedError extends ShortCodeError {
-  constructor(public readonly res: Response) {
-    super(`Unexpected status code ${res.status} ${res.statusText} from ${res.url}`);
+  constructor(public readonly res: Response, public readonly text: string) {
+    super(`Unexpected status code ${res.status} ${res.statusText} from ${res.url}: ${text}`);
   }
 }
 
@@ -38,3 +38,15 @@ export class ShortCodeAccessDeniedError extends ShortCodeError {
  * MixerPluginError is thrown when there's an error in the webpack MixerPlugin.
  */
 export class MixerPluginError extends Error {}
+
+/**
+ * A PackageIntegrityError is thrown during the bundling process if something
+ * is amiss in the build process.
+ */
+export class PackageIntegrityError extends Error {}
+
+/**
+ * A WebpackBundlerError is thrown during the bundling process if
+ * webpack throws an error.
+ */
+export class WebpackBundlerError extends Error {}

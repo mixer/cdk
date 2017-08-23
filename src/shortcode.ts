@@ -100,7 +100,7 @@ export class OAuthShortCode {
       case 404:
         throw new ShortCodeExpireError();
       default:
-        throw new ShortCodeUnexpectedError(res);
+        throw new ShortCodeUnexpectedError(res, await res.text());
     }
 
     await Promise.race([
@@ -121,7 +121,7 @@ export class OAuthShortCode {
     });
 
     if (res.status >= 300) {
-      throw new ShortCodeUnexpectedError(res);
+      throw new ShortCodeUnexpectedError(res, await res.text());
     }
 
     return OAuthTokens.fromTokenResponse(await res.json(), this.scopes);
@@ -193,7 +193,7 @@ export class OAuthClient {
     });
 
     if (results.status >= 300) {
-      throw new ShortCodeUnexpectedError(results);
+      throw new ShortCodeUnexpectedError(results, await results.text());
     }
 
     const json: IShortcodeCreateResponse = await results.json();
@@ -210,7 +210,7 @@ export class OAuthClient {
     });
 
     if (res.status >= 300) {
-      throw new ShortCodeUnexpectedError(res);
+      throw new ShortCodeUnexpectedError(res, await res.text());
     }
 
     return OAuthTokens.fromTokenResponse(await res.json(), tokens.data.scopes);

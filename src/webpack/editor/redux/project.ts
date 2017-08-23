@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ActionReducer, Store } from '@ngrx/store';
 import * as patch from 'fast-json-patch';
-import { CodeState } from './code';
 
+import { IStateDump } from '../../../stdlib/mixer';
 import * as Code from './code';
+import * as Connect from './connect';
 import * as Frame from './frame';
 
 const enum Action {
@@ -34,6 +35,7 @@ export interface IProject {
   history: IHistoryState;
   frame: Frame.IFrameState;
   code: Code.ICodeState;
+  connect: Connect.IConnectState;
 }
 
 /**
@@ -95,8 +97,31 @@ export class ProjectService {
   /**
    * Updates the controls tab/state.
    */
-  public setCodeState(state: CodeState) {
+  public setCodeState(state: Code.CodeState) {
     this.store.dispatch({ type: Code.Action.SetState, state });
+  }
+
+  // Connect actions ---------------------------------------------------------
+
+  /**
+   * Updates the active controls state.
+   */
+  public connectControls(data: Connect.IInteractiveJoin) {
+    this.store.dispatch({ type: Connect.Action.Connect, data });
+  }
+
+  /**
+   * Disconnects the active interactive controls.
+   */
+  public disconnectControls() {
+    this.store.dispatch({ type: Connect.Action.Disconnect });
+  }
+
+  /**
+   * Updates the connected state.
+   */
+  public setControlsState(controlsState: IStateDump) {
+    this.store.dispatch({ type: Connect.Action.UpdateState, controlsState });
   }
 }
 
@@ -163,6 +188,7 @@ const initialState: IProject = {
   },
   frame: Frame.initialState,
   code: Code.initialState,
+  connect: Connect.initialState,
 };
 
 /**

@@ -35,6 +35,10 @@ const yargs = require('yargs')
     'Boots up an interactive development server.',
     argv =>
       argv
+        .option('connect-channel', {
+          describe: 'Channel to connect to in the editor. Defaults to your own.',
+          default: process.env.MIIX_CONNECT_CHANNEL,
+        })
         .usage('miix serve [-- <webpack-dev-server args>]')
         .example('miix serve', 'Boot a server on http://localhost:8080')
         .example(
@@ -43,7 +47,13 @@ const yargs = require('yargs')
         ),
     execute
   )
-  .command('debug-metadata', 'Displays project metadata', {}, execute)
+  .command(
+    'pack',
+    'Creates a packaged version of your controls as uploaded in `miix publish`. Useful for debugging.',
+    {},
+    execute
+  )
+  .command('debug-metadata', false, {}, execute)
   .strict()
   .help()
   .demandCommand().argv;

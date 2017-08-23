@@ -26,6 +26,21 @@ export async function exists(file: string): Promise<boolean> {
 }
 
 /**
+ * Promisified fs.readDir
+ */
+export async function readDir(dir: string): Promise<string[]> {
+  return new Promise<string[]>((resolve, reject) => {
+    fs.readdir(dir, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
+  });
+}
+
+/**
  * Returns a promise that resolves after the given duration.
  */
 export async function delay(duration: number): Promise<void> {
@@ -68,12 +83,19 @@ export interface IRequester {
 }
 
 /**
+ * Returns a path to the Mixer API.
+ */
+export function api(): string {
+  return process.env.MIIX_API_HOST || 'https://mixer.com';
+}
+
+/**
  * Fetcher is a concrete, node-fetch-based implementation of IRequester.
  */
 export class Fetcher implements IRequester {
   constructor(
     private readonly policies: IFetchPolicy[] = [],
-    private readonly host: string = 'https://mixer.com/api/v1',
+    private readonly host: string = `${api()}/api/v1`,
     private readonly fetch: typeof nodeFetch = nodeFetch,
   ) {}
 

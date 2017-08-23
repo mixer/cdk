@@ -8,6 +8,8 @@ import { IPackageConfig } from './package';
 // TypeScript will enforce most of this, but some parts come from the
 // package.json and not all consumers may be using TypeScript or strict typing.
 const packageSchema = Joi.object({
+  name: Joi.string().required(),
+  version: Joi.string().required(),
   display: Joi.object({
     mode: Joi.valid('fixed-grid', 'flex').required(),
   }),
@@ -41,6 +43,8 @@ export async function createPackage(dir: string): Promise<IPackageConfig> {
   const staticData = await new MetadataExtractor().compile(dir);
 
   const packaged = {
+    name: packageJson.name,
+    version: packageJson.version,
     ...packageJson.interactive,
     ...staticData,
   };

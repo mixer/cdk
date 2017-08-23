@@ -1,4 +1,3 @@
-import * as chalk from 'chalk';
 import { unlinkSync } from 'fs';
 
 import writer from '../writer';
@@ -11,5 +10,5 @@ export default async function(options: IGlobalOptions): Promise<void> {
     /* ignored */
   }
 
-  writer.write(chalk.green('Logged out successfully.'));
+  writer.write('Logged out successfully.');
 }

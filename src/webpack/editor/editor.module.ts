@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import {
   MdButtonModule,
+  MdDialogModule,
   MdIconModule,
   MdInputModule,
   MdSelectModule,
+  MdSnackBarModule,
   MdTooltipModule,
 } from '@angular/material';
 import { BrowserModule } from '@angular/platform-browser';
@@ -17,6 +19,7 @@ import { StoreModule } from '@ngrx/store';
 import { CodeComponent } from './code/code.component';
 import { FrameComponent } from './frame/frame.component';
 import { HostComponent } from './host/host.component';
+import { LaunchDialogComponent } from './launch-dialog/launch-dialog.component';
 import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
 import { metaReducers, ProjectService, reducers } from './redux/project';
@@ -31,16 +34,26 @@ require('../../../static/editor/style.scss');
     BrowserAnimationsModule,
     BrowserModule,
     CommonModule,
-    HttpModule,
     FormsModule,
+    HttpModule,
     MdButtonModule,
+    MdDialogModule,
     MdIconModule,
     MdInputModule,
     MdSelectModule,
+    MdSnackBarModule,
     MdTooltipModule,
     StoreModule.forRoot(reducers, { metaReducers }),
   ],
-  declarations: [CodeComponent, CodeNavComponent, FrameComponent, HostComponent, NavComponent],
+  declarations: [
+    CodeComponent,
+    CodeNavComponent,
+    FrameComponent,
+    HostComponent,
+    LaunchDialogComponent,
+    NavComponent,
+  ],
+  entryComponents: [LaunchDialogComponent],
   providers: [ProjectService],
   bootstrap: [HostComponent],
 })

@@ -6,6 +6,8 @@ import { IControlOptions, ISceneOptions } from './decoration';
  * controls boot.
  */
 export interface IPackageConfig {
+  name: string;
+  version: string;
   display: {
     mode: 'fixed-grid' | 'flex';
   };
