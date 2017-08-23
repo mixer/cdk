@@ -4,6 +4,7 @@ import * as path from 'path';
 
 import { MixerPluginError } from '../errors';
 import { createPackage } from '../metadata/metadata';
+import { IPackageConfig } from '../metadata/package';
 import { getProjectPath } from '../npm';
 import { readFile, wrapErr } from '../util';
 
@@ -32,56 +33,32 @@ const staticPath = path.resolve(__dirname, '../../../static');
 const devAssetPrefix = '__miix_static';
 
 /**
- * IDevEnvironment is the environment structure stored as JSON in the
- * devEnvironmentVar.
+ * The HTMLInjector is a helper that is able to inject HTML fragments into
+ * an HTML document.
  */
-export interface IDevEnvironment {
-  address: string;
-}
-
-/**
- * HomepageRenderer is responsible for modifying and injecting Mixer stdlib
- * scripts into the developer's index.html.
- */
-class HomepageRenderer {
+abstract class HTMLInjector {
   constructor(private readonly filepath: string) {}
 
   public async render(compiler: any): Promise<string> {
-    const projectPath = getProjectPath(compiler.options.output.path);
-    if (!projectPath) {
-      throw new Error('Could not find your project path, are you missing a package.json?');
-    }
-
-    const packaged = await createPackage(projectPath);
-    const parsed = await this.getDocument(compiler);
+    const parsed = await this.getDocument();
     const head = <parse5.AST.HtmlParser2.ParentNode>this.findNode(parsed, ['html', 'head']);
     if (!head) {
       throw new MixerPluginError('Your homepage is missing a <head> section!');
     }
 
-    if (process.env[devEnvironmentVar]) {
-      this.append(
-        head,
-        `<script>window.self!=window.top||(window.location='/editor.html')</script>`,
-      );
-    }
-
-    this.append(
-      head,
-      `<script src="./mixer.js"></script>`,
-      `<script>mixer.packageConfig=${JSON.stringify(packaged)}</script>`,
-    );
-
+    this.append(head, ...(await this.injectHead(compiler)));
     return parse5.serialize(parsed);
   }
 
-  private async getDocument(compiler: any) {
-    let { filepath } = this;
-    if (path.resolve(filepath) === path.normalize(filepath)) {
-      filepath = path.relative(compiler.options.output.path, filepath);
-    }
+  /**
+   * injectHead returns a list of HTML fragments to insert into the page <head>.
+   */
+  protected async injectHead(_compiler: any): Promise<string[]> {
+    return [];
+  }
 
-    const og = await readFile(filepath);
+  private async getDocument() {
+    const og = await readFile(this.filepath);
 
     try {
       return <parse5.AST.HtmlParser2.Document>parse5.parse(og);
@@ -128,6 +105,41 @@ class HomepageRenderer {
   }
 }
 
+/**
+ * HomepageRenderer is responsible for modifying and injecting Mixer stdlib
+ * scripts into the developer's index.html.
+ */
+class HomepageRenderer extends HTMLInjector {
+  constructor(filepath: string, private readonly packaged: IPackageConfig) {
+    super(filepath);
+  }
+
+  protected async injectHead(): Promise<string[]> {
+    const output: string[] = [];
+
+    if (process.env[devEnvironmentVar]) {
+      output.push(`<script>window.self!=window.top||(window.location='/editor.html')</script>`);
+    }
+
+    output.push(
+      `<script src="./mixer.js"></script>`,
+      `<script>mixer.packageConfig=${JSON.stringify(this.packaged)}</script>`,
+    );
+
+    return output;
+  }
+}
+
+/**
+ * EdtiroRenderer is responsible for injecting the address of the dev server
+ * into the editor's HTML.
+ */
+class EditorRenderer extends HTMLInjector {
+  protected async injectHead(): Promise<string[]> {
+    return [`<script>window.miixDev=${process.env[devEnvironmentVar]}</script>`];
+  }
+}
+
 interface IWebpackFile {
   source(): string | Buffer;
   size(): number;
@@ -151,25 +163,24 @@ async function fileToAsset(...segments: string[]): Promise<IWebpackFile> {
  * in development mode.
  */
 export class MixerPlugin {
-  private readonly homeRenderer = new HomepageRenderer(this.options.homepage);
-
+  private package: IPackageConfig;
   constructor(private readonly options: IPluginOptions) {}
 
   public apply(compiler: any) {
+    const projectPath = getProjectPath(compiler.options.output.path);
+    if (!projectPath) {
+      throw new Error('Could not find your project path, are you missing a package.json?');
+    }
+
     compiler.plugin('emit', async (compilation: any, callback: any) => {
       try {
-        await Promise.all([
-          this.homeRenderer.render(compiler).then(result => {
-            compilation.assets['index.html'] = contentsToAsset(result);
-          }),
-          this.addFiles(compilation, {
-            'mixer.js': path.resolve(__dirname, '../stdlib/mixer.min.js'),
-            'editor.html': path.resolve(staticPath, 'editor/index.html'),
-            'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
-            'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
-          }),
-          this.addStaticAssets(compilation),
-        ]);
+        this.package = await createPackage(projectPath);
+
+        const todo: Promise<void>[] = [this.addProductionFiles(compiler, compilation)];
+        if (process.env[devEnvironmentVar]) {
+          todo.push(this.addEditorFiles(compiler, compilation));
+        }
+        await Promise.all(todo);
       } catch (e) {
         callback(e);
         return;
@@ -177,6 +188,34 @@ export class MixerPlugin {
 
       callback();
     });
+  }
+
+  private async addEditorFiles(compiler: any, compilation: any): Promise<void> {
+    await Promise.all([
+      new EditorRenderer(path.resolve(staticPath, 'editor/index.html'))
+        .render(compiler)
+        .then(result => {
+          compilation.assets['editor.html'] = contentsToAsset(result);
+        }),
+      this.addFiles(compilation, {
+        'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
+        'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
+      }),
+      this.addStaticAssets(compilation),
+    ]);
+  }
+
+  private async addProductionFiles(compiler: any, compilation: any): Promise<void> {
+    compilation.assets['miix-package.json'] = contentsToAsset(JSON.stringify(this.package));
+
+    await Promise.all([
+      new HomepageRenderer(this.options.homepage, this.package).render(compiler).then(result => {
+        compilation.assets['index.html'] = contentsToAsset(result);
+      }),
+      this.addFiles(compilation, {
+        'mixer.js': path.resolve(__dirname, '../stdlib/mixer.min.js'),
+      }),
+    ]);
   }
 
   private async addStaticAssets(compilation: any): Promise<void> {

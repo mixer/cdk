@@ -4,20 +4,58 @@ import * as yaml from 'js-yaml';
 
 import { ShortCodeExpireError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
-import { exists, readFile, wrapErr } from './util';
+import { exists, Fetcher, readFile, wrapErr } from './util';
 import writer from './writer';
 
 interface IProfile {
   tokens: IOAuthTokenData;
+  userdata: IUser;
 }
 
 /**
- * Creates default profile data with the set of tokens.
- * todo(connor4312): this will be fleshed out later as we add more options
+ * IUser is the minimal user structure stored in the profile.
  */
-function createProfileDefaults(): IProfile {
-  return { tokens: <any>null };
+export interface IUser {
+  id: number;
+  username: string;
+  channel: number;
 }
+
+/**
+ * IGrantNotifier prompts the user to enter the granting code.
+ */
+export interface IGrantNotifier {
+  /**
+   * Tells the user to enter the code on mixer.com/go
+   */
+  prompt(code: string): void;
+
+  /**
+   * Whether we should cancel lookup up the code.
+   */
+  isCancelled(): boolean;
+}
+
+/**
+ * ConsoleGrantNotifier is a grant notifier that prints out to the console.
+ */
+export class ConsoleGrantNotifier implements IGrantNotifier {
+  public prompt(code: string) {
+    writer.write(
+      `Go to ${chalk.blue('mixer.com/go')} and enter the code ` + `${chalk.blue(code)} to log in!`,
+    );
+  }
+
+  public isCancelled() {
+    return false;
+  }
+}
+
+/**
+ * Thrown once the GrantNotifier says the the grant is cancelled,
+ * in Profile.grant().
+ */
+export class GrantCancelledError extends Error {}
 
 /**
  * Profile represents a user profile for miix, stored in the .miixrc file.
@@ -42,8 +80,72 @@ export class Profile {
    */
   public async tokens(): Promise<OAuthTokens> {
     await this.ensureProfile();
-
     return this.tokensObj;
+  }
+
+  /**
+   * Returns data about the currently authenticated user.
+   */
+  public async user(): Promise<IUser> {
+    await this.ensureProfile();
+    return this.profile.userdata;
+  }
+
+  /**
+   * Returns whether the user currently has valid credentials.
+   */
+  public async hasAuthenticated(): Promise<boolean> {
+    if (this.profile) {
+      return true;
+    }
+
+    if (!await this.tryLoadFile()) {
+      return false;
+    }
+
+    return !this.tokensObj.expired();
+  }
+
+  /**
+   * Prompts the user to grant the tokens anew, and saves the profile.
+   */
+  public async grant(notifier: IGrantNotifier = new ConsoleGrantNotifier()): Promise<OAuthTokens> {
+    let tokens: OAuthTokens | undefined;
+    do {
+      if (notifier.isCancelled()) {
+        throw new GrantCancelledError();
+      }
+
+      const code = await this.oauthClient.getCode();
+      notifier.prompt(code.code);
+
+      try {
+        tokens = await code.waitForAccept();
+      } catch (e) {
+        if (!(e instanceof ShortCodeExpireError)) {
+          throw e;
+        }
+      }
+    } while (!tokens);
+
+    const udata = await new Fetcher()
+      .with(tokens)
+      .json('get', '/users/current?fields=id,username,channel')
+      .then(async res => res.json());
+
+    this.tokensObj = tokens;
+    this.profile = {
+      tokens: this.tokensObj.data,
+      userdata: {
+        id: udata.id,
+        username: udata.username,
+        channel: udata.channel.id,
+      },
+    };
+
+    await this.save();
+
+    return tokens;
   }
 
   /**
@@ -55,7 +157,6 @@ export class Profile {
     }
 
     if (!await this.tryLoadFile()) {
-      this.profile = createProfileDefaults();
       await this.grant();
     } else if (!this.tokensObj.granted(Profile.necessaryScopes)) {
       await this.grant();
@@ -86,34 +187,6 @@ export class Profile {
     this.tokensObj = await this.oauthClient.refresh(this.tokensObj);
     this.profile.tokens = this.tokensObj.data;
     await this.save();
-  }
-
-  /**
-   * Prompts the user to grant the tokens anew, and saves the profile.
-   */
-  private async grant(): Promise<OAuthTokens> {
-    let tokens: OAuthTokens | undefined;
-    do {
-      const code = await this.oauthClient.getCode();
-      writer.write(
-        `Go to ${chalk.blue('mixer.com/go')} and enter the code ` +
-          `${chalk.blue(code.code)} to log in!`,
-      );
-
-      try {
-        tokens = await code.waitForAccept();
-      } catch (e) {
-        if (!(e instanceof ShortCodeExpireError)) {
-          throw e;
-        }
-      }
-    } while (!tokens);
-
-    this.tokensObj = tokens;
-    this.profile.tokens = this.tokensObj.data;
-    await this.save();
-
-    return tokens;
   }
 
   /**

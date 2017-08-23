@@ -7,4 +7,17 @@
 body {
   background: url(asset('background.png')) #2e2e2e;
   font-family: $font-family-sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: $color-highlight;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+
+  &:hover {
+    border-bottom-color: transparent;
+  }
 }

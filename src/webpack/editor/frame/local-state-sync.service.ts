@@ -7,8 +7,8 @@ import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { IVideoPositionOptions } from '../../../stdlib/mixer';
 import { RPC } from '../../../stdlib/rpc';
+import { IVideoPositionOptions } from '../../../stdlib/typings';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
 import { ControlsSource } from './sources/controls';
@@ -27,16 +27,17 @@ const enum State {
  * to handle this.
  */
 @Injectable()
-export class StateSyncService implements OnDestroy {
+export class LocalStateSyncService implements OnDestroy {
   private rpc: RPC;
   private state = State.Loading;
   private sources = [new ControlsSource(), new GroupSource(), new ParticipantSource()];
   private lastDevice: IDevice;
   private videoSizeSubj = new MemorizingSubject<IVideoPositionOptions>();
+  private closed = new MemorizingSubject<void>();
 
   constructor(store: Store<IProject>) {
     this.sources.forEach(source => {
-      source.getEvents(store.select('code')).takeUntilDestroyed(this).subscribe(calls => {
+      source.getEvents(store.select('code')).takeUntil(this.closed).subscribe(calls => {
         if (this.state === State.AwaitingValid) {
           this.sendInitialState();
         } else if (this.state === State.Ready) {
@@ -45,7 +46,7 @@ export class StateSyncService implements OnDestroy {
       });
     });
 
-    store.select('frame').takeUntilDestroyed(this).subscribe(state => {
+    store.select('frame').takeUntil(this.closed).subscribe(state => {
       this.lastDevice = devices[state.chosenDevice];
       if (this.state === State.Ready) {
         this.updateSettings();
@@ -53,24 +54,37 @@ export class StateSyncService implements OnDestroy {
     });
   }
 
-  public bind(frame: Window): this {
-    this.rpc = new RPC(frame);
+  /**
+   * Attaches listeners to the iframe.
+   */
+  public bind(frame: HTMLIFrameElement): this {
+    this.rpc = new RPC(frame.contentWindow);
     this.rpc.expose('controlsReady', () => {
       this.sendInitialState();
     });
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.videoSizeSubj.next(data);
     });
-    Observable.fromEvent(frame, 'loaded').takeUntilDestroyed(this).subscribe(() => {
+    Observable.fromEvent(frame, 'loaded').takeUntil(this.closed).subscribe(() => {
       this.state = State.Loading;
     });
+
     return this;
   }
 
-  public ngOnDestroy() {
+  /**
+   * Tears down resources associated with the service.
+   */
+  public unbind() {
     if (this.rpc) {
       this.rpc.destroy();
     }
+
+    this.closed.next(undefined);
+  }
+
+  public ngOnDestroy() {
+    this.unbind();
   }
 
   /**

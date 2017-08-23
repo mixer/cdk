@@ -67,8 +67,8 @@ export class RPC extends EventEmitter {
         return;
       }
 
+      // tslint:disable-next-line
       Promise.resolve(handler(data.params)).then(result => {
-        // tslint:disable-line
         this.post({
           type: 'reply',
           id: data.id,
@@ -81,7 +81,9 @@ export class RPC extends EventEmitter {
   /**
    * Makes an RPC call out to the target window.
    */
-  public call(method: string, params: object, waitForReply: boolean): Promise<object> | void {
+  public call<T>(method: string, params: object, waitForReply: true): Promise<T>;
+  public call(method: string, params: object, waitForReply: false): void;
+  public call<T>(method: string, params: object, waitForReply: boolean): Promise<T> | void {
     const id = this.callCounter++;
     this.post({ type: 'method', id, params, method, discard: !waitForReply });
     if (!waitForReply) {
@@ -129,7 +131,17 @@ export class RPC extends EventEmitter {
     const packet: RPCMessage<any> = ev.data;
     switch (packet.type) {
       case 'method':
-        this.emit(packet.method, packet);
+        if (this.listeners(packet.method).length > 0) {
+          this.emit(packet.method, packet);
+          return;
+        }
+
+        this.post({
+          type: 'reply',
+          id: packet.id,
+          error: { code: 4003, message: 'Unknown method name' },
+          result: null,
+        });
         break;
       case 'reply':
         this.handleReply(packet);

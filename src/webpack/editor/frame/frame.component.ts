@@ -5,7 +5,6 @@ import {
   Component,
   ElementRef,
   OnDestroy,
-  ViewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
@@ -24,7 +23,6 @@ import '../util/takeUntilDestroyed';
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
 import { devices, IBlock, IDevice } from './devices';
-import { StateSyncService } from './state-sync.service';
 
 /**
  * One random background is chosen eac
@@ -44,7 +42,6 @@ const backgrounds = [
   templateUrl: './frame.component.html',
   styleUrls: ['./frame.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [StateSyncService],
 })
 export class FrameComponent implements AfterContentInit, OnDestroy {
   /**
@@ -80,18 +77,12 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
    */
   public device: Observable<IDevice> = this.state.map(s => devices[s.chosenDevice]);
 
-  /**
-   * The nested iframe containing the control.
-   */
-  @ViewChild('iframe') public iframe: ElementRef;
-
   constructor(
-    private el: ElementRef,
-    private cdRef: ChangeDetectorRef,
-    private project: ProjectService,
-    private store: Store<IProject>,
-    private sanitizer: DomSanitizer,
-    public sync: StateSyncService,
+    private readonly el: ElementRef,
+    private readonly cdRef: ChangeDetectorRef,
+    private readonly project: ProjectService,
+    private readonly store: Store<IProject>,
+    private readonly sanitizer: DomSanitizer,
   ) {}
 
   public ngAfterContentInit() {
@@ -109,8 +100,6 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
       .subscribe(state => {
         this.refreshBlocks(state);
       });
-
-    this.sync.bind((<HTMLIFrameElement>this.iframe.nativeElement).contentWindow);
   }
 
   public ngOnDestroy() {

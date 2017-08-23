@@ -1,4 +1,3 @@
-import * as chalk from 'chalk';
 import { unlinkSync } from 'fs';
 
 import { Profile } from '../profile';
@@ -11,6 +10,6 @@ export default async function(options: IGlobalOptions): Promise<void> {
   } catch (e) {
     /* ignored */
   }
-  await new Profile(options.profile).tokens();
-  writer.write(chalk.green('Logged in successfully!'));
+  await new Profile(options.profile).grant();
+  writer.write('Logged in successfully!');
 }

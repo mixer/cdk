@@ -14,6 +14,7 @@ import {
   ISceneCreate,
   ISceneDelete,
   ISceneUpdate,
+  IStateDump,
   IVideoPositionOptions,
 } from './typings';
 
@@ -37,6 +38,14 @@ export class Socket extends EventEmitter {
     rpc.expose('recieveInteractivePacket', (data: IInteractiveRPCMethod<any>) => {
       this.emit(data.method, data.params);
     });
+  }
+
+  /**
+   * Sets the handler to use when the editor requests a dump of the current
+   * controls state.
+   */
+  public dumpHandler(fn: () => IStateDump) {
+    rpc.expose('dumpState', fn);
   }
 
   public on(event: 'onParticipantJoin', handler: (ev: IParticipantUpdate) => void): this;
@@ -71,7 +80,7 @@ export class Socket extends EventEmitter {
         method,
         params,
       },
-      waitForReply,
+      <any>waitForReply,
     );
     if (!reply) {
       return;

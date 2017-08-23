@@ -377,3 +377,48 @@ export interface ISettings {
    */
   placesVideo: boolean;
 }
+
+/**
+ * IStateDump is a dump of the raw object tree. The Mixer.socket has an
+ * `onStateDump` handler which should be attached to; the editor will use
+ * this during runtime for debugging.
+ */
+export interface IStateDump {
+  scenes: IScene[];
+  groups: IGroup[];
+  participant: IParticipant;
+}
+
+/**
+ * Enumeration of Interactive error codes. More docs and descriptions can be found in:
+ * {@link https://dev.mixer.com/reference/interactive/protocol/protocol.pdf}
+ */
+export enum ErrorCode {
+  CloseUnknown = 1011,
+  CloseRestarting = 1012,
+
+  AppBadJson = 4000,
+  AppBadCompression,
+  AppBadPacketType,
+  AppBadMethod,
+  AppBadArgs,
+  AppBadEtag,
+  AppExpiredTransaction,
+  AppNotEnoughSparks,
+  AppUnknownGroup,
+  AppGroupExists,
+  AppUnknownScene,
+  AppSceneExists,
+  AppUnknownControl,
+  AppControlExists,
+  AppUnknownControlType,
+  AppUnknownParticipant,
+  AppSessionClosing,
+  AppOutOfMemory,
+  AppCannotDeleteDefault,
+  AppCannotAuthenticate,
+  AppNoInteractiveVersion,
+  AppExistingInteractiveSession,
+  AppChannelNotOnline,
+  AppBadUserInput = 4999,
+}
