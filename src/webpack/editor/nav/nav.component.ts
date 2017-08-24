@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MdDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
+import { ChannelSelectDialog } from '../launch-dialog/channel-select-dialog.component';
 
 import { devices, IDevice } from '../frame/devices';
 import { LaunchDialogComponent } from '../launch-dialog/launch-dialog.component';
@@ -55,9 +56,24 @@ export class NavComponent {
     this.project.redo();
   }
 
-  public connect() {
-    this.dialog.open(LaunchDialogComponent).afterClosed().subscribe(_result => {
-      // todo(connor4312): 08/22 left off
+  public connect(ev: MouseEvent) {
+    if (!ev.shiftKey) {
+      this.launch();
+      return;
+    }
+
+    this.dialog.open(ChannelSelectDialog).afterClosed().subscribe(launch => {
+      if (launch) {
+        this.launch();
+      }
+    });
+  }
+
+  private launch() {
+    this.dialog.open(LaunchDialogComponent).afterClosed().subscribe(result => {
+      if (result) {
+        this.project.connectControls(result);
+      }
     });
   }
 }

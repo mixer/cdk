@@ -14,8 +14,20 @@ export const enum ConnectState {
  * to connect to Interactive.
  */
 export interface IInteractiveJoin {
+  /**
+   * Primary websocket address for the participant.
+   */
   address: string;
+
+  /**
+   * Address of static content to serve for this session.
+   */
   contentAddress: string;
+
+  /**
+   * Address where live-updated resources are stored.
+   */
+  ugcAddress: string;
 }
 
 /**
@@ -33,12 +45,19 @@ export interface IConnectState {
    * the Mixer backend on /api/v1/interactive/{channel}
    */
   join?: IInteractiveJoin;
+
+  /**
+   * Channel to connect to. Overrides the default, which is connecting to
+   * the user's own channel.
+   */
+  channelOverride?: number;
 }
 
 export const enum Action {
   Connect = 'CONNECT_CONNECT',
   Disconnect = 'CONNECT_DISCONNECT',
   UpdateState = 'CONNECT_UPDATE_STATE',
+  SetChannel = 'CONNECT_SET_CHANNEL',
 }
 
 export const initialState = {
@@ -53,6 +72,8 @@ export function reducer(state: IConnectState, action: any): IConnectState {
       return { ...state, state: ConnectState.Idle, join: undefined };
     case Action.UpdateState:
       return { ...state, controlsState: action.controlsState };
+    case Action.SetChannel:
+      return { ...state, channelOverride: action.channelID };
     default:
       return state;
   }

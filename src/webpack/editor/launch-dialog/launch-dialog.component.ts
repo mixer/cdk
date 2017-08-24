@@ -2,8 +2,10 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import { MdDialogRef, MdSnackBar } from '@angular/material';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { IProject } from '../redux/project';
 
 import 'rxjs/add/observable/interval';
 import 'rxjs/add/operator/publishReplay';
@@ -12,8 +14,9 @@ import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/takeUntil';
 
 import { IInteractiveJoin } from '../redux/connect';
-import { apiUrl } from '../util/env';
+import { apiUrl, mixerUrl } from '../util/env';
 import { MemorizingSubject } from '../util/memorizingSubject';
+import { reportHttpError } from '../util/report-issue';
 
 export enum State {
   Connecting,
@@ -53,7 +56,7 @@ export class LaunchDialogComponent implements OnInit {
    * codeUrl is the full Mixer URL the user should go to
    */
   public codeUrl: Observable<SafeUrl> = this.code.map(code =>
-    this.sanitizer.bypassSecurityTrustUrl(`https://mixer.com/go?code=${code}`),
+    this.sanitizer.bypassSecurityTrustUrl(`${mixerUrl()}/go?code=${code}`),
   );
 
   /**
@@ -75,12 +78,13 @@ export class LaunchDialogComponent implements OnInit {
     private readonly dialogRef: MdDialogRef<IInteractiveJoin>,
     private readonly snackRef: MdSnackBar,
     private readonly sanitizer: DomSanitizer,
+    private readonly store: Store<IProject>,
   ) {}
 
   public ngOnInit() {
     setTimeout(() => {
       this.connect();
-    }, 1000);
+    }, 250);
   }
 
   /**
@@ -88,30 +92,42 @@ export class LaunchDialogComponent implements OnInit {
    * when it successfully does so.
    */
   public connect() {
-    this.http.get(apiUrl('connect-participant')).subscribe(
-      res => {
-        this.dialogRef.close(res.json());
-      },
-      (err: Response) => {
-        switch (err.status) {
-          case 401:
-            this.login();
-            break;
-          case 409:
-            this.state.next(State.AwaitingGameClient);
-            Observable.interval(5000)
-              .take(1)
-              .takeUntil(this.dialogRef.afterClosed())
-              .subscribe(() => {
-                this.connect();
-              });
-            break;
-          default:
-            this.snackRef.open('An unknown error occurred');
-            break;
-        }
-      },
-    );
+    this.store
+      .select(s => s.connect.channelOverride)
+      .take(1)
+      .switchMap(channelID =>
+        this.http.get(apiUrl('connect-participant'), { params: { channelID } }),
+      )
+      .subscribe(
+        res => {
+          this.dialogRef.close(res.json());
+        },
+        (err: Response) => {
+          switch (err.status) {
+            case 401:
+              this.login();
+              break;
+            case 409:
+              this.state.next(State.AwaitingGameClient);
+              Observable.interval(5000)
+                .take(1)
+                .takeUntil(this.dialogRef.afterClosed())
+                .subscribe(() => {
+                  this.connect();
+                });
+              break;
+            default:
+              this.snackRef
+                .open('An unknown error occurred', 'Report', { duration: 5000 })
+                .onAction()
+                .subscribe(() => {
+                  reportHttpError('Unknown error in launch dialog', err);
+                });
+              this.dialogRef.close();
+              break;
+          }
+        },
+      );
   }
 
   /**

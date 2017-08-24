@@ -7,7 +7,24 @@ const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 const { findPackageJson } = require('../dist/src/npm');
 
+const hoistEnv = [
+  'api',
+  'profile',
+  'project',
+  'connect_channel',
+];
+
+function optionDefault(opt, defaultValue) {
+  return process.env[`MIIX_${opt.toUpperCase()}`] || defaultValue;
+}
+
 const execute = argv => {
+  hoistEnv.forEach(opt => {
+    if (argv[opt] !== undefined) {
+      process.env[`MIIX_${opt.toUpperCase()}`] = argv[opt];
+    }
+  });
+
   Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
     .catch(err => {
@@ -21,11 +38,15 @@ const yargs = require('yargs')
   .version(pkg.version)
   .option('profile', {
     description: 'Profile to use, stores authentication and config credentials',
-    default: path.join(os.homedir(), '.miixrc'),
+    default: optionDefault('profile', path.join(os.homedir(), '.miixrc')),
   })
   .option('project', {
     description: 'Path to your interactive project',
-    default: path.dirname(findPackageJson(process.cwd())),
+    default: optionDefault('project', path.dirname(findPackageJson(process.cwd()))),
+  })
+  .option('api', {
+    description: 'Mixer API address',
+    default: optionDefault('api', 'https://mixer.com'),
   })
   .command('login', 'Authenticates your machine with Mixer', {}, execute)
   .command('logout', 'Clears your Mixer profile from this machine', {}, execute)
@@ -35,10 +56,6 @@ const yargs = require('yargs')
     'Boots up an interactive development server.',
     argv =>
       argv
-        .option('connect-channel', {
-          describe: 'Channel to connect to in the editor. Defaults to your own.',
-          default: process.env.MIIX_CONNECT_CHANNEL,
-        })
         .usage('miix serve [-- <webpack-dev-server args>]')
         .example('miix serve', 'Boot a server on http://localhost:8080')
         .example(

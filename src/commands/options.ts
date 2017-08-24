@@ -8,4 +8,9 @@ export interface IGlobalOptions {
    * Base directory of the interactive project.
    */
   project: string;
+
+  /**
+   * Address of the Mixer API.
+   */
+  api: string;
 }

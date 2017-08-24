@@ -20,8 +20,10 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/startWith';
 import '../util/takeUntilDestroyed';
 
+import { ConnectState } from '../redux/connect';
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
+import { ControlStateSyncService } from './control-state-sync.service';
 import { devices, IBlock, IDevice } from './devices';
 
 /**
@@ -42,6 +44,7 @@ const backgrounds = [
   templateUrl: './frame.component.html',
   styleUrls: ['./frame.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ControlStateSyncService],
 })
 export class FrameComponent implements AfterContentInit, OnDestroy {
   /**
@@ -77,12 +80,18 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
    */
   public device: Observable<IDevice> = this.state.map(s => devices[s.chosenDevice]);
 
+  /**
+   * Whether the controls should be connected to production.
+   */
+  public isConnectedToRemote = this.store.map(s => s.connect.state === ConnectState.Active);
+
   constructor(
-    private readonly el: ElementRef,
+    public readonly el: ElementRef,
     private readonly cdRef: ChangeDetectorRef,
     private readonly project: ProjectService,
     private readonly store: Store<IProject>,
     private readonly sanitizer: DomSanitizer,
+    public readonly controls: ControlStateSyncService,
   ) {}
 
   public ngAfterContentInit() {

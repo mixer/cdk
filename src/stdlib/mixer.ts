@@ -115,14 +115,14 @@ export class Display extends EventEmitter {
    * while the controls are already minimized, it will update the message.
    */
   public minimize(message?: string): void {
-    rpc.call('minimize', { message }, false);
+    rpc.call('maximize', { maximized: false, message }, false);
   }
 
   /**
    * Restores previously minimize()'d controls.
    */
   public maximize(): void {
-    rpc.call('maximize', {}, false);
+    rpc.call('maximize', { maximized: true }, false);
   }
 
   /**
@@ -164,6 +164,10 @@ export function asset(...path: string[]): string {
 export function isLoaded() {
   rpc.call('controlsReady', {}, false);
 }
+
+window.addEventListener('beforeunload', () => {
+  rpc.call('unloading', {}, false);
+});
 
 export const packageConfig: IPackageConfig = <any>null; // overridden by the MixerPlugin
 export const socket = new Socket();

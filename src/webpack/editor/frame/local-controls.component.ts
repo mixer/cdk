@@ -9,15 +9,17 @@ import {
 import { LocalStateSyncService } from './local-state-sync.service';
 
 /**
- * The FrameComponent hosts the frame containing the developer's controls.
+ * The LocalControlsComponent hosts the frame containing
+ * the developer's local controls.
  */
 @Component({
   selector: 'editor-local-controls',
-  template: '<iframe frameborder="0" src="/"></iframe>',
+  template: '<iframe frameborder="0" src="/?" #iframe></iframe>',
+  styleUrls: ['./controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LocalStateSyncService],
 })
-export class FrameComponent implements AfterContentInit {
+export class LocalControlsComponent implements AfterContentInit {
   /**
    * The nested iframe containing the control.
    */

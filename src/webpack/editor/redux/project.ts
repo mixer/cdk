@@ -17,7 +17,7 @@ const undoableActions = [
   Frame.Action.Select,
   Code.Action.SetState, // so they aren't ever undoing something on a screen they can't see
   Code.Action.SetParticipant,
-  Code.Action.SetControls,
+  Code.Action.SetScenes,
 ];
 
 /**
@@ -123,6 +123,13 @@ export class ProjectService {
   public setControlsState(controlsState: IStateDump) {
     this.store.dispatch({ type: Connect.Action.UpdateState, controlsState });
   }
+
+  /**
+   * Updates the channel the controls will connect to..
+   */
+  public setConnectionChannel(channelID: number) {
+    this.store.dispatch({ type: Connect.Action.SetChannel, channelID });
+  }
 }
 
 function compare(from: IProject, to: IProject): patch.Operation[] {
@@ -212,9 +219,10 @@ export function historyReducer(
 /**
  * ngrx store reducers.
  */
-export const reducers: { [key in keyof IProject]?: Function } = {
+export const reducers: { [key in keyof IProject]: Function } = {
   frame: Frame.reducer,
   code: Code.reducer,
+  connect: Connect.reducer,
   history: (s: IProject) => s,
 };
 

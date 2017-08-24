@@ -3,7 +3,7 @@
  * Landscape is the default orientation.
  */
 export enum CodeState {
-  Controls,
+  Scenes,
   Participant,
   Groups,
   Closed,
@@ -33,7 +33,7 @@ export interface ICodeState {
    * Raw json5 data for the controls model. Split by lines of code
    * (primarily to make diffing faster).
    */
-  controls: string[];
+  scenes: string[];
   /**
    * Raw json5 data for the groups. Split by lines of code
    * (primarily to make diffing faster).
@@ -45,18 +45,18 @@ export const enum Action {
   SetState = 'CODE_SET_STATE',
   Resize = 'CODE_RESIZE',
   SetParticipant = 'CODE_SET_PARTICIPANT',
-  SetControls = 'CODE_SET_CONTROLS',
+  SetScenes = 'CODE_SET_SCENES',
   SetGroups = 'CODE_SET_GROUPS',
 }
 
 export const stateToProp = {
-  [CodeState.Controls]: 'controls',
+  [CodeState.Scenes]: 'scenes',
   [CodeState.Participant]: 'participant',
   [CodeState.Groups]: 'groups',
 };
 
 export const stateToUpdateAction = {
-  [CodeState.Controls]: Action.SetControls,
+  [CodeState.Scenes]: Action.SetScenes,
   [CodeState.Participant]: Action.SetParticipant,
   [CodeState.Groups]: Action.SetGroups,
 };
@@ -91,7 +91,7 @@ const initialControls = `[
         cost: 100,
         progress: 0.5,
         disabled: true,
-        grids: [
+        position: [
           {
             width: 10,
             height: 8,
@@ -105,7 +105,7 @@ const initialControls = `[
         controlID: 'my_awesome_joystick',
         kind: 'joystick',
         disabled: true,
-        grids: [
+        position: [
           {
             width: 7,
             height: 7,
@@ -120,10 +120,10 @@ const initialControls = `[
 ]`;
 
 export const initialState = {
-  state: CodeState.Controls,
+  state: CodeState.Scenes,
   width: 50,
   participant: initialParticipant.split('\n'),
-  controls: initialControls.split('\n'),
+  scenes: initialControls.split('\n'),
   groups: initialGroups.split('\n'),
 };
 
@@ -135,8 +135,8 @@ export function reducer(state: ICodeState, action: any): ICodeState {
       return { ...state, width: action.width };
     case Action.SetParticipant:
       return { ...state, participant: action.data };
-    case Action.SetControls:
-      return { ...state, controls: action.data };
+    case Action.SetScenes:
+      return { ...state, scenes: action.data };
     case Action.SetGroups:
       return { ...state, groups: action.data };
     default:

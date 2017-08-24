@@ -53,7 +53,7 @@ export class ControlsSource extends Source<IScene[]> {
    * @override
    */
   protected sourceProp(): keyof ICodeState {
-    return 'controls';
+    return 'scenes';
   }
 
   /**

@@ -212,9 +212,9 @@ export interface IControl {
   readonly disabled: boolean;
 
   /**
-   * List of display grids using the legacy-grid layout mode.
+   * List of display grids using the fixed-grid layout mode.
    */
-  readonly grids?: Layout.IGridPlacement[];
+  readonly position?: Layout.IGridPlacement[];
 
   /**
    * Styles when using the `flex` display mode. See Layout.IContainer for
@@ -394,8 +394,24 @@ export interface IStateDump {
  * {@link https://dev.mixer.com/reference/interactive/protocol/protocol.pdf}
  */
 export enum ErrorCode {
-  CloseUnknown = 1011,
-  CloseRestarting = 1012,
+  HttpBadRequest = 400,
+  HttpNotFound = 404,
+  HttpInternalServerError = 500,
+  HttpServiceUnavailable = 503,
+
+  CloseNormal = 1000,
+  CloseGoingAway,
+  CloseProtocolError,
+  CloseUnsupported,
+  // 1004 is reserved
+  CloseNoStatus = 1005,
+  CloseAbnormal,
+  CloseUnsupportedData,
+  ClosePolicyViolation,
+  CloseTooLarge,
+  CloseMissingExtension,
+  CloseInternalError,
+  CloseRestarting,
 
   AppBadJson = 4000,
   AppBadCompression,

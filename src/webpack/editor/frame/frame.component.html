@@ -22,14 +22,16 @@
     [style.height.px]="controlsBlock?.height">
     <div class="block block-video"
       *ngIf="(device | async)?.isMobile === false"
-      [style.top.px]="(sync.videoSize() | async)?.top"
-      [style.left.px]="(sync.videoSize() | async)?.left"
-      [style.right.px]="(sync.videoSize() | async)?.right"
-      [style.bottom.px]="(sync.videoSize() | async)?.bottom"
-      [style.width.px]="(sync.videoSize() | async)?.width"
-      [style.height.px]="(sync.videoSize() | async)?.height">
+      [style.top.px]="(controls.getVideoSize() | async)?.top"
+      [style.left.px]="(controls.getVideoSize() | async)?.left"
+      [style.right.px]="(controls.getVideoSize() | async)?.right"
+      [style.bottom.px]="(controls.getVideoSize() | async)?.bottom"
+      [style.width.px]="(controls.getVideoSize() | async)?.width"
+      [style.height.px]="(controls.getVideoSize() | async)?.height">
     </div>
-    <iframe frameborder="0" #iframe></iframe>
+    <editor-local-controls *ngIf="!(isConnectedToRemote | async)"></editor-local-controls>
+    <editor-remote-controls *ngIf="isConnectedToRemote | async"></editor-remote-controls>
   </div>
 </div>
 
+<editor-frame-controls></editor-frame-controls>
