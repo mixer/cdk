@@ -1,0 +1,19 @@
+<a (click)="refresh()"
+  mdTooltip="Refresh Controls"
+  mdTooltipPosition="left">
+  <md-icon svgIcon="refresh"></md-icon>
+</a>
+
+<a *ngIf="canFullscreen"
+  (click)="fullscreen()"
+  mdTooltip="Toggle Fullscreen"
+  mdTooltipPosition="left">
+  <md-icon svgIcon="fullscreen"></md-icon>
+</a>
+
+<a *ngIf="areControlsConnected | async"
+  (click)="exitRemote()"
+  mdTooltip="Disconnect Controls"
+  mdTooltipPosition="left">
+  <md-icon svgIcon="close"></md-icon>
+</a>

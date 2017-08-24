@@ -1,5 +1,7 @@
+import * as chalk from 'chalk';
 import * as express from 'express';
 import { Fetcher } from '../util';
+import writer from '../writer';
 
 import { GrantCancelledError, Profile } from '../profile';
 
@@ -18,7 +20,11 @@ function route(handler: (req: express.Request, res: express.Response) => Promise
 
         res.json(data);
       })
-      .catch(err => res.status(500).send(err.stack || err.message || err));
+      .catch(err => {
+        const contents = err.stack || err.message || String(err);
+        writer.write(chalk.red(`Error in ${req.method} ${req.path}:\n${contents}`));
+        res.status(500).send(contents);
+      });
   };
 }
 
@@ -27,7 +33,7 @@ function route(handler: (req: express.Request, res: express.Response) => Promise
  * endpoints for saving environment/profile settings as well as making calls
  * out to the Mixer API on behalf of the logged in user.
  */
-export function createApp(profile: Profile, connectChannel: number): express.Express {
+export function createApp(profile: Profile): express.Express {
   const app = express();
 
   app.use((_req, res, next) => {
@@ -39,7 +45,7 @@ export function createApp(profile: Profile, connectChannel: number): express.Exp
 
   app.get(
     '/connect-participant',
-    route(async (_req, res) => {
+    route(async (req, res) => {
       if (!await profile.hasAuthenticated()) {
         res.status(401).send();
         return;
@@ -48,7 +54,7 @@ export function createApp(profile: Profile, connectChannel: number): express.Exp
       const udata = await profile.user();
       const joinRes = await new Fetcher()
         .with(await profile.tokens())
-        .json('get', `/interactive/${connectChannel || udata.channel}`);
+        .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
 
       if (joinRes.status === 400) {
         res.status(409).send(); // remap

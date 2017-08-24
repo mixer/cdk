@@ -2,7 +2,7 @@ import { EventEmitter } from 'eventemitter3';
 import { stringify } from 'querystring';
 
 import { RPC, RPCError } from '../stdlib/rpc';
-import { ErrorCode, IStateDump } from '../stdlib/typings';
+import { ErrorCode, ISettings, IStateDump, IVideoPositionOptions } from '../stdlib/typings';
 
 /**
  * This is file contains a websocket implementation to coordinate messaging
@@ -12,6 +12,8 @@ import { ErrorCode, IStateDump } from '../stdlib/typings';
 const enum State {
   Loading,
   Ready,
+  Closing,
+  Closed,
 }
 
 /**
@@ -20,7 +22,40 @@ const enum State {
 export interface IConnectionOptions {
   socketAddress: string;
   contentAddress: string;
-  xAuthUser?: object;
+  ugcAddress: string;
+  xAuthUser?: {
+    ID?: number;
+    Username?: string;
+    XP?: string;
+  };
+}
+
+/**
+ * ICloseData is fired in a `close` event.
+ */
+export interface ICloseData {
+  /**
+   * HTTP *or* websocket error code that caused the connection to fail.
+   * -1 if we couldn't find an appropriate code.
+   */
+  code: number;
+
+  /**
+   * Associated developer-readable message.
+   */
+  message?: string;
+
+  /**
+   * Whether the socket was closed from a manual call to destroy())
+   */
+  expected: boolean;
+
+  /**
+   * Event that caused this error to happen. May be a websocket CloseEvent
+   * if it was closed as a result of a websocket frame, but it can be a plain
+   * Event if an error happened prior to us getting a socket connect going.
+   */
+  ev: CloseEvent | Event;
 }
 
 /**
@@ -45,21 +80,21 @@ export class Participant extends EventEmitter {
   private rpc: RPC;
 
   /**
-   * Buffer of packets from Interactive to replace once the controls load.
+   * Buffer of packets from to replay once the controls load.
    * As soon as we connect to interactive it'll send the initial state
    * messages, but there's a good chance we won't have loaded the controls
    * by that time, so buffer 'em until the controls say they're ready.
    */
-  private replayBuffer: string[] = [];
+  private replayBuffer: { method: string; params: object }[] = [];
 
   /**
    * Controls state.
    */
   private state = State.Loading;
 
-  constructor(private readonly frame: HTMLIFrameElement) {
+  constructor(private readonly frame: HTMLIFrameElement, settings: ISettings) {
     super();
-    this.rpc = new RPC(frame.contentWindow);
+    this.fireEvent('updateSettings', settings);
   }
 
   /**
@@ -70,45 +105,57 @@ export class Participant extends EventEmitter {
       // cache bust the iframe to ensure that it reloads
       // whenever we get a new connection.
       bustCache: Date.now(),
+      'x-protocol-version': Participant.protocolVersion,
       'x-auth-user': options.xAuthUser ? JSON.stringify(options.xAuthUser) : undefined,
     });
 
     const ws = (this.websocket = new WebSocket(`${options.socketAddress}&${qs}`));
     this.frame.src = `${options.contentAddress}&${qs}`;
 
-    this.rpc.expose('sendInteractivePacket', data => {
-      ws.send({ ...data, discard: true });
-    });
-
-    this.rpc.expose('controlsReady', () => {
-      this.replayBuffer.forEach(p => {
-        this.sendInteractive(p);
-      });
-      this.replayBuffer = [];
-      this.state = State.Ready;
-      this.emit('loaded');
-    });
+    this.frame.addEventListener('load', this.onFrameLoad);
 
     ws.addEventListener('message', data => {
-      if (this.state !== State.Ready) {
-        this.replayBuffer.push(data.data);
-      } else {
-        this.sendInteractive(data.data);
-      }
+      this.sendInteractive(data.data);
     });
 
     ws.addEventListener('close', ev => {
-      this.emit('close', ev.code, ev);
+      this.emit(
+        'close',
+        <ICloseData>{
+          code: ev.code,
+          message: ev.reason,
+          expected: this.state === State.Closing,
+          ev,
+        },
+      );
+
+      this.state = State.Closed;
+      this.destroy();
     });
 
     ws.addEventListener('error', ev => {
-      this.emit('close', -1, ev);
+      this.handleWebsocketError(ev);
     });
 
     return this;
   }
 
+  /**
+   * Updates the controls' settings.
+   */
+  public updateSettings(settings: ISettings) {
+    this.fireEvent('updateSettings', settings);
+  }
+
+  /**
+   * Triggers a dump of state from the nested controls. Returns undefined if
+   * the controls do not expose a dumpState method.
+   */
   public dumpState(): Promise<IStateDump | undefined> {
+    if (!this.rpc) {
+      return Promise.resolve(undefined);
+    }
+
     return this.rpc.call<IStateDump>('dumpState', {}, true).catch(err => {
       if (err instanceof RPCError && err.code === ErrorCode.AppBadMethod) {
         return undefined; // controls don't expose dumpState, sad but we'll hide our sadness
@@ -122,7 +169,13 @@ export class Participant extends EventEmitter {
    * Closes the participant connection and frees resources.
    */
   public destroy() {
-    this.rpc.destroy();
+    if (this.state < State.Closing) {
+      this.state = State.Closing;
+    }
+
+    if (this.rpc) {
+      this.rpc.destroy();
+    }
 
     try {
       this.websocket.close();
@@ -134,9 +187,9 @@ export class Participant extends EventEmitter {
 
   /**
    * A close event is emitted, with the error code, if we fail to connect
-   * to Interactive or the connection is lost, a code of -1 will be given.
+   * to Interactive or the connection is lost.
    */
-  public on(event: 'close', handler: (code: number, ev: Event) => void): this;
+  public on(event: 'close', handler: (reason: ICloseData) => void): this;
 
   /**
    * Transmit is fired whenever we proxy an event from the Interactive
@@ -145,7 +198,23 @@ export class Participant extends EventEmitter {
   public on(event: 'transmit', handler: (data: object) => void): this;
 
   /**
-   * Loaded is fired when the contained iframe loads.
+   * Called when the control asks to be maximized or minimized.
+   */
+  public on(event: 'maximize', handler: (isMaximized: boolean, message?: string) => void): this;
+
+  /**
+   * Called when the control asks to move the video position.
+   */
+  public on(event: 'moveVideo', handler: (options: IVideoPositionOptions) => void): this;
+
+  /**
+   * The unload event is fired when the user navigates away from the page.
+   */
+  public on(event: 'unload', handler: () => void): this;
+
+  /**
+   * Loaded is fired when the contained iframe loads and controls signal that
+   * they're ready.
    */
   public on(event: 'loaded', handler: () => void): this;
   public on(event: string, handler: (...args: any[]) => void): this {
@@ -159,7 +228,92 @@ export class Participant extends EventEmitter {
    */
   private sendInteractive(data: string) {
     const parsed = JSON.parse(data);
-    this.rpc.call('recieveInteractivePacket', parsed, false);
+    this.fireEvent('recieveInteractivePacket', parsed);
     this.emit('transmit', parsed);
   }
+
+  /**
+   * attachListeners is called once the frame contents load to boot up
+   * the RPC system.
+   */
+  private attachListeners() {
+    this.rpc = new RPC(this.frame.contentWindow);
+
+    this.rpc.expose('sendInteractivePacket', data => {
+      this.websocket.send({ ...data, discard: true });
+    });
+
+    this.rpc.expose('controlsReady', () => {
+      this.state = State.Ready;
+      this.replayBuffer.forEach(p => {
+        this.fireEvent(p.method, p.params);
+      });
+      this.replayBuffer = [];
+      this.emit('loaded');
+    });
+
+    this.rpc.expose('maximize', (params: { maximized: boolean; message?: string }) => {
+      this.emit('maximize', params.maximized, params.message);
+    });
+
+    this.rpc.expose('moveVideo', (options: IVideoPositionOptions) => {
+      this.emit('moveVideo', options);
+    });
+
+    this.rpc.expose('unloading', () => {
+      this.emit('unload');
+    });
+  }
+
+  /**
+   * handleWebsocketError is called when the websocket emits an `error`. This
+   * is generally called when the connection is terminated before a socket
+   * connection is established. We want to go back and get the error code/body.
+   */
+  private handleWebsocketError(ev: Event) {
+    // tslint:disable-next-line
+    fetch(this.websocket.url.replace(/^ws/, 'http'))
+      .then(res => {
+        return res.text().then(message => {
+          this.emit('close', {
+            message,
+            code: res.status,
+            expected: this.state === State.Closing,
+            ev,
+          });
+        });
+      })
+      .catch(err => {
+        this.emit('close', {
+          code: -1,
+          message: err.message,
+          expected: this.state === State.Closing,
+          ev,
+        });
+      })
+      .then(() => {
+        this.state = State.Closed;
+        this.destroy();
+      });
+  }
+
+  private fireEvent(method: string, params: object): void {
+    if (this.state !== State.Ready) {
+      this.replayBuffer.push({ method, params });
+      return;
+    }
+
+    this.rpc.call(method, params, false);
+  }
+
+  /**
+   * onFrameLoad is called once the iframe loads.
+   */
+  private onFrameLoad = () => {
+    if (this.state === State.Loading) {
+      this.attachListeners();
+    }
+
+    this.frame.removeEventListener('load', this.onFrameLoad);
+  };
 }

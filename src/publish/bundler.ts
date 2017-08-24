@@ -13,7 +13,7 @@ const tar = require('tar'); // typings are pretty bad for this module.
  * that can be uploaded to Mixer.
  */
 export class Bundler {
-  constructor(private readonly projectDir: string) {}
+  constructor(private readonly projectDir: string = process.env.MIIX_PROJECT) {}
 
   public async bundle(
     progressReporter: (message: string) => void = () => undefined,

@@ -11,5 +11,9 @@ export function apiUrl(path: string) {
   }
 
   // tslint:disable-next-line
-  return `http://${dev.address}/${path}`;
+  return `http://${dev.devServerAddress}/${path}`;
+}
+
+export function mixerUrl() {
+  return dev.mixerAddress;
 }

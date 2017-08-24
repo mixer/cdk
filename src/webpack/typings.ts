@@ -3,5 +3,6 @@
  * devEnvironmentVar.
  */
 export interface IDevEnvironment {
-  address: string;
+  devServerAddress: string;
+  mixerAddress: string;
 }

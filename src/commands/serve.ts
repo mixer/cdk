@@ -22,14 +22,10 @@ function defaultArgs(original: string[], defaults: { [key: string]: string | boo
   return original;
 }
 
-export interface IServeOptions extends IGlobalOptions {
-  connectChannel: number;
-}
-
-export default async function(options: IServeOptions): Promise<void> {
+export default async function(options: IGlobalOptions): Promise<void> {
   const argDelimiter = process.argv.indexOf('--');
   const profile = new Profile(options.profile);
-  const server = createServer(createApp(profile, options.connectChannel)).listen(0);
+  const server = createServer(createApp(profile)).listen(0);
   let args = argDelimiter > -1 ? process.argv.slice(argDelimiter + 1) : [];
 
   args = defaultArgs(args, {
@@ -48,7 +44,8 @@ export default async function(options: IServeOptions): Promise<void> {
         ...process.env,
         [devEnvironmentVar]: JSON.stringify(
           <IDevEnvironment>{
-            address: `127.0.0.1:${server.address().port}`,
+            mixerAddress: options.api,
+            devServerAddress: `127.0.0.1:${server.address().port}`,
           },
         ),
       },

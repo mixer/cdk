@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  Input,
+  HostListener,
   OnDestroy,
   ViewChild,
 } from '@angular/core';
@@ -12,26 +12,32 @@ import { Store } from '@ngrx/store';
 import * as json5 from 'json5';
 import { throttle } from 'lodash';
 import { IInteractiveJoin } from '../redux/connect';
+import { ControlStateSyncService } from './control-state-sync.service';
 
-import { Participant } from '../../../participant/participant';
-import { ErrorCode } from '../../../stdlib/typings';
+import 'rxjs/add/operator/combineLatest';
+import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/mapTo';
+import 'rxjs/add/operator/startWith';
+import 'rxjs/add/operator/take';
+import '../util/takeUntilDestroyed';
+
+import { ICloseData, Participant } from '../../../participant/participant';
 import { IProject, ProjectService } from '../redux/project';
+import { exists } from '../util/ds';
 
 /**
  * The RemoteControlsComponent hosts the frame containing remote Interactive
  * controls.
  */
 @Component({
-  selector: 'editor-local-controls',
-  template: '<iframe frameborder="0" src="/"></iframe>',
+  selector: 'editor-remote-controls',
+  template: '<iframe frameborder="0" #iframe></iframe>',
+  styleUrls: ['./controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
-  /**
-   * Details on where to join Interactive.
-   */
-  @Input() public address: IInteractiveJoin;
-
   /**
    * The nested iframe containing the control.
    */
@@ -40,66 +46,112 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
   /**
    * Participant socket interface.
    */
-  private participant: Participant;
-
-  /**
-   * Called whenever a packet is transmitted over the Interactive connection.
-   */
-  private onTransmit = throttle(() => {
-    this.participant
-      .dumpState()
-      .then(dump => {
-        if (dump) {
-          this.project.setControlsState(dump);
-        }
-      })
-      .catch(() => undefined); // ignored
-  });
+  private participant: Participant | undefined;
 
   constructor(
     private readonly store: Store<IProject>,
     private readonly snackRef: MdSnackBar,
     private readonly project: ProjectService,
+    private readonly controls: ControlStateSyncService,
   ) {}
 
   public ngAfterContentInit() {
-    this.store.map(state => state.code.participant).take(1).subscribe(participant => {
-      const xAuthUser = { ID: 1, Username: 'tester' };
-      try {
-        const parsed = json5.parse(participant.join('\n'));
-        xAuthUser.ID = parsed.userID;
-        xAuthUser.Username = parsed.username;
-      } catch (_e) {
-        // ignored. We try to parse it to be nice but no biggie if we can't
-      }
-
-      const p = new Participant(<HTMLIFrameElement>this.iframe.nativeElement).connect({
-        xAuthUser,
-        socketAddress: this.address.address,
-        contentAddress: this.address.contentAddress,
+    this.store
+      .select(state => state.connect.join)
+      .filter(exists)
+      .takeUntilDestroyed(this)
+      .distinctUntilChanged((a, b) => a.address === b.address)
+      .combineLatest(this.controls.getRefresh().startWith(undefined))
+      .subscribe(([join]) => {
+        this.startConnect(join);
       });
-
-      p.on('loaded', () => {
-        this.afterConnect();
-      });
-      p.on('close', code => {
-        this.onClose(code);
-      });
-      p.on('transmit', this.onTransmit);
-      this.participant = p;
-    });
   }
 
   public ngOnDestroy() {
-    this.participant.destroy();
+    if (this.participant) {
+      this.participant.destroy();
+      this.participant = undefined;
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  public onExit(ev: KeyboardEvent) {
+    if (ev.keyCode === 27) {
+      // escape
+      this.project.disconnectControls();
+    }
+  }
+
+  /**
+   * startConnect is called when we get interactive join data from the state.
+   */
+  private startConnect(join: IInteractiveJoin) {
+    this.store
+      .map(state => state.code.participant)
+      .take(1)
+      .map(participant => {
+        const xAuthUser = { ID: 1, Username: 'tester' };
+        try {
+          const parsed = json5.parse(participant.join('\n'));
+          xAuthUser.ID = parsed.userID;
+          xAuthUser.Username = parsed.username;
+        } catch (_e) {
+          // ignored. We try to parse it to be nice but no biggie if we can't
+        }
+
+        return xAuthUser;
+      })
+      .combineLatest(this.controls.getSettings())
+      .takeUntilDestroyed(this)
+      .subscribe(([xAuthUser, settings]) => {
+        if (this.participant) {
+          this.participant.destroy();
+        }
+
+        const iframe = <HTMLIFrameElement>this.iframe.nativeElement;
+        this.participant = new Participant(iframe, settings)
+          .on('loaded', () => {
+            this.afterConnect();
+          })
+          .on('close', close => {
+            this.onClose(close);
+          })
+          .on(
+            'transmit',
+            throttle(() => {
+              this.onTransmit();
+            }, 50),
+          )
+          .on('moveVideo', size => {
+            this.controls.setVideoSize(size);
+          })
+          .on('unload', () => {
+            this.controls.requestRefresh();
+          })
+          .connect({
+            contentAddress: '/?',
+            socketAddress: join.address,
+            ugcAddress: join.ugcAddress,
+            xAuthUser,
+          });
+      });
   }
 
   /**
    * Called when the participant socket closes, for any reason.
    */
-  public onClose(code: number) {
+  private onClose(close: ICloseData) {
+    if (close.expected) {
+      // webpack reloaded the controls
+      return;
+    }
+
     this.snackRef.open(
-      `The interactive connection was closed with code ${code}: ${ErrorCode[code] || 'UNKNOWN'}`,
+      `The interactive connection was closed with code ${close.code}${close.message
+        ? `: ${close.message}`
+        : ''}`,
+      undefined,
+      { duration: 8000 },
     );
 
     this.project.disconnectControls();
@@ -109,6 +161,24 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
    * Called after the pariticipant socket opens.
    */
   private afterConnect() {
-    this.snackRef.open('Connected! Press ESC to exit Interactive.');
+    this.snackRef.open('Connected! Press ESC to exit Interactive.', undefined, { duration: 2000 });
+  }
+
+  /**
+   * Called whenever a packet is transmitted over the Interactive connection.
+   */
+  private onTransmit() {
+    if (!this.participant) {
+      return; // could have closed before the throttle fired
+    }
+
+    this.participant
+      .dumpState()
+      .then(dump => {
+        if (dump) {
+          this.project.setControlsState(dump);
+        }
+      })
+      .catch(() => undefined); // ignored
   }
 }

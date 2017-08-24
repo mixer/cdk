@@ -9,7 +9,15 @@ import 'rxjs/add/operator/map';
 import { CodeState } from '../redux/code';
 import { IProject } from '../redux/project';
 
-const availableIcons = ['rocket', 'screen-rotation', 'undo', 'redo', 'refresh'];
+const availableIcons = [
+  'rocket',
+  'screen-rotation',
+  'undo',
+  'redo',
+  'refresh',
+  'close',
+  'fullscreen',
+];
 
 /**
  * The host component holds the arrangement of macroscopic editor components.

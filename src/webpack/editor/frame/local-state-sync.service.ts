@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
-import { devices, IDevice } from './devices';
 
 import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
@@ -11,6 +10,7 @@ import { RPC } from '../../../stdlib/rpc';
 import { IVideoPositionOptions } from '../../../stdlib/typings';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
+import { ControlStateSyncService } from './control-state-sync.service';
 import { ControlsSource } from './sources/controls';
 import { GroupSource } from './sources/group';
 import { ParticipantSource } from './sources/participant';
@@ -22,20 +22,18 @@ const enum State {
 }
 
 /**
- * The StateSyncService manages synchronizing state between what's in the
- * editor state and what the controls know about. It uses RPC over postMessage
- * to handle this.
+ * The LocalStateSyncService manages synchronizing state between what's in the
+ * editor state and what the local controls know about. It uses RPC over
+ * postMessage to handle this.
  */
 @Injectable()
 export class LocalStateSyncService implements OnDestroy {
   private rpc: RPC;
   private state = State.Loading;
   private sources = [new ControlsSource(), new GroupSource(), new ParticipantSource()];
-  private lastDevice: IDevice;
-  private videoSizeSubj = new MemorizingSubject<IVideoPositionOptions>();
   private closed = new MemorizingSubject<void>();
 
-  constructor(store: Store<IProject>) {
+  constructor(private readonly controlsState: ControlStateSyncService, store: Store<IProject>) {
     this.sources.forEach(source => {
       source.getEvents(store.select('code')).takeUntil(this.closed).subscribe(calls => {
         if (this.state === State.AwaitingValid) {
@@ -44,13 +42,6 @@ export class LocalStateSyncService implements OnDestroy {
           this.sendInteractive(...calls);
         }
       });
-    });
-
-    store.select('frame').takeUntil(this.closed).subscribe(state => {
-      this.lastDevice = devices[state.chosenDevice];
-      if (this.state === State.Ready) {
-        this.updateSettings();
-      }
     });
   }
 
@@ -63,10 +54,16 @@ export class LocalStateSyncService implements OnDestroy {
       this.sendInitialState();
     });
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
-      this.videoSizeSubj.next(data);
+      this.controlsState.setVideoSize(data);
     });
     Observable.fromEvent(frame, 'loaded').takeUntil(this.closed).subscribe(() => {
       this.state = State.Loading;
+    });
+
+    this.controlsState.getRefresh().takeUntil(this.closed).subscribe(() => {
+      this.rpc.destroy();
+      frame.src = frame.src;
+      this.bind(frame);
     });
 
     return this;
@@ -88,13 +85,6 @@ export class LocalStateSyncService implements OnDestroy {
   }
 
   /**
-   * Observable that emits when the video size/position changes.
-   */
-  public videoSize(): Observable<IVideoPositionOptions> {
-    return this.videoSizeSubj;
-  }
-
-  /**
    * Sends down the initial/current controls state, fired when the controls
    * first call `controlsReady`.
    */
@@ -105,27 +95,16 @@ export class LocalStateSyncService implements OnDestroy {
       return;
     }
 
-    this.updateSettings();
+    this.controlsState.getSettings().takeUntil(this.closed).subscribe(settings => {
+      this.rpc.call('updateSettings', settings, false);
+    });
+
     this.sendInteractive(...create.map(call => call!), {
       method: 'onReady',
       params: { isReady: true },
     });
 
     this.state = State.Ready;
-  }
-
-  /**
-   * Pushes an settings update to the frame.
-   */
-  private updateSettings() {
-    this.rpc.call(
-      'updateSettings',
-      {
-        language: navigator.language,
-        placesVideo: !this.lastDevice.isMobile,
-      },
-      false,
-    );
   }
 
   private sendInteractive(...packets: { method: string; params: object }[]): void {

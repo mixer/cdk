@@ -35,3 +35,17 @@ export function setSub<T>(source: Set<T>, ...subs: Set<T>[]): Set<T> {
 
   return out;
 }
+
+export function exists<T>(value: T | null | undefined): value is T {
+  return value != null;
+}
+
+export function unindent(message: string): string {
+  const match = /\n?( *)/.exec(message);
+  if (!match) {
+    return message;
+  }
+
+  const re = new RegExp(`^ {${match[1].length}}`, 'mg');
+  return message.replace(re, '').trim();
+}

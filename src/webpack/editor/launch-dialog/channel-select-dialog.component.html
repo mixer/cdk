@@ -1,0 +1,17 @@
+<h1 md-dialog-title>Connect to Channel</h1>
+<div md-dialog-content>
+  <p>
+
+    Please enter the ID of the channel you want to connect to. Leave it blank to connect to your own.
+  </p>
+  <md-input-container>
+    <input mdInput placeholder="Channel ID"
+      [ngModel]="connectionChannel | async"
+      (ngModelChange)="setConnectionChannel($event)"
+      type="number">
+  </md-input-container>
+</div>
+<div md-dialog-actions>
+  <button md-button [md-dialog-close]="false">Close</button>
+  <button md-button [md-dialog-close]="true">Connect</button>
+</div>

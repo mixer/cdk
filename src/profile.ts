@@ -4,12 +4,16 @@ import * as yaml from 'js-yaml';
 
 import { ShortCodeExpireError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
-import { exists, Fetcher, readFile, wrapErr } from './util';
+import { api, exists, Fetcher, readFile, wrapErr } from './util';
 import writer from './writer';
 
-interface IProfile {
+interface IHostProfile {
   tokens: IOAuthTokenData;
   userdata: IUser;
+}
+
+interface IProfile {
+  hosts: { [url: string]: IHostProfile };
 }
 
 /**
@@ -42,7 +46,7 @@ export interface IGrantNotifier {
 export class ConsoleGrantNotifier implements IGrantNotifier {
   public prompt(code: string) {
     writer.write(
-      `Go to ${chalk.blue('mixer.com/go')} and enter the code ` + `${chalk.blue(code)} to log in!`,
+      `Go to ${chalk.blue(`${api()}/go`)} and enter the code ` + `${chalk.blue(code)} to log in!`,
     );
   }
 
@@ -61,17 +65,24 @@ export class GrantCancelledError extends Error {}
  * Profile represents a user profile for miix, stored in the .miixrc file.
  */
 export class Profile {
-  public static necessaryScopes = ['interactive:manage:self'];
+  public static necessaryScopes = ['interactive:manage:self', 'interactive:play:self'];
 
   private tokensObj: OAuthTokens;
-  private profile: IProfile;
+  private profile: IProfile = {
+    hosts: {},
+  };
+
+  private get hostProfile() {
+    return this.profile.hosts[this.host];
+  }
 
   constructor(
-    private readonly file: string,
+    private readonly file: string = process.env.MIIX_PROFILE,
     private readonly oauthClient: OAuthClient = new OAuthClient({
       clientId: '9789aae60656644524be9530889ba8884c0095834ae75f50',
       scopes: Profile.necessaryScopes,
     }),
+    private readonly host = api(),
   ) {}
 
   /**
@@ -88,14 +99,14 @@ export class Profile {
    */
   public async user(): Promise<IUser> {
     await this.ensureProfile();
-    return this.profile.userdata;
+    return this.hostProfile.userdata;
   }
 
   /**
    * Returns whether the user currently has valid credentials.
    */
   public async hasAuthenticated(): Promise<boolean> {
-    if (this.profile) {
+    if (this.hostProfile) {
       return true;
     }
 
@@ -107,9 +118,20 @@ export class Profile {
   }
 
   /**
+   * Logs out of the current session, if the user is authenticated.
+   */
+  public async logout(): Promise<void> {
+    await this.tryLoadFile();
+    delete this.profile.hosts[this.host];
+    await this.save();
+  }
+
+  /**
    * Prompts the user to grant the tokens anew, and saves the profile.
    */
   public async grant(notifier: IGrantNotifier = new ConsoleGrantNotifier()): Promise<OAuthTokens> {
+    await this.tryLoadFile();
+
     let tokens: OAuthTokens | undefined;
     do {
       if (notifier.isCancelled()) {
@@ -134,7 +156,7 @@ export class Profile {
       .then(async res => res.json());
 
     this.tokensObj = tokens;
-    this.profile = {
+    this.profile.hosts[this.host] = {
       tokens: this.tokensObj.data,
       userdata: {
         id: udata.id,
@@ -151,9 +173,10 @@ export class Profile {
   /**
    * Ensures that the profile exists and has valid grants.
    */
-  private async ensureProfile(): Promise<void> {
-    if (this.profile) {
-      return;
+  private async ensureProfile(): Promise<IHostProfile> {
+    const hostProfile = this.profile && this.profile.hosts[this.host];
+    if (hostProfile) {
+      return hostProfile;
     }
 
     if (!await this.tryLoadFile()) {
@@ -163,6 +186,8 @@ export class Profile {
     } else if (this.tokensObj.expired()) {
       await this.refresh();
     }
+
+    return this.profile.hosts[this.host];
   }
 
   /**
@@ -185,7 +210,7 @@ export class Profile {
    */
   private async refresh(): Promise<void> {
     this.tokensObj = await this.oauthClient.refresh(this.tokensObj);
-    this.profile.tokens = this.tokensObj.data;
+    this.hostProfile.tokens = this.tokensObj.data;
     await this.save();
   }
 
@@ -206,9 +231,13 @@ export class Profile {
           throw wrapErr(err, `Error parsing profile from ${this.file}`);
         }
 
+        if (!this.hostProfile) {
+          return false;
+        }
+
         this.tokensObj = new OAuthTokens({
-          ...this.profile.tokens,
-          expiresAt: new Date(this.profile.tokens.expiresAt),
+          ...this.hostProfile.tokens,
+          expiresAt: new Date(this.hostProfile.tokens.expiresAt),
         });
 
         return true;

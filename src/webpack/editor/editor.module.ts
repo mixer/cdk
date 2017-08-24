@@ -17,8 +17,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StoreModule } from '@ngrx/store';
 
 import { CodeComponent } from './code/code.component';
+import { FrameControlsComponent } from './frame/frame-controls.component';
 import { FrameComponent } from './frame/frame.component';
+import { LocalControlsComponent } from './frame/local-controls.component';
+import { RemoteControlsComponent } from './frame/remote-controls.component';
 import { HostComponent } from './host/host.component';
+import { ChannelSelectDialog } from './launch-dialog/channel-select-dialog.component';
 import { LaunchDialogComponent } from './launch-dialog/launch-dialog.component';
 import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
@@ -46,14 +50,18 @@ require('../../../static/editor/style.scss');
     StoreModule.forRoot(reducers, { metaReducers }),
   ],
   declarations: [
+    ChannelSelectDialog,
     CodeComponent,
     CodeNavComponent,
     FrameComponent,
+    FrameControlsComponent,
     HostComponent,
     LaunchDialogComponent,
+    LocalControlsComponent,
     NavComponent,
+    RemoteControlsComponent,
   ],
-  entryComponents: [LaunchDialogComponent],
+  entryComponents: [ChannelSelectDialog, LaunchDialogComponent],
   providers: [ProjectService],
   bootstrap: [HostComponent],
 })

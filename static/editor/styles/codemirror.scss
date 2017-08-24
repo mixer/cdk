@@ -23,4 +23,10 @@
   .CodeMirror-guttermarker-subtle {
     color: rgba(#fff, 0.2);
   }
+
+  .disabled & {
+    .CodeMirror-line {
+      opacity: 0.5;
+    }
+  }
 }
