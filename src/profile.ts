@@ -65,7 +65,7 @@ export class GrantCancelledError extends Error {}
  * Profile represents a user profile for miix, stored in the .miixrc file.
  */
 export class Profile {
-  public static necessaryScopes = ['interactive:manage:self', 'interactive:play:self'];
+  public static necessaryScopes = ['interactive:manage:self', 'interactive:play'];
 
   private tokensObj: OAuthTokens;
   private profile: IProfile = {

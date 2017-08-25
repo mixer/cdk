@@ -6,10 +6,10 @@ import { Response } from 'node-fetch';
 export class ShortCodeError extends Error {}
 
 /**
- * ShortCodeUnexpectedError is raised when we get an unexpected status code
+ * UnexpectedHttpError is raised when we get an unexpected status code
  * from Mixer.
  */
-export class ShortCodeUnexpectedError extends ShortCodeError {
+export class UnexpectedHttpError extends Error {
   constructor(public readonly res: Response, public readonly text: string) {
     super(`Unexpected status code ${res.status} ${res.statusText} from ${res.url}: ${text}`);
   }

@@ -5,9 +5,9 @@ import { Bundler } from '../publish/bundler';
 
 export default async function(): Promise<void> {
   const spinner = ora('Starting...').start();
-  const file = await new Bundler().bundle(progress => {
+  const output = await new Bundler().bundle(progress => {
     spinner.text = progress;
   });
 
-  spinner.succeed(`Bundle created in ${chalk.green(file)}`);
+  spinner.succeed(`Bundle created in ${chalk.green(output.filename)}`);
 }
