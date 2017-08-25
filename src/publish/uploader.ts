@@ -47,18 +47,11 @@ export class Uploader {
   }
 
   private async makeChecksum(filename: string): Promise<string> {
-    const hash = createHash('sha512');
-    const input = createReadStream(filename);
-
     return new Promise<string>((resolve, reject) => {
-      input.on('error', reject).on('readable', () => {
-        const data = input.read();
-        if (data) {
-          hash.update(data);
-        } else {
-          resolve(hash.digest('hex').slice(0, 64));
-        }
-      });
+      createReadStream(filename)
+        .pipe(createHash('sha512'))
+        .on('error', reject)
+        .on('data', (hash: Buffer) => resolve(hash.toString('hex').slice(0, 64)));
     });
   }
 }
