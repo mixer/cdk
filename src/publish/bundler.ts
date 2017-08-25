@@ -3,10 +3,19 @@ import * as path from 'path';
 
 import { PackageIntegrityError, WebpackBundlerError } from '../errors';
 import { createPackage } from '../metadata/metadata';
+import { IPackageConfig } from '../metadata/package';
 import { getPackageExecutable } from '../npm';
-import { exists, readDir } from '../util';
+import { copy, exists, readDir } from '../util';
 
 const tar = require('tar'); // typings are pretty bad for this module.
+
+/**
+ * IBundlerOutput is returned from Bundler.bundle
+ */
+export interface IBundlerOutput {
+  filename: string;
+  config: IPackageConfig;
+}
 
 /**
  * Bundler packages up controls from a project directory into a tarball
@@ -17,12 +26,12 @@ export class Bundler {
 
   public async bundle(
     progressReporter: (message: string) => void = () => undefined,
-  ): Promise<string> {
+  ): Promise<IBundlerOutput> {
     progressReporter('Reading control metadata');
-    const packaged = await createPackage(this.projectDir);
+    const config = await createPackage(this.projectDir);
 
     progressReporter('Running webpack bundler');
-    const filename = path.join(process.cwd(), `${packaged.name}.tar.gz`);
+    const filename = path.join(process.cwd(), `${config.name}.tar.gz`);
     await this.runWebpack();
 
     progressReporter('Verifying basic integrity');
@@ -32,7 +41,7 @@ export class Bundler {
     progressReporter('Compressing files');
     await this.createTarball(outputDir, filename);
 
-    return filename;
+    return { filename, config };
   }
 
   /**
@@ -46,20 +55,38 @@ export class Bundler {
         `An index.html is missing in your project output (${home} should exist)`,
       );
     }
+
+    const readme = path.join(this.projectDir, 'readme.md');
+    if (!await exists(readme)) {
+      throw new PackageIntegrityError(
+        `An readme.md is missing in your project (${readme} should exist)`,
+      );
+    }
+
+    const packageJson = path.join(this.projectDir, 'package.json');
+    if (!await exists(packageJson)) {
+      throw new PackageIntegrityError(
+        `An package.json is missing in your project (${packageJson} should exist)`,
+      );
+    }
   }
 
   /**
    * Compresses the output dir into the target tarball.
    */
   private async createTarball(output: string, target: string): Promise<void> {
-    const files = await readDir(output);
+    await Promise.all([
+      copy(path.resolve(this.projectDir, 'readme.md'), path.resolve(output, 'readme.md')),
+      copy(path.resolve(this.projectDir, 'package.json'), path.resolve(output, 'package.json')),
+    ]);
+
     await tar.create(
       {
         file: target,
         gzip: { level: 9 },
         cwd: output,
       },
-      files,
+      await readDir(output),
     );
   }
 

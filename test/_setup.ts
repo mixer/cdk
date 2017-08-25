@@ -14,6 +14,7 @@ use(require('chai-as-promised'));
  */
 export class MockRequester implements IRequester {
   public json = sinon.stub();
+  public run = sinon.stub();
 }
 
 export function createExpiredOAuthTokens() {

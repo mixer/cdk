@@ -18,6 +18,24 @@ export class Writer {
   public write(...message: any[]) {
     this.fn(...message);
   }
+
+  /**
+   * writeWrapped prints the message and wraps it at a certain character width.
+   */
+  public writeWrapped(message: string, width: number = 79) {
+    while (message.length > 0) {
+      let end = width;
+      if (message.length > end) {
+        end = message.slice(0, width).lastIndexOf(' ');
+      }
+      if (end === -1) {
+        end = width;
+      }
+
+      this.fn(message.slice(0, end));
+      message = message.slice(end).trim();
+    }
+  }
 }
 
 export default new Writer();

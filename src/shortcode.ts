@@ -1,8 +1,4 @@
-import {
-  ShortCodeAccessDeniedError,
-  ShortCodeExpireError,
-  ShortCodeUnexpectedError,
-} from './errors';
+import { ShortCodeAccessDeniedError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { delay, Fetcher, IRequester } from './util';
 
 // note: this is a functional port of the Python version here:
@@ -100,7 +96,7 @@ export class OAuthShortCode {
       case 404:
         throw new ShortCodeExpireError();
       default:
-        throw new ShortCodeUnexpectedError(res, await res.text());
+        throw new UnexpectedHttpError(res, await res.text());
     }
 
     await Promise.race([
@@ -121,7 +117,7 @@ export class OAuthShortCode {
     });
 
     if (res.status >= 300) {
-      throw new ShortCodeUnexpectedError(res, await res.text());
+      throw new UnexpectedHttpError(res, await res.text());
     }
 
     return OAuthTokens.fromTokenResponse(await res.json(), this.scopes);
@@ -193,7 +189,7 @@ export class OAuthClient {
     });
 
     if (results.status >= 300) {
-      throw new ShortCodeUnexpectedError(results, await results.text());
+      throw new UnexpectedHttpError(results, await results.text());
     }
 
     const json: IShortcodeCreateResponse = await results.json();
@@ -210,7 +206,7 @@ export class OAuthClient {
     });
 
     if (res.status >= 300) {
-      throw new ShortCodeUnexpectedError(res, await res.text());
+      throw new UnexpectedHttpError(res, await res.text());
     }
 
     return OAuthTokens.fromTokenResponse(await res.json(), tokens.data.scopes);

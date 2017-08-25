@@ -17,6 +17,19 @@ export async function readFile(file: string): Promise<string> {
 }
 
 /**
+ * Copies a file from one place to another.
+ */
+export async function copy(source: string, destination: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    fs
+      .createReadStream(source)
+      .pipe(fs.createWriteStream(destination))
+      .on('error', reject)
+      .on('close', resolve);
+  });
+}
+
+/**
  * Promisified fs.exists
  */
 export async function exists(file: string): Promise<boolean> {
@@ -80,13 +93,14 @@ export type HttpMethod = 'get' | 'post' | 'put' | 'patch';
  */
 export interface IRequester {
   json(method: HttpMethod, path: string, body?: object): Promise<Response>;
+  run(path: string, init?: RequestInit): Promise<Response>;
 }
 
 /**
  * Returns a path to the Mixer API.
  */
 export function api(): string {
-  return process.env.MIIX_API_HOST || 'https://mixer.com';
+  return process.env.MIIX_API || 'https://mixer.com';
 }
 
 /**

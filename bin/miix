@@ -6,6 +6,8 @@ const chalk = require('chalk');
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 const { findPackageJson } = require('../dist/src/npm');
+const packageDir = findPackageJson(process.cwd());
+const packageJson = require(packageDir);
 
 const hoistEnv = [
   'api',
@@ -42,7 +44,7 @@ const yargs = require('yargs')
   })
   .option('project', {
     description: 'Path to your interactive project',
-    default: optionDefault('project', path.dirname(findPackageJson(process.cwd()))),
+    default: optionDefault('project', path.dirname(packageDir)),
   })
   .option('api', {
     description: 'Mixer API address',
@@ -68,6 +70,27 @@ const yargs = require('yargs')
     'pack',
     'Creates a packaged version of your controls as uploaded in `miix publish`. Useful for debugging.',
     {},
+    execute
+  )
+  .command(
+    'upload',
+    'Uploads your controls to Mixer so you can use them on your channel. Controls are private until you run `miix publish`.',
+    argv =>
+      argv.option('tarball', {
+        description: 'Control archive to upload as created with `miix pack`. ' +
+          'Will be created automatically if one is not specified.'
+      }),
+    execute
+  )
+  .command(
+    'unpublish',
+    'Unpublishes a previously-published version of your Interactive controls.',
+    argv =>
+      argv
+      .option('package', {
+        description: 'The package name and version to unpublish',
+        default: `${packageJson.name}@${packageJson.version}`,
+      }),
     execute
   )
   .command('debug-metadata', false, {}, execute)
