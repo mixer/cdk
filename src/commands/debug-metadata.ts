@@ -1,5 +1,4 @@
 import { MetadataExtractor } from '../metadata/extractor';
-
 import { IGlobalOptions } from './options';
 
 export default async function(options: IGlobalOptions): Promise<void> {
