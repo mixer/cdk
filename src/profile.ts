@@ -2,7 +2,7 @@ import * as chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
-import { ShortCodeExpireError } from './errors';
+import { ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
 import { api, exists, Fetcher, readFile, wrapErr } from './util';
 import writer from './writer';
@@ -184,7 +184,15 @@ export class Profile {
     } else if (!this.tokensObj.granted(Profile.necessaryScopes)) {
       await this.grant();
     } else if (this.tokensObj.expired()) {
-      await this.refresh();
+      try {
+        await this.refresh();
+      } catch (err) {
+        if (err instanceof UnexpectedHttpError && err.tryJson()!.error === 'invalid_grant') {
+          await this.grant();
+        } else {
+          throw err;
+        }
+      }
     }
 
     return this.profile.hosts[this.host];

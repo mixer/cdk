@@ -1,10 +1,11 @@
 import * as ora from 'ora';
-import { Profile } from '../profile';
-import { Fetcher } from '../util';
 
 import { IPackageConfig } from '../metadata/package';
+import { Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
+import { Fetcher } from '../util';
+import { failSpiner } from './options';
 
 export default async function(options: { tarball: string }): Promise<void> {
   const fetcher = new Fetcher().with(await new Profile().tokens());
@@ -13,15 +14,18 @@ export default async function(options: { tarball: string }): Promise<void> {
   let config: IPackageConfig | undefined;
   let filename = options.tarball;
   if (!filename) {
-    const output = await new Bundler().bundle(progress => {
-      spinner.text = progress;
-    });
+    const output = await new Bundler()
+      .bundle(progress => {
+        spinner.text = progress;
+      })
+      .catch(failSpiner(spinner));
+
     config = output.config;
     filename = output.filename;
   }
 
   spinner.text = 'Uploading to Mixer...';
-  config = await new Uploader(fetcher).upload(filename, config);
+  config = await new Uploader(fetcher).upload(filename, config).catch(failSpiner(spinner));
 
   spinner.succeed(`${config.name}@${config.version} uploaded successfully!`);
 }

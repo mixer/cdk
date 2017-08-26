@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { readFile } from './util';
+import { readDir, readFile } from './util';
 
 /**
  * Finds the nearest package.json relative to the given directory, returning
@@ -71,4 +71,18 @@ export async function getPackageExecutable(
     const parsed = JSON.parse(config);
     return path.join(base, parsed.bin[commandName]);
   });
+}
+
+/**
+ * Finds the readme for the project in the given directory. Uses a similar
+ * process to npm.
+ */
+export async function findReadme(name: string): Promise<string | undefined> {
+  const fname = (await readDir(name)).find(f => /^readme\.?/i.test(f));
+  if (fname) {
+    return fname;
+  }
+
+  const packageJson = await mustLoadPackageJson(name);
+  return packageJson.readmeFile;
 }

@@ -5,16 +5,12 @@ const path = require('path');
 const chalk = require('chalk');
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
+const { isHumanError } = require('../dist/src/errors');
 const { findPackageJson } = require('../dist/src/npm');
 const packageDir = findPackageJson(process.cwd());
 const packageJson = require(packageDir);
 
-const hoistEnv = [
-  'api',
-  'profile',
-  'project',
-  'connect_channel',
-];
+const hoistEnv = ['api', 'profile', 'project', 'connect_channel'];
 
 function optionDefault(opt, defaultValue) {
   return process.env[`MIIX_${opt.toUpperCase()}`] || defaultValue;
@@ -30,8 +26,13 @@ const execute = argv => {
   Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
     .catch(err => {
-      const message = String(err.stack || err.message || err);
-      console.error(err.dontColor ? message : chalk.red(message));
+      if (isHumanError(err)) {
+        console.error(err.getHumanMessage());
+      } else {
+        const message = String(err.stack || err.message || err);
+        console.error(err.dontColor ? message : chalk.red(message));
+      }
+
       process.exit(1);
     });
 };
@@ -77,8 +78,10 @@ const yargs = require('yargs')
     'Uploads your controls to Mixer so you can use them on your channel. Controls are private until you run `miix publish`.',
     argv =>
       argv.option('tarball', {
-        description: 'Control archive to upload as created with `miix pack`. ' +
-          'Will be created automatically if one is not specified.'
+        description:
+          'Control archive to upload as created with `miix pack`. ' +
+            'Will be created automatically if one is not specified.',
+            alias: 't',
       }),
     execute
   )
@@ -87,10 +90,53 @@ const yargs = require('yargs')
     'Unpublishes a previously-published version of your Interactive controls.',
     argv =>
       argv
-      .option('package', {
-        description: 'The package name and version to unpublish',
-        default: `${packageJson.name}@${packageJson.version}`,
-      }),
+        .option('package', {
+          description: 'The package name and version to unpublish',
+          default: `${packageJson.name}@${packageJson.version}`,
+          alias: 'p',
+        })
+        .option('force', {
+          alias: 'f',
+          description: 'Skip confirmation prompt',
+          type: 'boolean',
+        }),
+    execute
+  )
+  .command(
+    'publish',
+    'Makes your control bundle accessible to everyone on Mixer.',
+    argv =>
+      argv
+        .option('tarball', {
+          description:
+            'Control archive to upload as created with `miix pack`. ' +
+              'Will be created automatically if one is not specified.',
+          alias: 't',
+        })
+        .option('skip-bundle', {
+          description: 'Publishes an existing version without recreating the bundle',
+          alias: 's',
+          type: 'boolean',
+        })
+        .option('force', {
+          alias: 'f',
+          description: 'Skip confirmation prompt',
+          type: 'boolean',
+        }),
+    execute
+  )
+  .command(
+    'info <bundle>',
+    'Displays info about a bundle on Mixer',
+    argv =>
+      argv.option('json', {
+        description: 'Use plain JSON for the output',
+      })
+      .option('verbose', {
+        description: 'Print version metadata too.',
+        alias: 'v',
+      })
+      .demand('bundle'),
     execute
   )
   .command('debug-metadata', false, {}, execute)
