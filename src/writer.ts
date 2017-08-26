@@ -1,3 +1,5 @@
+import * as readline from 'readline';
+
 /**
  * Writer is a super simple wrapper around the console/standard output for
  * use/replacement in testing.
@@ -35,6 +37,25 @@ export class Writer {
       this.fn(message.slice(0, end));
       message = message.slice(end).trim();
     }
+  }
+
+  /**
+   * Prompts the user whether they'd like to continue the current operation.
+   * Returns whether they've given consent to continue.
+   */
+  public async confirm(question: string, defaultValue: boolean = true): Promise<boolean> {
+    const rl = readline.createInterface(process.stdin, process.stdout);
+    this.writeWrapped(question);
+
+    const answer = await new Promise<string>(resolve => {
+      rl.question(`\nContinue? ${defaultValue ? '[y]/n' : 'y/[n]'}: `, resolve);
+    });
+
+    if (defaultValue) {
+      return answer[0] !== 'n';
+    }
+
+    return answer[0] === 'y';
   }
 }
 

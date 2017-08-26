@@ -8,6 +8,11 @@ import { IControlOptions, ISceneOptions } from './decoration';
 export interface IPackageConfig {
   name: string;
   version: string;
+  description?: string;
+  keywords?: string[];
+  private?: boolean;
+  homepage?: string;
+
   display: {
     mode: 'fixed-grid' | 'flex';
   };

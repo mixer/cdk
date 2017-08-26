@@ -4,7 +4,7 @@ import * as path from 'path';
 import { PackageIntegrityError, WebpackBundlerError } from '../errors';
 import { createPackage } from '../metadata/metadata';
 import { IPackageConfig } from '../metadata/package';
-import { getPackageExecutable } from '../npm';
+import { findReadme, getPackageExecutable } from '../npm';
 import { copy, exists, readDir } from '../util';
 
 const tar = require('tar'); // typings are pretty bad for this module.
@@ -56,10 +56,13 @@ export class Bundler {
       );
     }
 
-    const readme = path.join(this.projectDir, 'readme.md');
-    if (!await exists(readme)) {
+    const readme = findReadme(this.projectDir);
+    if (!readme) {
       throw new PackageIntegrityError(
-        `An readme.md is missing in your project (${readme} should exist)`,
+        `An readme.md is missing in your project (${path.join(
+          this.projectDir,
+          'readme.md',
+        )} should exist)`,
       );
     }
 

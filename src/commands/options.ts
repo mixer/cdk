@@ -1,3 +1,5 @@
+import { isHumanError } from '../errors';
+
 export interface IGlobalOptions {
   /**
    * .miixrc profile to load.
@@ -13,4 +15,17 @@ export interface IGlobalOptions {
    * Address of the Mixer API.
    */
   api: string;
+}
+
+export function failSpiner(spinner: { fail(message: string): void }) {
+  return (err: Error): never => {
+    if (isHumanError(err)) {
+      spinner.fail(err.getHumanMessage());
+      process.exit(1);
+      throw new Error(''); // cannot be reached
+    }
+
+    spinner.fail(err.message);
+    throw err;
+  };
 }

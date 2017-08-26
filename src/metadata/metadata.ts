@@ -8,8 +8,13 @@ import { IPackageConfig } from './package';
 // TypeScript will enforce most of this, but some parts come from the
 // package.json and not all consumers may be using TypeScript or strict typing.
 const packageSchema = Joi.object({
-  name: Joi.string().required(),
+  name: Joi.string().regex(/^[a-z0-9\-]{2,60}/i).required(),
   version: Joi.string().required(),
+  description: Joi.string().max(512),
+  private: Joi.boolean(),
+  homepage: Joi.string().uri(),
+  keywords: Joi.array().items(Joi.string().max(32)).max(32),
+
   display: Joi.object({
     mode: Joi.valid('fixed-grid', 'flex').required(),
   }),
@@ -45,6 +50,11 @@ export async function createPackage(dir: string): Promise<IPackageConfig> {
   const packaged = {
     name: packageJson.name,
     version: packageJson.version,
+    description: packageJson.description,
+    keywords: packageJson.keywords,
+    private: packageJson.private,
+    homepage: packageJson.homepage,
+
     ...packageJson.interactive,
     ...staticData,
   };

@@ -2,7 +2,7 @@ import { createHash } from 'crypto';
 import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
 
-import { UnexpectedHttpError } from '../errors';
+import { UploaderHttpError } from '../errors';
 import { createPackage } from '../metadata/metadata';
 import { IPackageConfig } from '../metadata/package';
 import { IRequester } from '../util';
@@ -42,7 +42,7 @@ export class Uploader {
           return config!;
         }
 
-        throw new UnexpectedHttpError(res, await res.text());
+        throw new UploaderHttpError(res, await res.text());
       });
   }
 
@@ -51,7 +51,9 @@ export class Uploader {
       createReadStream(filename)
         .pipe(createHash('sha512'))
         .on('error', reject)
-        .on('data', (hash: Buffer) => resolve(hash.toString('hex').slice(0, 64)));
+        .on('data', (hash: Buffer) => {
+          resolve(hash.toString('hex').slice(0, 64));
+        });
     });
   }
 }
