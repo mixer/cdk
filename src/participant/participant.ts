@@ -240,7 +240,11 @@ export class Participant extends EventEmitter {
     this.rpc = new RPC(this.frame.contentWindow);
 
     this.rpc.expose('sendInteractivePacket', data => {
-      this.websocket.send({ ...data, discard: true });
+      this.websocket.send(JSON.stringify({
+        ...data,
+        type: 'method',
+        discard: true
+      }));
     });
 
     this.rpc.expose('controlsReady', () => {
