@@ -47,9 +47,11 @@ export class Writer {
     const rl = readline.createInterface(process.stdin, process.stdout);
     this.writeWrapped(question);
 
-    const answer = await new Promise<string>(resolve => {
+    let answer = await new Promise<string>(resolve => {
       rl.question(`\nContinue? ${defaultValue ? '[y]/n' : 'y/[n]'}: `, resolve);
     });
+
+    answer = answer.toLowerCase();
 
     if (defaultValue) {
       return answer[0] !== 'n';
