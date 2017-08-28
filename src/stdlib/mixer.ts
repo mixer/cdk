@@ -2,7 +2,7 @@ import { EventEmitter } from 'eventemitter3';
 import { ISettings } from './mixer';
 
 import { IPackageConfig } from '../metadata/package';
-import { IRPCMethod, IRPCReply, objToError, RPC } from './rpc';
+import { IRPCMethod, RPC } from './rpc';
 import {
   IControlChange,
   IGroupCreate,
@@ -25,7 +25,7 @@ export * from '../metadata/package';
 
 // these are the same right now, but may diverge:
 interface IInteractiveRPCMethod<T> extends IRPCMethod<T> {} // tslint:disable-line
-interface IInteractiveRPCReply<T> extends IRPCReply<T> {} // tslint:disable-line
+// interface IInteractiveRPCReply<T> extends IRPCReply<T> {} // tslint:disable-line
 
 const rpc = new RPC(window.top);
 
@@ -82,17 +82,11 @@ export class Socket extends EventEmitter {
       },
       <any>waitForReply,
     );
-    if (!reply) {
+    if (!waitForReply) {
       return;
     }
 
-    return reply.then((result: IInteractiveRPCReply<any>) => {
-      if (result.error) {
-        throw objToError(result.error);
-      }
-
-      return result.result;
-    });
+    return reply;
   }
 }
 
