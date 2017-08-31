@@ -23,6 +23,7 @@ export interface IConnectionOptions {
   socketAddress: string;
   contentAddress: string;
   ugcAddress: string;
+  key?: string;
   xAuthUser?: {
     ID?: number;
     Username?: string;
@@ -105,6 +106,7 @@ export class Participant extends EventEmitter {
       // cache bust the iframe to ensure that it reloads
       // whenever we get a new connection.
       bustCache: Date.now(),
+      key: options.key,
       'x-protocol-version': Participant.protocolVersion,
       'x-auth-user': options.xAuthUser ? JSON.stringify(options.xAuthUser) : undefined,
     });

@@ -28,6 +28,11 @@ export interface IInteractiveJoin {
    * Address where live-updated resources are stored.
    */
   ugcAddress: string;
+
+  /**
+   * Access key for Interactive
+   */
+  key: string;
 }
 
 /**

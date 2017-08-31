@@ -133,6 +133,7 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
             socketAddress: join.address,
             ugcAddress: join.ugcAddress,
             xAuthUser,
+            key: join.key,
           });
       });
   }
