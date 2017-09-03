@@ -150,12 +150,27 @@ export function asset(...path: string[]): string {
   return `./${path.map(segment => segment.replace(/^\/+|\/+$/, '')).join('/')}`;
 }
 
+let isReady = false;
+
+/**
+ * resendReady is called by the host when it detects the iframe loads. It seems
+ * that loading can be fired "slowly" in some cases causing the isLoaded event
+ * to fire off before the host sets up listeners, so that host will call this
+ * method when it first boots to make sure that it didn't miss anything!
+ */
+rpc.expose('resendReady', () => {
+  if (isReady) {
+    rpc.call('controlsReady', {}, false);
+  }
+});
+
 /**
  * Called by the MState automatically when all hooks are set up. This signals
  * to Mixer that the controls have been bound and are ready to start taking
  * Interactive calls.
  */
 export function isLoaded() {
+  isReady = true;
   rpc.call('controlsReady', {}, false);
 }
 

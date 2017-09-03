@@ -257,6 +257,10 @@ export class Participant extends EventEmitter {
     });
 
     this.rpc.expose('controlsReady', () => {
+      if (this.state !== State.Loading) {
+        return;
+      }
+
       this.state = State.Ready;
       this.replayBuffer.forEach(p => {
         this.fireEvent(p.method, p.params);
@@ -326,6 +330,8 @@ export class Participant extends EventEmitter {
     if (this.state === State.Loading) {
       this.attachListeners();
     }
+
+    this.rpc.call('resendReady', {}, false);
 
     this.frame.removeEventListener('load', this.onFrameLoad);
   };
