@@ -60,6 +60,14 @@ export interface ICloseData {
 }
 
 /**
+ * Stringifies and appends the given query string to the URL.
+ */
+function appendQueryString(url: string, qs: object) {
+  const delimiter = url.indexOf('?') > -1 ? '&' : '?';
+  return `${url}${delimiter}${stringify(qs)}`;
+}
+
+/**
  * Participant is a bridge between the Interactive service and an iframe that
  * shows custom controls. It proxies calls between them and emits events
  * when states change.
@@ -102,18 +110,17 @@ export class Participant extends EventEmitter {
    * Creates a connection to the given Interactive address.
    */
   public connect(options: IConnectionOptions): this {
-    const qs = stringify({
+    const qs = {
       // cache bust the iframe to ensure that it reloads
       // whenever we get a new connection.
       bustCache: Date.now(),
       key: options.key,
       'x-protocol-version': Participant.protocolVersion,
       'x-auth-user': options.xAuthUser ? JSON.stringify(options.xAuthUser) : undefined,
-    });
+    };
 
-    const ws = (this.websocket = new WebSocket(`${options.socketAddress}&${qs}`));
-    this.frame.src = `${options.contentAddress}&${qs}`;
-
+    const ws = (this.websocket = new WebSocket(appendQueryString(options.socketAddress, qs)));
+    this.frame.src = options.contentAddress;
     this.frame.addEventListener('load', this.onFrameLoad);
 
     ws.addEventListener('message', data => {
