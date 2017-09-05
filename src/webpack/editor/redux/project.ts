@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActionReducer, Store } from '@ngrx/store';
 import * as patch from 'fast-json-patch';
 
-import { IStateDump } from '../../../stdlib/mixer';
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 import * as Code from './code';
 import * as Connect from './connect';
 import * as Frame from './frame';

@@ -20,7 +20,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'rxjs/add/operator/filter';
 import '../util/takeUntilDestroyed';
 
-import { IStateDump } from '../../../stdlib/mixer';
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 import {
   CodeState,
   ICodeState,

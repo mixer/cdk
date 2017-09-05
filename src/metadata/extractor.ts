@@ -8,9 +8,14 @@ import * as path from 'path';
 import * as ts from 'typescript';
 
 import { readFile } from '../util';
-import { IControlOptions, IInputOptions, InputKind, ISceneOptions } from './decoration';
+import {
+  IControlOptions,
+  IInputOptions,
+  InputKind,
+  ISceneOptions,
+} from '@mcph/miix-std/dist/internal';
 import { DeclarationError } from './error';
-import { IPackageConfig } from './package';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 
 type JsonType = string | number | object | boolean;
 

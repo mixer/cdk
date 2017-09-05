@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 
 import { mustLoadPackageJson } from '../npm';
 import { MetadataExtractor } from './extractor';
-import { IPackageConfig } from './package';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 
 // Quick validation to sanity check that nothing will crash and burn.
 // TypeScript will enforce most of this, but some parts come from the

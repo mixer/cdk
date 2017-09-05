@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { InputKind } from '../src/metadata/decoration';
+import { InputKind } from '@mcph/miix-std/dist/internal';
 import { MetadataExtractor } from '../src/metadata/extractor';
 
 describe('metadata', () => {

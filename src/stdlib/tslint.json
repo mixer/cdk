@@ -1,7 +1,0 @@
-{
-  "extends": "../../tslint.json",
-  "rules": {
-    "promise-function-async": false,
-    "unified-signatures": false
-  }
-}

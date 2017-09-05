@@ -6,8 +6,8 @@ import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { RPC } from '../../../stdlib/rpc';
-import { IVideoPositionOptions } from '../../../stdlib/typings';
+import { RPC } from '@mcph/miix-std/dist/internal';
+import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
 import { ControlStateSyncService } from './control-state-sync.service';

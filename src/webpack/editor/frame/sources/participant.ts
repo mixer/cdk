@@ -1,4 +1,4 @@
-import { IParticipant } from '../../../../stdlib/typings';
+import { IParticipant } from '@mcph/miix-std/dist/internal';
 import { ICodeState } from '../../redux/code';
 import { ICall, Source } from './source';
 

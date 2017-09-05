@@ -23,7 +23,7 @@ import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { ICloseData, Participant } from '../../../participant/participant';
+import { ICloseData, Participant } from '@mcph/miix-participant';
 import { IProject, ProjectService } from '../redux/project';
 import { exists } from '../util/ds';
 

@@ -6,7 +6,7 @@ import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/distinctUntilChanged';
 import 'rxjs/add/operator/map';
 
-import { ISettings, IVideoPositionOptions } from '../../../stdlib/typings';
+import { ISettings, IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import { IProject } from '../redux/project';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { devices } from './devices';

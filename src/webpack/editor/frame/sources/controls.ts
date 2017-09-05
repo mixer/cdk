@@ -1,4 +1,4 @@
-import { IScene } from '../../../../stdlib/typings';
+import { IScene } from '@mcph/miix-std/dist/internal';
 import { ICodeState } from '../../redux/code';
 import { ICall, ResourceComparator, Source } from './source';
 

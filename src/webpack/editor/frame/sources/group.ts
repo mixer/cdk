@@ -1,4 +1,4 @@
-import { IGroup } from '../../../../stdlib/typings';
+import { IGroup } from '@mcph/miix-std/dist/internal';
 import { ICodeState } from '../../redux/code';
 import { ICall, ResourceComparator, Source } from './source';
 

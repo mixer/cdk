@@ -2,7 +2,7 @@ import * as marked from 'marked';
 import * as path from 'path';
 
 import { PackageIntegrityError, PublishHttpError } from '../errors';
-import { IPackageConfig } from '../metadata/package';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { findReadme } from '../npm';
 import { IRequester, readFile } from '../util';
 

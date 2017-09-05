@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { PackageIntegrityError, WebpackBundlerError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig } from '../metadata/package';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { findReadme, getPackageExecutable } from '../npm';
 import { copy, exists, readDir } from '../util';
 

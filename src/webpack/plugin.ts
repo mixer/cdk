@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { MixerPluginError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig } from '../metadata/package';
+import { IPackageConfig, getBundlePath } from '@mcph/miix-std/dist/internal';
 import { getProjectPath } from '../npm';
 import { readFile, wrapErr } from '../util';
 
@@ -212,9 +212,7 @@ export class MixerPlugin {
       new HomepageRenderer(this.options.homepage, this.package).render(compiler).then(result => {
         compilation.assets['index.html'] = contentsToAsset(result);
       }),
-      this.addFiles(compilation, {
-        'mixer.js': path.resolve(__dirname, '../stdlib/mixer.min.js'),
-      }),
+      this.addFiles(compilation, { 'mixer.js': getBundlePath() }),
     ]);
   }
 

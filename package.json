@@ -1,6 +1,6 @@
 {
-  "name": "@mcph/miix",
-  "version": "0.1.0-alpha.2",
+  "name": "@mcph/miix-cli",
+  "version": "0.1.0-alpha.3",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "dist/src/index.js",
   "bin": "./bin/miix",
@@ -11,10 +11,10 @@
     "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js",
     "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\"",
     "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test}/**/*.ts\"",
-    "build": "rimraf dist && npm-run-all --parallel --silent build:ts build:stdlib build:editor",
+    "build": "rimraf dist && npm-run-all --parallel --silent build:ts build:editor",
     "build:ts": "tsc",
-    "build:stdlib": "webpack --config src/webpack/stdlib/webpack.config.js",
-    "build:editor": "webpack --config src/webpack/editor/webpack.config.js"
+    "build:editor": "webpack --config src/webpack/editor/webpack.config.js",
+    "prepare": "npm run -s build"
   },
   "repository": {
     "type": "git",
@@ -42,6 +42,7 @@
     "@angular/material": "^2.0.0-beta.8",
     "@angular/platform-browser": "^4.3.4",
     "@angular/platform-browser-dynamic": "^4.3.4",
+    "@mcph/miix-participant": "^0.1.1",
     "@ngrx/store": "^4.0.2",
     "@types/chai": "^4.0.3",
     "@types/chai-as-promised": "0.0.31",
@@ -95,6 +96,7 @@
     "zone.js": "^0.8.16"
   },
   "dependencies": {
+    "@mcph/miix-std": "^0.1.1",
     "chalk": "^2.1.0",
     "eventemitter3": "^2.0.3",
     "express": "^4.15.4",

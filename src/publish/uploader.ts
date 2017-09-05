@@ -4,7 +4,7 @@ import { createReadStream } from 'fs';
 
 import { UploaderHttpError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig } from '../metadata/package';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { IRequester } from '../util';
 
 /**

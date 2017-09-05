@@ -146,7 +146,7 @@ export class PublishHttpError extends UnexpectedHttpError {
           case 'id':
             return 'Your package name can only contain numbers, letters, and dashes.';
           default:
-            // fall through
+          // fall through
         }
         break;
 

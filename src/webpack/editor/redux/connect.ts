@@ -1,4 +1,4 @@
-import { IStateDump } from '../../../stdlib/mixer';
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 
 /**
  * Orientation is given to size() to determine the device orientation.

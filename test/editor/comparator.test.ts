@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { IScene } from '../../src/stdlib/typings';
+import { IScene } from '@mcph/miix-std/dist/internal';
 import { ControlsSource } from '../../src/webpack/editor/frame/sources/controls';
 
 const emptyFixture: IScene[] = [];

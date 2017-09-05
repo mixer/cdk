@@ -1,6 +1,6 @@
 import * as ora from 'ora';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 
-import { IPackageConfig } from '../metadata/package';
 import { Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';

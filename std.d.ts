@@ -1,1 +1,1 @@
-export * from './dist/src/stdlib/mixer';
+export * from '@mcph/miix-std/dist/internal';
