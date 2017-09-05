@@ -280,6 +280,8 @@ export class Participant extends EventEmitter {
     this.rpc.expose('unloading', () => {
       this.emit('unload');
     });
+
+    this.rpc.call('resendReady', {}, false);
   }
 
   /**
@@ -330,8 +332,6 @@ export class Participant extends EventEmitter {
     if (this.state === State.Loading) {
       this.attachListeners();
     }
-
-    this.rpc.call('resendReady', {}, false);
 
     this.frame.removeEventListener('load', this.onFrameLoad);
   };
