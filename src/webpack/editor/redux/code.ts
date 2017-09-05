@@ -105,6 +105,8 @@ const initialControls = `[
         controlID: 'my_awesome_joystick',
         kind: 'joystick',
         disabled: true,
+        angle: 0.7,
+        intensity: 0.5,
         position: [
           {
             width: 7,
