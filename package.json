@@ -1,9 +1,11 @@
 {
   "name": "@mcph/miix-cli",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "dist/src/index.js",
-  "bin": "./bin/miix",
+  "bin": {
+    "miix": "./bin/miix"
+  },
   "scripts": {
     "test": "npm-run-all --parallel --silent test:lint test:unit fmt",
     "test:unit": "mocha --compilers ts:ts-node/register --timeout 20000 -r test/_setup.ts \"test/**/*.test.ts\"",
