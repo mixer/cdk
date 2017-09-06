@@ -1,9 +1,9 @@
 import { fork } from 'child_process';
 import * as path from 'path';
 
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { PackageIntegrityError, WebpackBundlerError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { findReadme, getPackageExecutable } from '../npm';
 import { copy, exists, readDir } from '../util';
 

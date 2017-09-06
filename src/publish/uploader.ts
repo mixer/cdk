@@ -2,9 +2,9 @@ import { createHash } from 'crypto';
 import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
 
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { UploaderHttpError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { IRequester } from '../util';
 
 /**
