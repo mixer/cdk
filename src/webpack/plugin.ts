@@ -1,10 +1,11 @@
 import * as glob from 'glob';
+import * as json5 from 'json5';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
+import { getBundlePath, IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { MixerPluginError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { IPackageConfig, getBundlePath } from '@mcph/miix-std/dist/internal';
 import { getProjectPath } from '../npm';
 import { readFile, wrapErr } from '../util';
 
@@ -15,6 +16,11 @@ export interface IPluginOptions {
    * Path to the HTML page to serve content from.
    */
   homepage: string;
+
+  /**
+   * glob for the locale json files.
+   */
+  locales: string;
 }
 
 /**
@@ -110,7 +116,11 @@ abstract class HTMLInjector {
  * scripts into the developer's index.html.
  */
 class HomepageRenderer extends HTMLInjector {
-  constructor(filepath: string, private readonly packaged: IPackageConfig) {
+  constructor(
+    filepath: string,
+    private readonly packaged: IPackageConfig,
+    private readonly locales: string[],
+  ) {
     super(filepath);
   }
 
@@ -123,7 +133,8 @@ class HomepageRenderer extends HTMLInjector {
 
     output.push(
       `<script src="./mixer.js"></script>`,
-      `<script>mixer.packageConfig=${JSON.stringify(this.packaged)}</script>`,
+      `<script>mixer.packageConfig=${JSON.stringify(this.packaged)};` +
+        `mixer.locales=${JSON.stringify(this.locales)}</script>`,
     );
 
     return output;
@@ -154,6 +165,51 @@ function contentsToAsset(contents: string | Buffer): IWebpackFile {
 
 async function fileToAsset(...segments: string[]): Promise<IWebpackFile> {
   return readFile(path.resolve(...segments)).then(contentsToAsset);
+}
+
+/**
+ * The LocalePackager takes a glob on the filesystem and returns a map of
+ * locale names to their parsed data.
+ */
+class LocalePackager {
+  constructor(private readonly compilation: any) {}
+
+  /**
+   * compile loads locales matching the glob pattern to a map of locales
+   * (from the file basenames) to their contents.
+   */
+  public async compile(pattern: string): Promise<{ [locale: string]: object }> {
+    const files = glob.sync(pattern);
+    const output: { [locale: string]: object } = {};
+
+    await Promise.all(
+      files.map(async file => {
+        const contents = await readFile(file);
+
+        let parsed: object;
+        try {
+          parsed = json5.parse(contents);
+        } catch (err) {
+          throw new MixerPluginError(`Could not parse ${file}: ${err.message || err}`);
+        }
+
+        this.compilation.fileDependencies.push(file);
+        output[path.basename(file, path.extname(file))] = parsed;
+      }),
+    );
+
+    return output;
+  }
+
+  /**
+   * Adds the compile()'d locale data to the webpack compilation,
+   * in the locales folder.
+   */
+  public addToCompilation(data: { [locale: string]: object }) {
+    Object.keys(data).forEach(key => {
+      this.compilation.assets[`locales/${key}.json`] = contentsToAsset(JSON.stringify(data[key]));
+    });
+  }
 }
 
 /**
@@ -206,12 +262,16 @@ export class MixerPlugin {
   }
 
   private async addProductionFiles(compiler: any, compilation: any): Promise<void> {
-    compilation.assets['miix-package.json'] = contentsToAsset(JSON.stringify(this.package));
+    const packager = new LocalePackager(compilation);
+    const locales = await packager.compile(this.options.locales);
+    packager.addToCompilation(locales);
 
     await Promise.all([
-      new HomepageRenderer(this.options.homepage, this.package).render(compiler).then(result => {
-        compilation.assets['index.html'] = contentsToAsset(result);
-      }),
+      new HomepageRenderer(this.options.homepage, this.package, Object.keys(locales))
+        .render(compiler)
+        .then(result => {
+          compilation.assets['index.html'] = contentsToAsset(result);
+        }),
       this.addFiles(compilation, { 'mixer.js': getBundlePath() }),
     ]);
   }
