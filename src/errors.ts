@@ -20,6 +20,12 @@ export function isHumanError(err: Error): err is IHumanError {
 export class ShortCodeError extends Error {}
 
 /**
+ * A subprocess error is thrown when a subprocess exits with an unexpected
+ * status code.
+ */
+export class SubprocessError extends Error {}
+
+/**
  * UnexpectedHttpError is raised when we get an unexpected status code
  * from Mixer.
  */
