@@ -6,6 +6,7 @@ import * as readline from 'readline';
  */
 export class Writer {
   private fn = console.log.bind(console);
+  private readline = readline.createInterface(process.stdin, process.stdout);
 
   /**
    * Swaps the function used for writing.
@@ -44,11 +45,10 @@ export class Writer {
    * Returns whether they've given consent to continue.
    */
   public async confirm(question: string, defaultValue: boolean = true): Promise<boolean> {
-    const rl = readline.createInterface(process.stdin, process.stdout);
     this.writeWrapped(question);
 
     let answer = await new Promise<string>(resolve => {
-      rl.question(`\nContinue? ${defaultValue ? '[y]/n' : 'y/[n]'}: `, resolve);
+      this.readline.question(`\nContinue? ${defaultValue ? '[y]/n' : 'y/[n]'}: `, resolve);
     });
 
     answer = answer.toLowerCase();
@@ -58,6 +58,40 @@ export class Writer {
     }
 
     return answer[0] === 'y';
+  }
+
+  /**
+   * Prompts the user with a question, and records their answer as a string.
+   * Optionally takes a `validate` function. If the validator returns a string,
+   * it will be printed and the user will be prompted to
+   * answer the question again.
+   */
+  public async ask(
+    question: string,
+    defaultValue?: string,
+    validate?: (answer: string) => string | void,
+  ): Promise<string> {
+    // tslint:disable-next-line
+    while (true) {
+      let answer = await new Promise<string>(resolve => {
+        this.readline.question(`${question} ${defaultValue ? `[${defaultValue}] ` : ''}`, resolve);
+      });
+
+      if (!answer && defaultValue) {
+        answer = defaultValue;
+      }
+
+      if (!validate) {
+        return answer;
+      }
+
+      const errorMessage = validate(answer);
+      if (!errorMessage) {
+        return answer;
+      }
+
+      this.writeWrapped(errorMessage);
+    }
   }
 }
 
