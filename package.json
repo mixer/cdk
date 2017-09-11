@@ -65,6 +65,7 @@
     "@types/screenfull": "^3.3.1",
     "@types/sinon": "^2.3.3",
     "@types/sinon-chai": "^2.7.28",
+    "@types/tar": "^4.0.0",
     "@types/yargs": "^8.0.2",
     "angular2-template-loader": "^0.6.2",
     "awesome-typescript-loader": "^3.2.2",

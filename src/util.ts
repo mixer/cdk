@@ -1,5 +1,8 @@
+import { ChildProcess } from 'child_process';
 import * as fs from 'fs';
 import nodeFetch, { RequestInit, Response } from 'node-fetch';
+
+import { SubprocessError } from './errors';
 
 /**
  * Promisified fs.readFile
@@ -11,6 +14,21 @@ export async function readFile(file: string): Promise<string> {
         reject(err);
       } else {
         resolve(contents);
+      }
+    });
+  });
+}
+
+/**
+ * Promisified fs.writeFile
+ */
+export async function writeFile(file: string, contents: string | Buffer): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    fs.writeFile(file, contents, err => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
       }
     });
   });
@@ -49,6 +67,32 @@ export async function readDir(dir: string): Promise<string[]> {
       } else {
         resolve(results);
       }
+    });
+  });
+}
+
+/**
+ * Waits for the child process to exit. Buffers output and throws it on a
+ * non-zero exit code.
+ */
+export async function awaitChildProcess(child: ChildProcess) {
+  const stdAll: (string | Buffer)[] = [];
+  child.stdout.on('data', data => {
+    stdAll.push(data);
+  });
+  child.stderr.on('data', data => {
+    stdAll.push(data);
+  });
+
+  await new Promise((resolve, reject) => {
+    child.on('close', code => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+
+      const output = Buffer.concat(stdAll.map(s => (typeof s === 'string' ? Buffer.from(s) : s)));
+      reject(new SubprocessError(output.toString('utf8')));
     });
   });
 }

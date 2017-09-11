@@ -7,8 +7,12 @@ const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 const { isHumanError } = require('../dist/src/errors');
 const { findPackageJson } = require('../dist/src/npm');
-const packageDir = findPackageJson(process.cwd());
-const packageJson = require(packageDir);
+const packageDir = findPackageJson(process.cwd()) || process.cwd();
+
+let packageJson = {};
+try {
+  packageJson = require(packageDir);
+} catch (e) {}
 
 const hoistEnv = ['api', 'profile', 'project', 'connect_channel'];
 
@@ -81,7 +85,7 @@ const yargs = require('yargs')
         description:
           'Control archive to upload as created with `miix pack`. ' +
             'Will be created automatically if one is not specified.',
-            alias: 't',
+        alias: 't',
       }),
     execute
   )
@@ -129,14 +133,32 @@ const yargs = require('yargs')
     'info <bundle>',
     'Displays info about a bundle on Mixer',
     argv =>
-      argv.option('json', {
-        description: 'Use plain JSON for the output',
-      })
-      .option('verbose', {
-        description: 'Print version metadata too.',
-        alias: 'v',
-      })
-      .demand('bundle'),
+      argv
+        .option('json', {
+          description: 'Use plain JSON for the output',
+        })
+        .option('verbose', {
+          description: 'Print version metadata too.',
+          alias: 'v',
+        })
+        .demand('bundle'),
+    execute
+  )
+  .command(
+    'quickstart <projectName>',
+    'Creates a base project for building interactive controls',
+    argv =>
+      argv
+        .option('dir', {
+          description:
+            'The folder to extract into. Will be created if it does ' +
+              'not exist. Defaults to ./<projectName>',
+        })
+        .option('npm', {
+          description: 'npm path to use when installing the quickstart dependencies',
+          default: 'npm',
+        })
+        .demand('projectName'),
     execute
   )
   .command('debug-metadata', false, {}, execute)

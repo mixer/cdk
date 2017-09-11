@@ -2,10 +2,10 @@ import { fork } from 'child_process';
 import * as path from 'path';
 
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { PackageIntegrityError, WebpackBundlerError } from '../errors';
+import { PackageIntegrityError } from '../errors';
 import { createPackage } from '../metadata/metadata';
 import { findReadme, getPackageExecutable } from '../npm';
-import { copy, exists, readDir } from '../util';
+import { awaitChildProcess, copy, exists, readDir } from '../util';
 
 const tar = require('tar'); // typings are pretty bad for this module.
 
@@ -107,30 +107,12 @@ export class Bundler {
   private async runWebpack(): Promise<void> {
     const wds = await getPackageExecutable(path.join(this.projectDir, 'node_modules', 'webpack'));
 
-    const child = fork(wds, ['--display=minimal'], {
-      cwd: process.cwd(),
-      env: { ...process.env, ENV: 'production' },
-      silent: true,
-    });
-
-    const stdAll: (string | Buffer)[] = [];
-    child.stdout.on('data', data => {
-      stdAll.push(data);
-    });
-    child.stderr.on('data', data => {
-      stdAll.push(data);
-    });
-
-    await new Promise(resolve => {
-      child.on('close', code => {
-        if (code === 0) {
-          resolve();
-          return;
-        }
-
-        const output = Buffer.concat(stdAll.map(s => (typeof s === 'string' ? Buffer.from(s) : s)));
-        throw new WebpackBundlerError(output.toString('utf8'));
-      });
-    });
+    return awaitChildProcess(
+      fork(wds, ['--display=minimal'], {
+        cwd: process.cwd(),
+        env: { ...process.env, ENV: 'production' },
+        silent: true,
+      }),
+    );
   }
 }
