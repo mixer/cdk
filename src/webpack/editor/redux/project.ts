@@ -15,10 +15,14 @@ const enum Action {
 const undoableActions = [
   Frame.Action.Rotate,
   Frame.Action.Select,
+  Frame.Action.SetDimensions,
   Code.Action.SetState, // so they aren't ever undoing something on a screen they can't see
   Code.Action.SetParticipant,
   Code.Action.SetScenes,
+  Code.Action.SetGroups,
 ];
+
+const storedKeys: (keyof IProject)[] = ['frame', 'code', 'history'];
 
 /**
  * Undo/redo history.
@@ -188,15 +192,26 @@ function storeHistory(previous: IProject, next: IProject, action: any): IProject
 /**
  * Initial state of the project.
  */
-const initialState: IProject = {
-  history: {
-    ahead: [],
-    behind: [],
-  },
-  frame: Frame.initialState,
-  code: Code.initialState,
-  connect: Connect.initialState,
-};
+const initialState: IProject = (() => {
+  let parsed: Partial<IProject> = {};
+  try {
+    const data = localStorage.getItem('last-control-state');
+    parsed = data && JSON.parse(data);
+  } catch (e) {
+    // ignored
+  }
+
+  return {
+    history: {
+      ahead: [],
+      behind: [],
+    },
+    frame: Frame.initialState,
+    code: Code.initialState,
+    connect: Connect.initialState,
+    ...parsed,
+  };
+})();
 
 /**
  * historyReducer is a metareducer that enabled undo/redo history on the state.
@@ -217,6 +232,24 @@ export function historyReducer(
 }
 
 /**
+ * localStorageReduxer is a metareducer that saves changes to localstorage.
+ */
+export function localStorageReducer(
+  reducer: ActionReducer<IProject, any>,
+): ActionReducer<IProject, any> {
+  return (project = initialState, action) => {
+    const next = reducer(project, action);
+    const plucked: Partial<IProject> = {};
+    storedKeys.forEach(key => {
+      plucked[key] = next[key];
+    });
+
+    localStorage.setItem('last-control-state', JSON.stringify(plucked));
+    return next;
+  };
+}
+
+/**
  * ngrx store reducers.
  */
 export const reducers: { [key in keyof IProject]: Function } = {
@@ -229,4 +262,4 @@ export const reducers: { [key in keyof IProject]: Function } = {
 /**
  * ngrx metareducers
  */
-export const metaReducers = [historyReducer];
+export const metaReducers = [historyReducer, localStorageReducer];
