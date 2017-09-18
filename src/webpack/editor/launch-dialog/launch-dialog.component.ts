@@ -100,7 +100,12 @@ export class LaunchDialogComponent implements OnInit {
       )
       .subscribe(
         res => {
-          this.dialogRef.close(res.json());
+          const data: IInteractiveJoin = res.json();
+          if (!data.address) {
+            this.waitForConnect();
+          } else {
+            this.dialogRef.close(data);
+          }
         },
         (err: Response) => {
           switch (err.status) {
@@ -108,13 +113,7 @@ export class LaunchDialogComponent implements OnInit {
               this.login();
               break;
             case 409:
-              this.state.next(State.AwaitingGameClient);
-              Observable.interval(5000)
-                .take(1)
-                .takeUntil(this.dialogRef.afterClosed())
-                .subscribe(() => {
-                  this.connect();
-                });
+              this.waitForConnect();
               break;
             default:
               this.snackRef
@@ -150,6 +149,19 @@ export class LaunchDialogComponent implements OnInit {
         this.state.next(State.Connecting);
         this.connect();
         sub.unsubscribe();
+      });
+  }
+
+  /**
+   * Waits for the game client connect, polling occasionally.
+   */
+  private waitForConnect() {
+    this.state.next(State.AwaitingGameClient);
+    Observable.interval(5000)
+      .take(1)
+      .takeUntil(this.dialogRef.afterClosed())
+      .subscribe(() => {
+        this.connect();
       });
   }
 }
