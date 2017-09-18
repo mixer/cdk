@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mixer/miix.git"
+    "url": "git+https://github.com/mixer/miix-cli.git"
   },
   "keywords": [
     "mixer",
@@ -30,9 +30,9 @@
   "author": "Connor Peet <connor@xbox.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mixer/miix/issues"
+    "url": "https://github.com/mixer/miix-cli/issues"
   },
-  "homepage": "https://github.com/mixer/miix#readme",
+  "homepage": "https://github.com/mixer/miix-cli#readme",
   "devDependencies": {
     "@angular/animations": "^4.3.4",
     "@angular/cdk": "^2.0.0-beta.8",
