@@ -107,7 +107,7 @@ export class Profile {
    */
   public async hasAuthenticated(): Promise<boolean> {
     if (this.hostProfile) {
-      return this.hostProfile.tokens.expiresAt.getTime() < Date.now();
+      return this.hostProfile.tokens.expiresAt.getTime() > Date.now();
     }
 
     if (!await this.tryLoadFile()) {
