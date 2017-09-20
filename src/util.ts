@@ -183,9 +183,12 @@ export class Fetcher implements IRequester {
    * Makes a generic HTTP request to the given path.
    */
   public async run(path: string, init: RequestInit = {}): Promise<Response> {
-    this.policies.forEach(p => {
-      init.headers = Object.assign(init.headers || {}, p.header());
-    });
+    init.headers = init.headers || {};
+    if (process.env.MIIX_HEADERS) {
+      Object.assign(init.headers, JSON.parse(process.env.MIIX_HEADERS));
+    }
+
+    this.policies.forEach(p => Object.assign(init.headers, p.header()));
 
     return this.fetch(`${this.host}${path}`, init);
   }
