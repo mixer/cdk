@@ -136,6 +136,7 @@ export type HttpMethod = 'get' | 'post' | 'put' | 'patch';
  * IRequester is an interface for a type that makes fetch requests.
  */
 export interface IRequester {
+  with(...policies: IFetchPolicy[]): IRequester;
   json(method: HttpMethod, path: string, body?: object): Promise<Response>;
   run(path: string, init?: RequestInit): Promise<Response>;
 }
@@ -160,7 +161,7 @@ export class Fetcher implements IRequester {
   /**
    * Returns a new fetcher with the provided policies applied.
    */
-  public with(...policies: IFetchPolicy[]): Fetcher {
+  public with(...policies: IFetchPolicy[]): IRequester {
     return new Fetcher(this.policies.concat(policies), this.host, this.fetch);
   }
 

@@ -2,7 +2,7 @@ import * as marked from 'marked';
 import * as path from 'path';
 
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { PackageIntegrityError, PublishHttpError } from '../errors';
+import { PackageIntegrityError, PublishHttpError, PublishPrivateError } from '../errors';
 import { findReadme } from '../npm';
 import { IRequester, readFile } from '../util';
 
@@ -29,6 +29,10 @@ export class Publisher {
    * Publishes a package, making it accessible to everyone.
    */
   public async publish(dir: string, config: IPackageConfig): Promise<void> {
+    if (config.private) {
+      throw new PublishPrivateError();
+    }
+
     const readme = await this.renderReadme(dir);
     return this.requester
       .json('post', `${this.getPath(config.name, config.version)}/publish`, {
@@ -50,11 +54,11 @@ export class Publisher {
     const fname = await findReadme(dir);
     if (!fname) {
       throw new PackageIntegrityError(
-        `An readme.md is missing in your project (${path.join(dir, 'readme.md')} should exist)`,
+        `A readme.md is missing in your project (${path.join(dir, 'readme.md')} should exist)`,
       );
     }
 
-    return marked(await readFile(fname));
+    return marked(await readFile(path.join(dir, fname)));
   }
 
   private getPath(name: string, version: string): string {

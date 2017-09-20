@@ -76,6 +76,7 @@ export function createApp(profile: Profile): express.Express {
     '/login',
     route(async () => {
       if (await profile.hasAuthenticated()) {
+        grantingCode = undefined;
         return await profile.user();
       }
       if (grantingCode) {

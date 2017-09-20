@@ -4,7 +4,7 @@ import * as yaml from 'js-yaml';
 
 import { ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
-import { api, exists, Fetcher, readFile, wrapErr } from './util';
+import { api, exists, Fetcher, IRequester, readFile, wrapErr } from './util';
 import writer from './writer';
 
 interface IHostProfile {
@@ -67,7 +67,7 @@ export class GrantCancelledError extends Error {}
 export class Profile {
   public static necessaryScopes = ['interactive:manage:self', 'interactive:play'];
 
-  private tokensObj: OAuthTokens;
+  private tokensObj: OAuthTokens | undefined;
   private profile: IProfile = {
     hosts: {},
   };
@@ -82,6 +82,7 @@ export class Profile {
       clientId: '9789aae60656644524be9530889ba8884c0095834ae75f50',
       scopes: Profile.necessaryScopes,
     }),
+    private readonly requester: IRequester = new Fetcher(),
     private readonly host = api(),
   ) {}
 
@@ -91,7 +92,7 @@ export class Profile {
    */
   public async tokens(): Promise<OAuthTokens> {
     await this.ensureProfile();
-    return this.tokensObj;
+    return this.tokensObj!;
   }
 
   /**
@@ -106,15 +107,11 @@ export class Profile {
    * Returns whether the user currently has valid credentials.
    */
   public async hasAuthenticated(): Promise<boolean> {
-    if (this.hostProfile) {
-      return this.hostProfile.tokens.expiresAt.getTime() > Date.now();
+    if (!this.hostProfile) {
+      await this.tryLoadFile();
     }
 
-    if (!await this.tryLoadFile()) {
-      return false;
-    }
-
-    return !this.tokensObj.expired();
+    return this.tokensObj !== undefined && !this.tokensObj.expired();
   }
 
   /**
@@ -123,6 +120,7 @@ export class Profile {
   public async logout(): Promise<void> {
     await this.tryLoadFile();
     delete this.profile.hosts[this.host];
+    this.tokensObj = undefined;
     await this.save();
   }
 
@@ -150,7 +148,7 @@ export class Profile {
       }
     } while (!tokens);
 
-    const udata = await new Fetcher()
+    const udata = await this.requester
       .with(tokens)
       .json('get', '/users/current?fields=id,username,channel')
       .then(async res => res.json());
@@ -181,9 +179,9 @@ export class Profile {
 
     if (!await this.tryLoadFile()) {
       await this.grant();
-    } else if (!this.tokensObj.granted(Profile.necessaryScopes)) {
+    } else if (!this.tokensObj!.granted(Profile.necessaryScopes)) {
       await this.grant();
-    } else if (this.tokensObj.expired()) {
+    } else if (this.tokensObj!.expired()) {
       try {
         await this.refresh();
       } catch (err) {
@@ -217,6 +215,11 @@ export class Profile {
    * Refreshes the token grants and saves the profile.
    */
   private async refresh(): Promise<void> {
+    if (!this.tokensObj) {
+      await this.grant();
+      return;
+    }
+
     this.tokensObj = await this.oauthClient.refresh(this.tokensObj);
     this.hostProfile.tokens = this.tokensObj.data;
     await this.save();

@@ -87,7 +87,7 @@ abstract class DecoratorExtractor<T extends object> {
   protected parseSimpleNode(node: ts.Node): JsonType | JsonType[] {
     if (
       node.kind >= ts.SyntaxKind.FirstLiteralToken &&
-      node.kind < ts.SyntaxKind.LastLiteralToken
+      node.kind <= ts.SyntaxKind.LastLiteralToken
     ) {
       return (<ts.LiteralExpression>node).text;
     }
@@ -96,7 +96,7 @@ abstract class DecoratorExtractor<T extends object> {
       case ts.SyntaxKind.TrueKeyword:
         return true;
       case ts.SyntaxKind.FalseKeyword:
-        return true;
+        return false;
       case ts.SyntaxKind.Identifier:
         return (<ts.Identifier>node).text;
       case ts.SyntaxKind.ObjectLiteralExpression:
@@ -173,7 +173,7 @@ abstract class DecoratorExtractor<T extends object> {
     return output;
   }
 
-  protected assert(value: boolean, node: ts.Node, message: string) {
+  protected assert(value: boolean, node: ts.Node, message: string): void {
     if (value) {
       return; // all good
     }

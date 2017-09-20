@@ -157,11 +157,8 @@ export class LaunchDialogComponent implements OnInit {
    */
   private waitForConnect() {
     this.state.next(State.AwaitingGameClient);
-    Observable.interval(5000)
-      .take(1)
-      .takeUntil(this.dialogRef.afterClosed())
-      .subscribe(() => {
-        this.connect();
-      });
+    Observable.interval(5000).take(1).takeUntil(this.dialogRef.afterClosed()).subscribe(() => {
+      this.connect();
+    });
   }
 }

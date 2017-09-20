@@ -16,7 +16,7 @@ const packageSchema = Joi.object({
   keywords: Joi.array().items(Joi.string().max(32)).max(32),
 
   display: Joi.object({
-    mode: Joi.valid('fixed-grid', 'flex').required(),
+    mode: Joi.string().valid('fixed-grid', 'flex').required(),
   }),
   controls: Joi.object()
     .pattern(

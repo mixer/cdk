@@ -66,3 +66,4 @@ typings/
 
 /dist
 /package-lock.json
+/.vscode

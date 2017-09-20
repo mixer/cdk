@@ -15,7 +15,7 @@ describe('shortcode oauth', () => {
     oauth = new OAuthClient(
       {
         clientId: 'clientId',
-        scopes: ['interactive:manage:self'],
+        scopes: ['interactive:manage:self', 'interactive:play'],
       },
       requester,
     );
@@ -32,7 +32,7 @@ describe('shortcode oauth', () => {
       expiresAt: new Date(Date.now() + mockTokenResponse.expires_in * 1000),
       accessToken: 'access_token',
       refreshToken: 'refresh_token',
-      scopes: ['interactive:manage:self'],
+      scopes: ['interactive:manage:self', 'interactive:play'],
     });
   };
 
@@ -106,7 +106,7 @@ describe('shortcode oauth', () => {
         .withArgs('post', '/oauth/shortcode', {
           client_id: 'clientId',
           client_secret: undefined,
-          scope: 'interactive:manage:self',
+          scope: 'interactive:manage:self interactive:play',
         })
         .resolves({
           status: 200,
