@@ -3,7 +3,7 @@ import { inspect } from 'util';
 
 import { UnexpectedHttpError } from '../errors';
 import { Profile } from '../profile';
-import { Fetcher } from '../util';
+import { Fetcher, IRequester } from '../util';
 import writer from '../writer';
 
 export interface IInfoOptions {
@@ -15,7 +15,7 @@ export interface IInfoOptions {
 export default async function(options: IInfoOptions): Promise<void> {
   const profile = new Profile();
 
-  let fetcher = new Fetcher();
+  let fetcher: IRequester = new Fetcher();
   let loggedIn = false;
   if (await profile.hasAuthenticated()) {
     loggedIn = true;

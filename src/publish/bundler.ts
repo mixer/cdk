@@ -105,7 +105,7 @@ export class Bundler {
    * Runs webpack to create a production bundle.
    */
   private async runWebpack(): Promise<void> {
-    const wds = await getPackageExecutable(path.join(this.projectDir, 'node_modules', 'webpack'));
+    const wds = getPackageExecutable(path.join(this.projectDir, 'node_modules', 'webpack'));
 
     return awaitChildProcess(
       fork(wds, ['--display=minimal'], {

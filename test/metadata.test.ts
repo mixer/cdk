@@ -43,6 +43,40 @@ describe('metadata', () => {
       });
     });
 
+    it('allows for namespaced decorators', () => {
+      expect(
+        new MetadataExtractor().parseString(`
+          @Mixer.Control({ kind: 'button' })
+          class MyScene {}
+        `),
+      ).to.containSubset({
+        controls: {
+          button: { kind: 'button' },
+        },
+      });
+    });
+
+    it('parses data kinds', () => {
+      expect(
+        new MetadataExtractor().parseString(`
+          @Mixer.Control({
+            kind: 'button',
+            'quoted': [{ deeplyNested: true, isLame: false }],
+            1: \`some numeric prop\`,
+          })
+          class MyScene {}
+        `),
+      ).to.containSubset({
+        controls: {
+          button: {
+            kind: 'button',
+            quoted: [{ deeplyNested: true, isLame: false }],
+            1: 'some numeric prop',
+          },
+        },
+      });
+    });
+
     it('infers the basic types from inputs', () => {
       expectType(
         InputKind.Number,

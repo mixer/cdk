@@ -15,13 +15,14 @@ use(require('chai-as-promised'));
 export class MockRequester implements IRequester {
   public json = sinon.stub();
   public run = sinon.stub();
+  public with = sinon.stub().returns(this);
 }
 
 export function createExpiredOAuthTokens() {
   return new OAuthTokens({
     accessToken: 'expired_access_token',
     refreshToken: 'expired_refresh_token',
-    scopes: ['interactive:manage:self'],
+    scopes: ['interactive:manage:self', 'interactive:play'],
     expiresAt: new Date(Date.now() - 1),
   });
 }
@@ -30,7 +31,7 @@ export function createValidOAuthTokens() {
   return new OAuthTokens({
     accessToken: 'access_token',
     refreshToken: 'refresh_token',
-    scopes: ['interactive:manage:self'],
+    scopes: ['interactive:manage:self', 'interactive:play'],
     expiresAt: new Date(Date.now() + 10000),
   });
 }

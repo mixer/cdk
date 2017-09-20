@@ -25,7 +25,8 @@
       "mocha",
       "node",
       "chai-subset",
-      "chai-as-promised"
+      "chai-as-promised",
+      "sinon-chai"
     ],
     "baseUrl": ".",
     "paths": {

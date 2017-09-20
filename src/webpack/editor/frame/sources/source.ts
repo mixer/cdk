@@ -140,7 +140,7 @@ export class ResourceComparator<T> {
     patch.compare(previous, next).forEach(op => {
       const path = op.path.split('/').slice(1);
       const index = Number(path[0]);
-      const prop = path[1];
+      const prop = <keyof T> path[1];
       if (typeof index !== 'number') {
         return; // todo(connor4312): print error
       }

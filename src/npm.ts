@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { readDir, readFile } from './util';
+import { readDir } from './util';
 
 /**
  * Finds the nearest package.json relative to the given directory, returning
@@ -32,8 +32,8 @@ export function mustLoadPackageJson(dir: string): any {
   }
 
   throw new Error(
-    'Could not find package.json in your current folder, make sure to `cd`' +
-      'into your project directory!',
+    'Could not find a package.json in your current folder, ' +
+      'make sure to `cd` into your project directory!',
   );
 }
 
@@ -63,26 +63,28 @@ export function getDependencyPath(name: string): string {
 /**
  * Gets the path to the binary script defeined by the module in the given dir.
  */
-export async function getPackageExecutable(
+export function getPackageExecutable(
   base: string,
   commandName: string = path.basename(base),
-): Promise<string> {
-  return readFile(path.join(base, 'package.json')).then(config => {
-    const parsed = JSON.parse(config);
-    return path.join(base, parsed.bin[commandName]);
-  });
+): string {
+  const parsed = mustLoadPackageJson(base);
+  return path.join(base, parsed.bin[commandName]);
 }
 
 /**
  * Finds the readme for the project in the given directory. Uses a similar
  * process to npm.
  */
-export async function findReadme(name: string): Promise<string | undefined> {
-  const fname = (await readDir(name)).find(f => /^readme\.?/i.test(f));
+export async function findReadme(dir: string): Promise<string | undefined> {
+  const fname = (await readDir(dir)).find(f => /^readme\.?/i.test(f));
   if (fname) {
     return fname;
   }
 
-  const packageJson = await mustLoadPackageJson(name);
-  return packageJson.readmeFile;
+  try {
+    const packageJson = mustLoadPackageJson(dir);
+    return packageJson && path.normalize(packageJson.readmeFile);
+  } catch (e) {
+    return undefined;
+  }
 }

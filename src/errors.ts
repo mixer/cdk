@@ -164,6 +164,19 @@ export class PublishHttpError extends UnexpectedHttpError {
 }
 
 /**
+ * PublishPrivateError is thrown when attempts to run miix publish on
+ * a private module.
+ */
+export class PublishPrivateError extends Error implements IHumanError {
+  public getHumanMessage(): string {
+    return (
+      `Your package.json has \`"private": true\` in it, which prevents publishing. ` +
+      `Remove this line if you're ready to publish your project to the world!`
+    );
+  }
+}
+
+/**
  * UploaderHttpError is thrown by the Updater process.
  */
 export class UploaderHttpError extends PublishHttpError {

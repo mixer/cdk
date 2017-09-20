@@ -33,10 +33,8 @@ export default async function(options: IGlobalOptions): Promise<void> {
     open: true,
   });
 
-  server.on('listening', async () => {
-    const wds = await getPackageExecutable(
-      join(options.project, 'node_modules', 'webpack-dev-server'),
-    );
+  server.on('listening', () => {
+    const wds = getPackageExecutable(join(options.project, 'node_modules', 'webpack-dev-server'));
 
     const child = fork(wds, args, {
       cwd: process.cwd(),
