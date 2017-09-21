@@ -8,22 +8,30 @@ import { MetadataExtractor } from './extractor';
 // TypeScript will enforce most of this, but some parts come from the
 // package.json and not all consumers may be using TypeScript or strict typing.
 const packageSchema = Joi.object({
-  name: Joi.string().regex(/^[a-z0-9\-]{2,60}/i).required(),
+  name: Joi.string()
+    .regex(/^[a-z0-9\-]{2,60}/i)
+    .required(),
   version: Joi.string().required(),
   description: Joi.string().max(512),
   private: Joi.boolean(),
   homepage: Joi.string().uri(),
-  keywords: Joi.array().items(Joi.string().max(32)).max(32),
+  keywords: Joi.array()
+    .items(Joi.string().max(32))
+    .max(32),
 
   display: Joi.object({
-    mode: Joi.string().valid('fixed-grid', 'flex').required(),
+    mode: Joi.string()
+      .valid('fixed-grid', 'flex')
+      .required(),
   }),
   controls: Joi.object()
     .pattern(
       /./,
       Joi.object({
         kind: Joi.string().required(),
-        inputs: Joi.object().unknown().required(),
+        inputs: Joi.object()
+          .unknown()
+          .required(),
       }).unknown(),
     )
     .required(),
@@ -33,7 +41,9 @@ const packageSchema = Joi.object({
       Joi.object({
         default: Joi.boolean(),
         id: Joi.string(),
-        inputs: Joi.object().unknown().required(),
+        inputs: Joi.object()
+          .unknown()
+          .required(),
       }).unknown(),
     )
     .required(),

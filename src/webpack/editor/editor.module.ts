@@ -47,7 +47,7 @@ require('../../../static/editor/style.scss');
     MdSelectModule,
     MdSnackBarModule,
     MdTooltipModule,
-    StoreModule.forRoot(<any> reducers, { metaReducers }),
+    StoreModule.forRoot(<any>reducers, { metaReducers }),
   ],
   declarations: [
     ChannelSelectDialog,

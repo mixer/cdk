@@ -35,13 +35,16 @@ export class LocalStateSyncService implements OnDestroy {
 
   constructor(private readonly controlsState: ControlStateSyncService, store: Store<IProject>) {
     this.sources.forEach(source => {
-      source.getEvents(store.select('code')).takeUntil(this.closed).subscribe(calls => {
-        if (this.state === State.AwaitingValid) {
-          this.sendInitialState();
-        } else if (this.state === State.Ready) {
-          this.sendInteractive(...calls);
-        }
-      });
+      source
+        .getEvents(store.select('code'))
+        .takeUntil(this.closed)
+        .subscribe(calls => {
+          if (this.state === State.AwaitingValid) {
+            this.sendInitialState();
+          } else if (this.state === State.Ready) {
+            this.sendInteractive(...calls);
+          }
+        });
     });
   }
 
@@ -56,15 +59,23 @@ export class LocalStateSyncService implements OnDestroy {
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.controlsState.setVideoSize(data);
     });
-    Observable.fromEvent(frame, 'loaded').takeUntil(this.closed).subscribe(() => {
-      this.state = State.Loading;
+    this.rpc.expose('sendInteractivePacket', input => {
+      console.log('Sending', input);
     });
+    Observable.fromEvent(frame, 'loaded')
+      .takeUntil(this.closed)
+      .subscribe(() => {
+        this.state = State.Loading;
+      });
 
-    this.controlsState.getRefresh().takeUntil(this.closed).subscribe(() => {
-      this.rpc.destroy();
-      frame.src = frame.src;
-      this.bind(frame);
-    });
+    this.controlsState
+      .getRefresh()
+      .takeUntil(this.closed)
+      .subscribe(() => {
+        this.rpc.destroy();
+        frame.src = frame.src;
+        this.bind(frame);
+      });
 
     return this;
   }
@@ -95,9 +106,12 @@ export class LocalStateSyncService implements OnDestroy {
       return;
     }
 
-    this.controlsState.getSettings().takeUntil(this.closed).subscribe(settings => {
-      this.rpc.call('updateSettings', settings, false);
-    });
+    this.controlsState
+      .getSettings()
+      .takeUntil(this.closed)
+      .subscribe(settings => {
+        this.rpc.call('updateSettings', settings, false);
+      });
 
     this.sendInteractive(...create.map(call => call!), {
       method: 'onReady',

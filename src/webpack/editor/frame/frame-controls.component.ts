@@ -44,13 +44,15 @@ export class FrameControlsComponent implements OnDestroy {
   ) {
     this.frameEl = <HTMLElement>frame.el.nativeElement;
 
-    Observable.fromEvent(screenfull, 'change').takeUntilDestroyed(this).subscribe(() => {
-      if (screenfull.isFullscreen) {
-        this.frameEl.classList.add('fullscreen');
-      } else {
-        this.frameEl.classList.remove('fullscreen');
-      }
-    });
+    Observable.fromEvent(screenfull, 'change')
+      .takeUntilDestroyed(this)
+      .subscribe(() => {
+        if (screenfull.isFullscreen) {
+          this.frameEl.classList.add('fullscreen');
+        } else {
+          this.frameEl.classList.remove('fullscreen');
+        }
+      });
   }
 
   public ngOnDestroy() {

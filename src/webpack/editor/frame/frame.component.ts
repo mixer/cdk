@@ -99,9 +99,17 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
       this.state.distinctUntilChanged(
         (a, b) => a.chosenDevice === b.chosenDevice && a.orientation === b.orientation,
       ),
-      this.store.select('code').map(c => c.width).distinctUntilChanged(),
-      this.store.select('code').map(c => c.state).distinctUntilChanged(),
-      Observable.fromEvent(window, 'resize').debounceTime(5).startWith(null),
+      this.store
+        .select('code')
+        .map(c => c.width)
+        .distinctUntilChanged(),
+      this.store
+        .select('code')
+        .map(c => c.state)
+        .distinctUntilChanged(),
+      Observable.fromEvent(window, 'resize')
+        .debounceTime(5)
+        .startWith(null),
       state => state,
     )
       .delay(1)

@@ -62,18 +62,24 @@ export class NavComponent {
       return;
     }
 
-    this.dialog.open(ChannelSelectDialog).afterClosed().subscribe(launch => {
-      if (launch) {
-        this.launch();
-      }
-    });
+    this.dialog
+      .open(ChannelSelectDialog)
+      .afterClosed()
+      .subscribe(launch => {
+        if (launch) {
+          this.launch();
+        }
+      });
   }
 
   private launch() {
-    this.dialog.open(LaunchDialogComponent).afterClosed().subscribe(result => {
-      if (result) {
-        this.project.connectControls(result);
-      }
-    });
+    this.dialog
+      .open(LaunchDialogComponent)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.project.connectControls(result);
+        }
+      });
   }
 }
