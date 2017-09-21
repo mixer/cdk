@@ -85,18 +85,13 @@ abstract class DecoratorExtractor<T extends object> {
    * Throws if it's a bad type.
    */
   protected parseSimpleNode(node: ts.Node): JsonType | JsonType[] {
-    if (
-      node.kind >= ts.SyntaxKind.FirstLiteralToken &&
-      node.kind <= ts.SyntaxKind.LastLiteralToken
-    ) {
-      return (<ts.LiteralExpression>node).text;
-    }
-
     switch (node.kind) {
       case ts.SyntaxKind.TrueKeyword:
         return true;
       case ts.SyntaxKind.FalseKeyword:
         return false;
+      case ts.SyntaxKind.NumericLiteral:
+        return Number((<ts.LiteralExpression>node).text);
       case ts.SyntaxKind.Identifier:
         return (<ts.Identifier>node).text;
       case ts.SyntaxKind.ObjectLiteralExpression:
@@ -105,6 +100,13 @@ abstract class DecoratorExtractor<T extends object> {
         return (<ts.ArrayLiteralExpression>node).elements.map(n => this.parseSimpleNode(n));
       default:
       // fall through
+    }
+
+    if (
+      node.kind >= ts.SyntaxKind.FirstLiteralToken &&
+      node.kind <= ts.SyntaxKind.LastLiteralToken
+    ) {
+      return (<ts.LiteralExpression>node).text;
     }
 
     this.assert(false, node, 'Only simple, JSON-compatible expressions are allowed here');
@@ -116,7 +118,9 @@ abstract class DecoratorExtractor<T extends object> {
    * and tries to parse it to the corresponding numeric type.
    */
   protected parseEnumAccess(node: ts.Node, name: string, actualEnum: any): number {
-    const keys = Object.keys(actualEnum).filter(k => typeof actualEnum[k] === 'number').join(', ');
+    const keys = Object.keys(actualEnum)
+      .filter(k => typeof actualEnum[k] === 'number')
+      .join(', ');
     if (node.kind === ts.SyntaxKind.StringLiteral) {
       const text = (<ts.StringLiteral>node).text;
       this.assert(

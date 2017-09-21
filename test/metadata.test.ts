@@ -61,6 +61,7 @@ describe('metadata', () => {
         new MetadataExtractor().parseString(`
           @Mixer.Control({
             kind: 'button',
+            level: 42,
             'quoted': [{ deeplyNested: true, isLame: false }],
             1: \`some numeric prop\`,
           })
@@ -70,6 +71,7 @@ describe('metadata', () => {
         controls: {
           button: {
             kind: 'button',
+            level: 42,
             quoted: [{ deeplyNested: true, isLame: false }],
             1: 'some numeric prop',
           },
