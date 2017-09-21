@@ -169,6 +169,29 @@ describe('metadata', () => {
       );
     });
 
+    it('parses default values', () => {
+      const str = `
+        @Control({ kind: 'button' })
+        class MyScene {
+          @Input({ kind: InputKind.Color })
+          public foo: string = '#fff';
+        }
+      `;
+
+      expect(new MetadataExtractor().parseString(str)).to.containSubset({
+        controls: {
+          button: {
+            inputs: {
+              foo: {
+                kind: InputKind.Color,
+                defaultValue: '#fff',
+              },
+            },
+          },
+        },
+      });
+    });
+
     describe('invalid cases', () => {
       it('errors on shorthand props', () => {
         expect(() =>

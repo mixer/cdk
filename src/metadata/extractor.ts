@@ -277,6 +277,9 @@ class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInput
     if (!result.kind) {
       result.kind = this.inferKind(prop);
     }
+    if (prop.initializer) {
+      result.defaultValue = super.parseLiteralValue(prop.initializer, '');
+    }
 
     lastMapping[prop.name.getText()] = result;
   }
