@@ -59,7 +59,7 @@ export class LocalStateSyncService implements OnDestroy {
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.controlsState.setVideoSize(data);
     });
-    this.rpc.expose('sendInteractivePacket', input => {
+    this.rpc.expose('sendInteractivePacket', _input => {
       // todo(connor4312): log
     });
     Observable.fromEvent(frame, 'loaded')

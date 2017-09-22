@@ -53,7 +53,7 @@ export function stubWriter(): IExpectWriter {
       writer.use(stub);
     },
     expectToNotHaveWritten(): void {
-      expect(stub.args.length).to.eql(0, `Expected not to have written. ${dumpLogs}`);
+      expect(stub.args.length).to.eql(0, `Expected not to have written. ${dumpLogs()}`);
     },
     expectToHaveWritten: (str: string | RegExp) => {
       expect(
@@ -65,7 +65,7 @@ export function stubWriter(): IExpectWriter {
 
           return message.indexOf(str) > -1;
         }),
-      ).to.equal(true, `Expected to have logged ${str}. ${dumpLogs}`);
+      ).to.equal(true, `Expected to have logged ${str}. ${dumpLogs()}`);
     },
   };
 }

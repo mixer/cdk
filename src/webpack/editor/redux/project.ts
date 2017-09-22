@@ -7,21 +7,6 @@ import * as Code from './code';
 import * as Connect from './connect';
 import * as Frame from './frame';
 
-const enum Action {
-  Undo = 'UNDO',
-  Redo = 'REDO',
-}
-
-const undoableActions = [
-  Frame.Action.Rotate,
-  Frame.Action.Select,
-  Frame.Action.SetDimensions,
-  Code.Action.SetState, // so they aren't ever undoing something on a screen they can't see
-  Code.Action.SetParticipant,
-  Code.Action.SetScenes,
-  Code.Action.SetGroups,
-];
-
 const storedKeys: (keyof IProject)[] = ['frame', 'code', 'history'];
 
 /**
@@ -48,22 +33,6 @@ export interface IProject {
 @Injectable()
 export class ProjectService {
   constructor(private store: Store<IProject>) {}
-
-  // History actions ----------------------------------------------------------
-
-  /**
-   * Steps back in history.
-   */
-  public undo() {
-    this.store.dispatch({ type: Action.Undo });
-  }
-
-  /**
-   * Moves forwards in history.
-   */
-  public redo() {
-    this.store.dispatch({ type: Action.Redo });
-  }
 
   // Frame actions ------------------------------------------------------------
 
@@ -136,59 +105,6 @@ export class ProjectService {
   }
 }
 
-function compare(from: IProject, to: IProject): patch.Operation[] {
-  return patch.compare({ ...from, history: <any>null }, { ...to, history: <any>null });
-}
-
-/**
- * Maximum amount of history states to keep/
- */
-const maxHistoryRecords = 500;
-
-function moveHistory(project: IProject, direction: Action.Undo | Action.Redo): IProject {
-  const { ahead, behind } = project.history;
-
-  if (direction === Action.Undo && behind.length > 0) {
-    const next = patch.applyPatch(patch.deepClone(project), behind[behind.length - 1]).newDocument;
-    next.history = {
-      ahead: ahead.concat([compare(next, project)]),
-      behind: behind.slice(0, -1),
-    };
-
-    return next;
-  }
-
-  if (direction === Action.Redo && ahead.length > 0) {
-    const prev = patch.applyPatch(patch.deepClone(project), ahead[ahead.length - 1]).newDocument;
-    prev.history = {
-      behind: behind.concat([compare(prev, project)]),
-      ahead: ahead.slice(0, -1),
-    };
-
-    return prev;
-  }
-
-  return project;
-}
-
-function storeHistory(previous: IProject, next: IProject, action: any): IProject {
-  if (undoableActions.indexOf(action.type) === -1) {
-    return next;
-  }
-
-  const adjust = Math.max(0, next.history.behind.length - maxHistoryRecords);
-
-  return {
-    ...next,
-    history: {
-      ahead: [],
-      behind: next.history.behind
-        .slice(adjust, maxHistoryRecords)
-        .concat([compare(next, previous)]),
-    },
-  };
-}
-
 /**
  * Initial state of the project.
  */
@@ -212,24 +128,6 @@ const initialState: IProject = (() => {
     ...parsed,
   };
 })();
-
-/**
- * historyReducer is a metareducer that enabled undo/redo history on the state.
- */
-export function historyReducer(
-  reducer: ActionReducer<IProject, any>,
-): ActionReducer<IProject, any> {
-  return (project = initialState, action) => {
-    switch (action.type) {
-      case Action.Undo:
-        return moveHistory(project, Action.Undo);
-      case Action.Redo:
-        return moveHistory(project, Action.Redo);
-      default:
-        return storeHistory(project, reducer(project, action), action);
-    }
-  };
-}
 
 /**
  * localStorageReduxer is a metareducer that saves changes to localstorage.
@@ -262,4 +160,4 @@ export const reducers: { [key in keyof IProject]: Function } = {
 /**
  * ngrx metareducers
  */
-export const metaReducers = [historyReducer, localStorageReducer];
+export const metaReducers = [localStorageReducer];

@@ -41,20 +41,6 @@
 
 <div class="tools">
   <button md-icon-button
-    [disabled]="!(canUndo | async)"
-    mdTooltipPosition="below"
-    mdTooltip="Undo (Ctrl-Z)"
-    (click)="undo()">
-    <md-icon svgIcon="undo"></md-icon>
-  </button>
-  <button md-icon-button
-    [disabled]="!(canRedo | async)"
-    mdTooltipPosition="below"
-    mdTooltip="Redo (Ctrl-Y)"
-    (click)="redo()">
-    <md-icon svgIcon="redo"></md-icon>
-  </button>
-  <button md-icon-button
     mdTooltipPosition="below"
     mdTooltip="Connect to Interactive"
     (click)="connect($event)">

@@ -48,14 +48,6 @@ export class NavComponent {
     this.project.resizeDevice(undefined, height);
   }
 
-  public undo() {
-    this.project.undo();
-  }
-
-  public redo() {
-    this.project.redo();
-  }
-
   public connect(ev: MouseEvent) {
     if (!ev.shiftKey) {
       this.launch();
