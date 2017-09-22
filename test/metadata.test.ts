@@ -1,17 +1,15 @@
 import { expect } from 'chai';
 
-import { InputKind } from '@mcph/miix-std/dist/internal';
+import { IInputDescriptor, InputKind } from '@mcph/miix-std/dist/internal';
 import { MetadataExtractor } from '../src/metadata/extractor';
 
 describe('metadata', () => {
   describe('extractor', () => {
-    const expectType = (kind: InputKind, str: string) => {
+    const expectType = (expected: Partial<IInputDescriptor>, str: string) => {
       expect(new MetadataExtractor().parseString(str)).to.containSubset({
         controls: {
           button: {
-            inputs: {
-              foo: { kind },
-            },
+            inputs: [expected],
           },
         },
       });
@@ -81,7 +79,7 @@ describe('metadata', () => {
 
     it('infers the basic types from inputs', () => {
       expectType(
-        InputKind.Number,
+        { kind: InputKind.Number, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -92,7 +90,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.String,
+        { kind: InputKind.String, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -103,7 +101,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.Boolean,
+        { kind: InputKind.Boolean, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -114,7 +112,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.Dimensions,
+        { kind: InputKind.Dimensions, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -125,7 +123,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.Dimensions,
+        { kind: InputKind.Dimensions, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -138,7 +136,7 @@ describe('metadata', () => {
 
     it('explcitly defines input types', () => {
       expectType(
-        InputKind.Color,
+        { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -149,7 +147,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.Color,
+        { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -160,7 +158,7 @@ describe('metadata', () => {
       );
 
       expectType(
-        InputKind.Color,
+        { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
         `
         @Control({ kind: 'button' })
         class MyScene {
@@ -183,12 +181,14 @@ describe('metadata', () => {
       expect(new MetadataExtractor().parseString(str)).to.containSubset({
         controls: {
           button: {
-            inputs: {
-              foo: {
+            inputs: [
+              {
+                alias: 'foo',
+                propertyName: 'foo',
                 kind: InputKind.Color,
                 defaultValue: '#fff',
               },
-            },
+            ],
           },
         },
       });

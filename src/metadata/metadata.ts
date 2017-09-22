@@ -4,6 +4,14 @@ import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { mustLoadPackageJson } from '../npm';
 import { MetadataExtractor } from './extractor';
 
+const inputSchema = Joi.object({
+  propertyName: Joi.string().required(),
+  alias: Joi.string().required(),
+  displayName: Joi.string(),
+  kind: Joi.number().required(),
+  defaultValue: Joi.any(),
+});
+
 // Quick validation to sanity check that nothing will crash and burn.
 // TypeScript will enforce most of this, but some parts come from the
 // package.json and not all consumers may be using TypeScript or strict typing.
@@ -29,8 +37,8 @@ const packageSchema = Joi.object({
       /./,
       Joi.object({
         kind: Joi.string().required(),
-        inputs: Joi.object()
-          .unknown()
+        inputs: Joi.array()
+          .items(inputSchema)
           .required(),
       }).unknown(),
     )
@@ -41,8 +49,8 @@ const packageSchema = Joi.object({
       Joi.object({
         default: Joi.boolean(),
         id: Joi.string(),
-        inputs: Joi.object()
-          .unknown()
+        inputs: Joi.array()
+          .items(inputSchema)
           .required(),
       }).unknown(),
     )

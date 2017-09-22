@@ -132,9 +132,9 @@ class HomepageRenderer extends HTMLInjector {
     }
 
     output.push(
+      `<script>window.mixerPackageConfig=${JSON.stringify(this.packaged)};` +
+        `window.mixerLocales=${JSON.stringify(this.locales)}</script>`,
       `<script src="./mixer.js"></script>`,
-      `<script>mixer.packageConfig=${JSON.stringify(this.packaged)};` +
-        `mixer.locales=${JSON.stringify(this.locales)}</script>`,
     );
 
     return output;
@@ -223,7 +223,7 @@ export class MixerPlugin {
   constructor(private readonly options: IPluginOptions) {}
 
   public apply(compiler: any) {
-    const projectPath = getProjectPath(compiler.options.output.path);
+    const projectPath = getProjectPath(compiler.options.context);
     if (!projectPath) {
       throw new Error('Could not find your project path, are you missing a package.json?');
     }

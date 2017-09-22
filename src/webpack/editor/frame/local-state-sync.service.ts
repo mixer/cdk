@@ -60,7 +60,7 @@ export class LocalStateSyncService implements OnDestroy {
       this.controlsState.setVideoSize(data);
     });
     this.rpc.expose('sendInteractivePacket', input => {
-      console.log('Sending', input);
+      // todo(connor4312): log
     });
     Observable.fromEvent(frame, 'loaded')
       .takeUntil(this.closed)

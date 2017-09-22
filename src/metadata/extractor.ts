@@ -9,7 +9,7 @@ import * as ts from 'typescript';
 
 import {
   IControlOptions,
-  IInputOptions,
+  IInputDescriptor,
   InputKind,
   ISceneOptions,
 } from '@mcph/miix-std/dist/internal';
@@ -190,7 +190,7 @@ abstract class DecoratorExtractor<T extends object> {
  * IInputable is an Extractor interested in the last inputable classes.
  */
 interface IInputable {
-  setLastInput(map: { [property: string]: IInputOptions }): void;
+  setLastInput(map: IInputDescriptor[]): void;
 }
 
 /**
@@ -218,7 +218,7 @@ class ControlExtractor extends DecoratorExtractor<IControlOptions> {
       `Control type "${result.kind}" declared multiple times`,
     );
 
-    result.inputs = result.inputs || {};
+    result.inputs = result.inputs || [];
     this.inputable.setLastInput(result.inputs);
     this.controls[result.kind] = result;
   }
@@ -249,7 +249,7 @@ class SceneExtractor extends DecoratorExtractor<ISceneOptions> {
       'Non-default scenes must have a defined ID',
     );
 
-    result.inputs = result.inputs || {};
+    result.inputs = result.inputs || [];
     this.inputable.setLastInput(result.inputs);
     this.scenes[result.id || 'default'] = result;
   }
@@ -258,8 +258,8 @@ class SceneExtractor extends DecoratorExtractor<ISceneOptions> {
 /**
  * SceneExtractor extracts data from @Scene decorators.
  */
-class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInputable {
-  private lastMapping: { [property: string]: IInputOptions };
+class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IInputable {
+  private lastMapping: IInputDescriptor[];
 
   public name() {
     return 'Input';
@@ -269,13 +269,17 @@ class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInput
     /* noop */
   }
 
-  public setLastInput(map: { [property: string]: IInputOptions }) {
-    this.lastMapping = map;
+  public setLastInput(inputs: IInputDescriptor[]) {
+    this.lastMapping = inputs;
   }
 
-  public parse(result: IInputOptions, decorator: ts.Decorator) {
+  public parse(result: IInputDescriptor, decorator: ts.Decorator) {
     const lastMapping = this.lastMapping;
-    this.assert(!!lastMapping, decorator, "Input on a class that didn't have a @Control decorator");
+    this.assert(
+      !!lastMapping,
+      decorator,
+      "Input on a class that didn't have a @Control or @Scene decorator",
+    );
 
     const prop = this.getPropertyDeclaration(decorator);
     if (!result.kind) {
@@ -285,7 +289,11 @@ class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInput
       result.defaultValue = super.parseLiteralValue(prop.initializer, '');
     }
 
-    lastMapping[prop.name.getText()] = result;
+    lastMapping.push({
+      ...result,
+      alias: prop.name.getText(),
+      propertyName: prop.name.getText(),
+    });
   }
 
   protected parseLiteralValue(value: ts.Node, key: string): JsonType | JsonType[] {
