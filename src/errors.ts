@@ -42,7 +42,12 @@ export class UnexpectedHttpError extends Error implements IHumanError {
       '',
       inspect(json || this.text, false, null, true),
       '',
-      chalk.dim(this.stack!.split('\n').slice(1).join('\n')),
+      chalk.dim(
+        this.stack!
+          .split('\n')
+          .slice(1)
+          .join('\n'),
+      ),
     ].join('\n');
   }
 

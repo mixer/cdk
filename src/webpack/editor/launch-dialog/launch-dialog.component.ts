@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Http, Response } from '@angular/http';
 import { MdDialogRef, MdSnackBar } from '@angular/material';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
@@ -14,13 +13,12 @@ import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/takeUntil';
 
 import { IInteractiveJoin } from '../redux/connect';
-import { apiUrl, mixerUrl } from '../util/env';
-import { MemorizingSubject } from '../util/memorizingSubject';
+import { apiUrl } from '../util/env';
 import { reportHttpError } from '../util/report-issue';
 
 export enum State {
+  LoggingIn,
   Connecting,
-  AwaitingLogin,
   AwaitingGameClient,
 }
 
@@ -32,10 +30,10 @@ export enum State {
 @Component({
   selector: 'launch-dialog',
   templateUrl: './launch-dialog.component.html',
-  styleUrls: ['./launch-dialog.component.scss'],
+  styleUrls: ['../dialog.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LaunchDialogComponent implements OnInit {
+export class LaunchDialogComponent {
   /**
    * Exposed State enum for the template to consume.
    */
@@ -44,20 +42,7 @@ export class LaunchDialogComponent implements OnInit {
   /**
    * Curre state of the component.
    */
-  public state = new BehaviorSubject(State.Connecting);
-
-  /**
-   * code is the shortcode to display to the user that they need to enter
-   * on mixer.com/go in order to start login.
-   */
-  public code = new MemorizingSubject<string>();
-
-  /**
-   * codeUrl is the full Mixer URL the user should go to
-   */
-  public codeUrl: Observable<SafeUrl> = this.code.map(code =>
-    this.sanitizer.bypassSecurityTrustUrl(`${mixerUrl()}/go?code=${code}`),
-  );
+  public state = new BehaviorSubject(State.LoggingIn);
 
   /**
    * Dots used to subtly indicate progress.
@@ -77,21 +62,19 @@ export class LaunchDialogComponent implements OnInit {
     private readonly http: Http,
     private readonly dialogRef: MdDialogRef<IInteractiveJoin>,
     private readonly snackRef: MdSnackBar,
-    private readonly sanitizer: DomSanitizer,
     private readonly store: Store<IProject>,
   ) {}
 
-  public ngOnInit() {
-    setTimeout(() => {
-      this.connect();
-    }, 250);
+  public onLoggedIn() {
+    this.state.next(State.Connecting);
+    this.connect();
   }
 
   /**
    * Attempts to create a connection to Interactive. Closes the dialog
    * when it successfully does so.
    */
-  public connect() {
+  private connect() {
     this.store
       .select(s => s.connect.channelOverride)
       .take(1)
@@ -109,9 +92,6 @@ export class LaunchDialogComponent implements OnInit {
         },
         (err: Response) => {
           switch (err.status) {
-            case 401:
-              this.login();
-              break;
             case 409:
               this.waitForConnect();
               break;
@@ -130,35 +110,15 @@ export class LaunchDialogComponent implements OnInit {
   }
 
   /**
-   * Waits for the user to log in (or the dialog to close) and then tries
-   * to connect() to Interactive.
-   */
-  private login() {
-    this.state.next(State.AwaitingLogin);
-
-    const sub = Observable.interval(1000)
-      .switchMap(() => this.http.get(apiUrl('login')))
-      .takeUntil(this.dialogRef.afterClosed())
-      .map(res => res.json())
-      .subscribe(res => {
-        if (res.code) {
-          this.code.next(res.code);
-          return;
-        }
-
-        this.state.next(State.Connecting);
-        this.connect();
-        sub.unsubscribe();
-      });
-  }
-
-  /**
    * Waits for the game client connect, polling occasionally.
    */
   private waitForConnect() {
     this.state.next(State.AwaitingGameClient);
-    Observable.interval(5000).take(1).takeUntil(this.dialogRef.afterClosed()).subscribe(() => {
-      this.connect();
-    });
+    Observable.interval(5000)
+      .take(1)
+      .takeUntil(this.dialogRef.afterClosed())
+      .subscribe(() => {
+        this.connect();
+      });
   }
 }

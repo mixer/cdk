@@ -48,11 +48,14 @@ export class CodeNavComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit() {
-    this.store.select('code').takeUntilDestroyed(this).subscribe(code => {
-      this.isActive = code.state === CodeState[this.value];
-      this.cdRef.markForCheck();
-      this.cdRef.detectChanges();
-    });
+    this.store
+      .select('code')
+      .takeUntilDestroyed(this)
+      .subscribe(code => {
+        this.isActive = code.state === CodeState[this.value];
+        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
+      });
   }
 
   public ngOnDestroy() {

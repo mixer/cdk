@@ -1,8 +1,13 @@
-@import '../../../../static/editor/declarations';
+@import '../../../static/editor/declarations';
 
 @keyframes loader-spin {
   0%   { transform: rotate(0deg) }
   100% { transform: rotate(360deg) }
+}
+
+:host {
+  min-width: 300px;
+  display: block;
 }
 
 .loader {

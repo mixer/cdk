@@ -9,7 +9,7 @@ import * as ts from 'typescript';
 
 import {
   IControlOptions,
-  IInputOptions,
+  IInputDescriptor,
   InputKind,
   ISceneOptions,
 } from '@mcph/miix-std/dist/internal';
@@ -85,18 +85,13 @@ abstract class DecoratorExtractor<T extends object> {
    * Throws if it's a bad type.
    */
   protected parseSimpleNode(node: ts.Node): JsonType | JsonType[] {
-    if (
-      node.kind >= ts.SyntaxKind.FirstLiteralToken &&
-      node.kind <= ts.SyntaxKind.LastLiteralToken
-    ) {
-      return (<ts.LiteralExpression>node).text;
-    }
-
     switch (node.kind) {
       case ts.SyntaxKind.TrueKeyword:
         return true;
       case ts.SyntaxKind.FalseKeyword:
         return false;
+      case ts.SyntaxKind.NumericLiteral:
+        return Number((<ts.LiteralExpression>node).text);
       case ts.SyntaxKind.Identifier:
         return (<ts.Identifier>node).text;
       case ts.SyntaxKind.ObjectLiteralExpression:
@@ -105,6 +100,13 @@ abstract class DecoratorExtractor<T extends object> {
         return (<ts.ArrayLiteralExpression>node).elements.map(n => this.parseSimpleNode(n));
       default:
       // fall through
+    }
+
+    if (
+      node.kind >= ts.SyntaxKind.FirstLiteralToken &&
+      node.kind <= ts.SyntaxKind.LastLiteralToken
+    ) {
+      return (<ts.LiteralExpression>node).text;
     }
 
     this.assert(false, node, 'Only simple, JSON-compatible expressions are allowed here');
@@ -116,7 +118,9 @@ abstract class DecoratorExtractor<T extends object> {
    * and tries to parse it to the corresponding numeric type.
    */
   protected parseEnumAccess(node: ts.Node, name: string, actualEnum: any): number {
-    const keys = Object.keys(actualEnum).filter(k => typeof actualEnum[k] === 'number').join(', ');
+    const keys = Object.keys(actualEnum)
+      .filter(k => typeof actualEnum[k] === 'number')
+      .join(', ');
     if (node.kind === ts.SyntaxKind.StringLiteral) {
       const text = (<ts.StringLiteral>node).text;
       this.assert(
@@ -186,7 +190,7 @@ abstract class DecoratorExtractor<T extends object> {
  * IInputable is an Extractor interested in the last inputable classes.
  */
 interface IInputable {
-  setLastInput(map: { [property: string]: IInputOptions }): void;
+  setLastInput(map: IInputDescriptor[]): void;
 }
 
 /**
@@ -214,7 +218,7 @@ class ControlExtractor extends DecoratorExtractor<IControlOptions> {
       `Control type "${result.kind}" declared multiple times`,
     );
 
-    result.inputs = result.inputs || {};
+    result.inputs = result.inputs || [];
     this.inputable.setLastInput(result.inputs);
     this.controls[result.kind] = result;
   }
@@ -245,7 +249,7 @@ class SceneExtractor extends DecoratorExtractor<ISceneOptions> {
       'Non-default scenes must have a defined ID',
     );
 
-    result.inputs = result.inputs || {};
+    result.inputs = result.inputs || [];
     this.inputable.setLastInput(result.inputs);
     this.scenes[result.id || 'default'] = result;
   }
@@ -254,8 +258,8 @@ class SceneExtractor extends DecoratorExtractor<ISceneOptions> {
 /**
  * SceneExtractor extracts data from @Scene decorators.
  */
-class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInputable {
-  private lastMapping: { [property: string]: IInputOptions };
+class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IInputable {
+  private lastMapping: IInputDescriptor[];
 
   public name() {
     return 'Input';
@@ -265,20 +269,31 @@ class InputExtractor extends DecoratorExtractor<IInputOptions> implements IInput
     /* noop */
   }
 
-  public setLastInput(map: { [property: string]: IInputOptions }) {
-    this.lastMapping = map;
+  public setLastInput(inputs: IInputDescriptor[]) {
+    this.lastMapping = inputs;
   }
 
-  public parse(result: IInputOptions, decorator: ts.Decorator) {
+  public parse(result: IInputDescriptor, decorator: ts.Decorator) {
     const lastMapping = this.lastMapping;
-    this.assert(!!lastMapping, decorator, "Input on a class that didn't have a @Control decorator");
+    this.assert(
+      !!lastMapping,
+      decorator,
+      "Input on a class that didn't have a @Control or @Scene decorator",
+    );
 
     const prop = this.getPropertyDeclaration(decorator);
     if (!result.kind) {
       result.kind = this.inferKind(prop);
     }
+    if (prop.initializer) {
+      result.defaultValue = super.parseLiteralValue(prop.initializer, '');
+    }
 
-    lastMapping[prop.name.getText()] = result;
+    lastMapping.push({
+      ...result,
+      alias: prop.name.getText(),
+      propertyName: prop.name.getText(),
+    });
   }
 
   protected parseLiteralValue(value: ts.Node, key: string): JsonType | JsonType[] {

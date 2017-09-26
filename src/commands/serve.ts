@@ -40,12 +40,10 @@ export default async function(options: IGlobalOptions): Promise<void> {
       cwd: process.cwd(),
       env: {
         ...process.env,
-        [devEnvironmentVar]: JSON.stringify(
-          <IDevEnvironment>{
-            mixerAddress: options.api,
-            devServerAddress: `127.0.0.1:${server.address().port}`,
-          },
-        ),
+        [devEnvironmentVar]: JSON.stringify(<IDevEnvironment>{
+          mixerAddress: options.api,
+          devServerAddress: `127.0.0.1:${server.address().port}`,
+        }),
       },
     });
 

@@ -28,7 +28,10 @@ async function installRepo(dir: string, npmPath: string): Promise<void> {
   }
 
   await new Promise((resolve, reject) => {
-    res.body.pipe(tar.extract({ cwd: dir, strip: 1 })).on('error', reject).on('end', resolve);
+    res.body
+      .pipe(tar.extract({ cwd: dir, strip: 1 }))
+      .on('error', reject)
+      .on('end', resolve);
   });
 
   await awaitChildProcess(spawn(npmPath, ['install'], { cwd: dir }));

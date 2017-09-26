@@ -120,9 +120,12 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
       },
     ));
 
-    this.store.select('code').takeUntilDestroyed(this).subscribe(code => {
-      this.updateEditorToState(code);
-    });
+    this.store
+      .select('code')
+      .takeUntilDestroyed(this)
+      .subscribe(code => {
+        this.updateEditorToState(code);
+      });
 
     cm.on('changes', () => {
       this.updateStoredState();

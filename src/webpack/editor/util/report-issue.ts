@@ -18,6 +18,7 @@ export function reportHttpError(title: string, res: Response) {
       ### Error
 
       \`\`\`
+      ${res.status} from ${res.url}:
       ${res.text()}
       \`\`\`
     `),

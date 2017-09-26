@@ -32,9 +32,11 @@
 }
 
 .sizing {
-  @include layout-row-center();
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
   color: #fff;
-  margin-bottom: -21px;
+  height: 46px;
 
   md-input-container,
   md-select {
@@ -43,8 +45,6 @@
 
   md-select {
     width: 200px;
-    // hack for https://github.com/angular/material2/issues/2124
-    margin-bottom: 3px;
   }
 
   md-input-container {
