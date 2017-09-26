@@ -17,6 +17,7 @@ const availableIcons = [
   'refresh',
   'close',
   'fullscreen',
+  'upload',
 ];
 
 /**

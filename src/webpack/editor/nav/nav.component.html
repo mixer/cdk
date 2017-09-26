@@ -40,6 +40,9 @@
 </div>
 
 <div class="tools">
+  <button md-icon-button [mdMenuTriggerFor]="syncMenu">
+    <md-icon svgIcon="upload"></md-icon>
+  </button>
   <button md-icon-button
     mdTooltipPosition="below"
     mdTooltip="Connect to Interactive"
@@ -47,3 +50,10 @@
     <md-icon svgIcon="rocket"></md-icon>
   </button>
 </div>
+
+<md-menu #syncMenu="mdMenu">
+  <button md-menu-item *ngIf="!(isVersionLinked | async)" (click)="openLinkDialog()">Link to Interactive Version</button>
+  <button md-menu-item *ngIf="isVersionLinked | async" (click)="unlink()">Unlink from Interactive Version</button>
+  <button md-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadBundle()">Upload Control Bundle</button>
+  <button md-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadSchema()">Upload Schema</button>
+</md-menu>

@@ -4,8 +4,12 @@ import { Fetcher } from '../util';
 import writer from '../writer';
 
 import { GrantCancelledError, Profile } from '../profile';
+import { Bundler } from '../publish/bundler';
+import { Uploader } from '../publish/uploader';
 
-function route(handler: (req: express.Request, res: express.Response) => Promise<object | void>) {
+type RouteHandler = (req: express.Request, res: express.Response) => Promise<object | void>;
+
+function route(handler: RouteHandler) {
   return (req: express.Request, res: express.Response) => {
     Promise.resolve(handler(req, res))
       .then(data => {
@@ -36,39 +40,48 @@ function route(handler: (req: express.Request, res: express.Response) => Promise
 export function createApp(profile: Profile): express.Express {
   const app = express();
 
+  app.use(require('body-parser').json());
+
+  function requireAuth(fn: RouteHandler): RouteHandler {
+    return async (req, res) => {
+      if (await profile.hasAuthenticated()) {
+        return fn(req, res);
+      }
+
+      res.status(401).send();
+    };
+  }
+
   app.use((_req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     next();
   });
 
   app.get(
     '/connect-participant',
-    route(async (req, res) => {
-      if (!await profile.hasAuthenticated()) {
-        res.status(401).send();
-        return;
-      }
+    route(
+      requireAuth(async (req, res) => {
+        const udata = await profile.user();
+        const joinRes = await new Fetcher()
+          .with(await profile.tokens())
+          .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
 
-      const udata = await profile.user();
-      const joinRes = await new Fetcher()
-        .with(await profile.tokens())
-        .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
+        if (joinRes.status === 400) {
+          res.status(409).send(); // remap
+          return;
+        }
 
-      if (joinRes.status === 400) {
-        res.status(409).send(); // remap
-        return;
-      }
+        if (joinRes.status !== 200) {
+          throw new Error(
+            `Unexpected status code ${joinRes.status} from ${joinRes.url}: ${await joinRes.text()}`,
+          );
+        }
 
-      if (joinRes.status !== 200) {
-        throw new Error(
-          `Unexpected status code ${joinRes.status} from ${joinRes.url}: ${await joinRes.text()}`,
-        );
-      }
-
-      return await joinRes.json();
-    }),
+        return await joinRes.json();
+      }),
+    ),
   );
 
   let grantingCode: string | undefined;
@@ -101,6 +114,75 @@ export function createApp(profile: Profile): express.Express {
           });
       }).then(code => ({ code }));
     }),
+  );
+
+  app.get(
+    '/interactive-versions',
+    route(
+      requireAuth(async (_req, res) => {
+        const user = await profile.user();
+        const fetcher = new Fetcher().with(await profile.tokens());
+
+        let output: object[] = [];
+        for (let page = 0; true; page++) {
+          // tslint:disable-line
+          const next = await fetcher.json(
+            'get',
+            `/interactive/games/owned?user=${user.id}&page=${page}`,
+          );
+          const contents = await next.json();
+          if (!contents.length) {
+            break;
+          }
+
+          output = output.concat(contents);
+        }
+
+        res.json(output);
+      }),
+    ),
+  );
+
+  app.post(
+    '/update-interactive-version/:versionId',
+    route(
+      requireAuth(async (req, res) => {
+        const updateRes = await new Fetcher()
+          .with(await profile.tokens())
+          .json('put', `/interactive/versions/${req.params.versionId}`, req.body);
+
+        res.status(updateRes.status).json(await updateRes.json());
+      }),
+    ),
+  );
+
+  app.post(
+    '/start-version-upload/:versionId',
+    route(
+      requireAuth(async (req, res) => {
+        const fetcher = new Fetcher().with(await profile.tokens());
+
+        // The writer will write progress to the console for diagnostic purposes.
+        writer.write('Starting version upload');
+        try {
+          const output = await new Bundler().bundle(progress => {
+            writer.write(progress);
+          });
+          writer.write('Uploading tarball');
+          const config = await new Uploader(fetcher).upload(output.filename, output.config);
+          writer.write('Updating linked version');
+          await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
+            bundle: `${config.name}_${config.version}`,
+          });
+          writer.write('Complete');
+        } catch (e) {
+          res.status(400).send(e.stack);
+        }
+
+        res.status(204).send();
+        return;
+      }),
+    ),
   );
 
   return app;

@@ -1,30 +1,22 @@
 import { Injectable } from '@angular/core';
 import { ActionReducer, Store } from '@ngrx/store';
-import * as patch from 'fast-json-patch';
 
 import { IStateDump } from '@mcph/miix-std/dist/internal';
 import * as Code from './code';
 import * as Connect from './connect';
 import * as Frame from './frame';
+import * as Sync from './sync';
 
-const storedKeys: (keyof IProject)[] = ['frame', 'code', 'history'];
-
-/**
- * Undo/redo history.
- */
-export interface IHistoryState {
-  behind: patch.Operation[][];
-  ahead: patch.Operation[][];
-}
+const storedKeys: (keyof IProject)[] = ['frame', 'code', 'sync'];
 
 /**
  * IProject is the application state for the project.
  */
 export interface IProject {
-  history: IHistoryState;
   frame: Frame.IFrameState;
   code: Code.ICodeState;
   connect: Connect.IConnectState;
+  sync: Sync.ISyncState;
 }
 
 /**
@@ -103,6 +95,20 @@ export class ProjectService {
   public setConnectionChannel(channelID: number) {
     this.store.dispatch({ type: Connect.Action.SetChannel, channelID });
   }
+
+  // Sync actions -------------------------------------------------------------
+
+  public syncUnlink() {
+    this.store.dispatch({ type: Sync.Action.Unlink });
+  }
+
+  public syncLink(interactiveVersionId: number) {
+    this.store.dispatch({ type: Sync.Action.Link, id: interactiveVersionId });
+  }
+
+  public syncDontConfirmSchema() {
+    this.store.dispatch({ type: Sync.Action.DontConfirmSchema });
+  }
 }
 
 /**
@@ -118,13 +124,10 @@ const initialState: IProject = (() => {
   }
 
   return {
-    history: {
-      ahead: [],
-      behind: [],
-    },
     frame: Frame.initialState,
     code: Code.initialState,
     connect: Connect.initialState,
+    sync: Sync.initialState,
     ...parsed,
   };
 })();
@@ -154,7 +157,7 @@ export const reducers: { [key in keyof IProject]: Function } = {
   frame: Frame.reducer,
   code: Code.reducer,
   connect: Connect.reducer,
-  history: (s: IProject) => s,
+  sync: Sync.reducer,
 };
 
 /**

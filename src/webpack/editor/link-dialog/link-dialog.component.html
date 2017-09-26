@@ -1,0 +1,58 @@
+<editor-login-walkthrough (loggedIn)="onLoggedIn()">
+  <ng-container *ngIf="(projects | async)?.length > 0">
+    <md-accordion>
+      <md-expansion-panel
+        *ngFor="let project of (projects | async); let i = index"
+        [expanded]="(expandedProject | async) === i"
+        (opened)="expandedProject.next(i)">
+        <md-expansion-panel-header>
+          <md-panel-title>
+            {{ project.name }}
+          </md-panel-title>
+          <md-panel-description>
+            Updated {{ getLastUpdatedAgo(project) }}
+          </md-panel-description>
+        </md-expansion-panel-header>
+
+        <md-list>
+          <md-list-item *ngFor="let version of project.versions">
+            <span style="flex:1">
+              {{ version.version }}
+              <small>Updated {{ getTimeAgo(version.updatedAt) }}</small>
+            </span>
+            <button md-button md-raised-button (click)="select(version.id)">Link</button>
+          </md-list-item>
+        </md-list>
+
+        <div class="new-button">
+          <a
+            href="https://mixer.com/lab/interactive/tool/{{ project.id}}/create-version"
+            target="_blank"
+            md-button>
+            Add New Version
+          </a>
+        </div>
+      </md-expansion-panel>
+    </md-accordion>
+    <div class="new-button">
+      <a href="https://mixer.com/lab/interactive"
+        target="_blank"
+        md-raised-button
+        color="primary">
+        Create New Game
+      </a>
+    </div>
+  </ng-container>
+
+  <div class="no-project-placeholder" *ngIf="(projects | async)?.length === 0">
+    You haven't created any Interactive games yet!
+    <div class="new-button">
+      <a href="https://mixer.com/lab/interactive"
+        target="_blank"
+        md-raised-button
+        color="primary">
+        Create New Game
+      </a>
+    </div>
+  </div>
+</editor-login-walkthrough>
