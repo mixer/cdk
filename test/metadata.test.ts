@@ -1,7 +1,9 @@
 import { expect } from 'chai';
 
 import { IInputDescriptor, InputKind } from '@mcph/miix-std/dist/internal';
+import { EvilSniffer } from '../src/metadata/evilsniffer';
 import { MetadataExtractor } from '../src/metadata/extractor';
+import { readFile } from '../src/util';
 
 describe('metadata', () => {
   describe('extractor', () => {
@@ -255,6 +257,43 @@ describe('metadata', () => {
           `);
         }).to.throw(/Only simple, JSON-compatible expressions are allowed here in @Control/);
       });
+    });
+  });
+
+  describe('evil sniffer', () => {
+    const expectFail = (str: string) => {
+      expect(() => new EvilSniffer().parseString(str)).to.throw(
+        /Executing arbitrary code is dangerous/,
+      );
+    };
+    const expectOK = (str: string) => {
+      expect(() => new EvilSniffer().parseString(str)).not.to.throw;
+    };
+
+    it('detects eval', () => {
+      expectFail('eval()');
+      expectFail('window.eval()');
+    });
+
+    it('detects new func', () => {
+      expectFail('new Function()');
+      expectFail('new window.Function()');
+    });
+
+    it('detect setTimeout/setInterval with strings', () => {
+      expectFail('setInterval("foo()")');
+      expectFail('window.setInterval("foo()")');
+      expectFail('setTimeout("foo()")');
+      expectFail('window.setTimeout("foo()")');
+
+      expectFail('setTimeout(`foo()`)');
+      expectFail('setTimeout(`f${o}o()`)'); // tslint:disable-line
+    });
+
+    it('allows good code/setTimeouts', async () => {
+      expectOK('setTimeout(() => foo())');
+      expectOK('setTimeout(foo)');
+      expectOK(await readFile(__filename)); // *universe explodes*
     });
   });
 });
