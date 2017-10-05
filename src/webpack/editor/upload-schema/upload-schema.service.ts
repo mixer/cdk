@@ -63,7 +63,9 @@ export class UploadSchemaService {
       .take(1)
       .switchMap(s =>
         this.http.post(apiUrl(`update-interactive-version/${s.sync.interactiveVersionId}`), {
-          controls: JSON5.parse(s.code.scenes.join('\n')),
+          controls: {
+            scenes: JSON5.parse(s.code.scenes.join('\n')),
+          },
         }),
       )
       .map(() => undefined);
