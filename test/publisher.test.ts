@@ -44,9 +44,7 @@ describe('Publisher', () => {
     requester.json.resolves({ status: 200 });
     await publisher.publish(projectPath, mockConfig);
 
-    expect(
-      requester.json,
-    ).to.have.been.calledWith(
+    expect(requester.json).to.have.been.calledWith(
       'post',
       '/interactive/bundles/interactive-launchpad/versions/0.1.0/publish',
       {
