@@ -10,6 +10,9 @@ import { devEnvironmentVar } from '../webpack/plugin';
 import { IDevEnvironment } from '../webpack/typings';
 import { IGlobalOptions } from './options';
 
+const portfinder = require('portfinder');
+portfinder.basePort = 13370;
+
 function defaultArgs(original: string[], defaults: { [key: string]: string | boolean }): string[] {
   Object.keys(defaults).forEach(key => {
     if (original.some(arg => arg.startsWith(`--${key}`))) {
@@ -25,7 +28,8 @@ function defaultArgs(original: string[], defaults: { [key: string]: string | boo
 export default async function(options: IGlobalOptions): Promise<void> {
   const argDelimiter = process.argv.indexOf('--');
   const profile = new Profile(options.profile);
-  const server = createServer(createApp(profile)).listen(0);
+  const port = await portfinder.getPortPromise();
+  const server = createServer(createApp(profile)).listen(port);
   let args = argDelimiter > -1 ? process.argv.slice(argDelimiter + 1) : [];
 
   args = defaultArgs(args, {

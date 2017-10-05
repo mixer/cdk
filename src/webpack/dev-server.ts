@@ -1,13 +1,13 @@
 import * as chalk from 'chalk';
 import * as express from 'express';
+
 import { DeclarationError } from '../metadata/error';
 import { EvilSniffer } from '../metadata/evilsniffer';
-import { Fetcher } from '../util';
-import writer from '../writer';
-
 import { GrantCancelledError, Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
+import { Fetcher } from '../util';
+import writer from '../writer';
 
 type RouteHandler = (req: express.Request, res: express.Response) => Promise<object | void>;
 
