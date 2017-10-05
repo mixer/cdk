@@ -52,7 +52,7 @@ const identifiers: ((node: ts.Node) => boolean)[] = [
       return false;
     }
 
-    return ts.isStringTextContainingNode(call[0]);
+    return ts.isLiteralExpression(call[0]) || ts.isTemplateLiteral(call[0]);
   },
 ];
 
