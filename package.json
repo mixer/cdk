@@ -12,7 +12,7 @@
     "test:cover": "nyc mocha",
     "test:unit": "mocha",
     "test:lint": "tslint --type-check --project tsconfig.json '{src,test}/**/*.ts'",
-    "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js",
+    "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js && npm run test:lint -- --fix",
     "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\"",
     "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test}/**/*.ts\"",
     "build": "rimraf dist && npm-run-all --parallel --silent build:ts build:editor",

@@ -63,7 +63,8 @@ const packageSchema = Joi.object({
  */
 export async function createPackage(dir: string): Promise<IPackageConfig> {
   const packageJson = mustLoadPackageJson(dir);
-  const staticData = await new MetadataExtractor().compile(dir);
+  const extractor = new MetadataExtractor();
+  await extractor.compile(dir);
 
   const packaged = {
     name: packageJson.name,
@@ -74,7 +75,7 @@ export async function createPackage(dir: string): Promise<IPackageConfig> {
     homepage: packageJson.homepage,
 
     ...packageJson.interactive,
-    ...staticData,
+    ...extractor.gatherResult(),
   };
 
   Joi.assert(packaged, packageSchema);
