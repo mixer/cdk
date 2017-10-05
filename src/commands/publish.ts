@@ -25,8 +25,13 @@ export default async function(options: IPublishOptions): Promise<void> {
   }
 
   const spinner = ora('Starting...').start();
+  const bundler = new Bundler();
   const fetcher = new Fetcher().with(await new Profile().tokens());
   const config = await createPackage(options.project);
+
+  if (!await bundler.checkEvil(writer)) {
+    return;
+  }
 
   if (!options.skipBundle) {
     let filename = options.tarball;

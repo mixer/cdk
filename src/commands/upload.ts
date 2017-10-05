@@ -5,12 +5,18 @@ import { Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
 import { Fetcher } from '../util';
+import writer from '../writer';
 import { failSpiner } from './options';
 
 export default async function(options: { tarball: string }): Promise<void> {
   const fetcher = new Fetcher().with(await new Profile().tokens());
-  const spinner = ora('Starting...').start();
+  const bundler = new Bundler();
 
+  if (!await bundler.checkEvil(writer)) {
+    return;
+  }
+
+  const spinner = ora('Starting...').start();
   let config: IPackageConfig | undefined;
   let filename = options.tarball;
   if (!filename) {

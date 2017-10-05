@@ -2,6 +2,8 @@ import * as chalk from 'chalk';
 import * as path from 'path';
 import * as ts from 'typescript';
 
+import { IHumanError } from '../errors';
+
 /**
  * Returns the sourcefile containing the given TypeScript node.
  */
@@ -71,6 +73,13 @@ export interface IAnnotationConfig {
 
 function annotateError(node: ts.Node, message: string, config: IAnnotationConfig) {
   const source = getSourceFile(node);
+
+  // ts can report the store of the node from the end of the last node, which
+  // may contain whitespace and throw things off. Fix that.
+  while (/\s/.test(source.text[node.pos])) {
+    node.pos++;
+  }
+
   const { after, before, line, char } = posToLine(source.text, node.pos);
   const end = node.end - (node.pos - char) + 1;
 
@@ -94,11 +103,25 @@ function annotateError(node: ts.Node, message: string, config: IAnnotationConfig
     .join('\n');
 }
 
+export enum ErrorCode {
+  InvalidArgumentCount,
+  InvalidArgumentType,
+  InvalidPropertyAssignment,
+  InvalidEnumAccess,
+  InvalidComplexExpression,
+  RedeclaredControl,
+  RequiredSceneID,
+  MissingResourceDecorator,
+  InvalidDecoratorTarget,
+  CouldNotInferKind,
+  DangerousEval,
+}
+
 /**
  * DeclarationError is an Error type thrown when some invalid code is
  * encountered. It creates a pretty annotated error.
  */
-export class DeclarationError extends Error {
+export class DeclarationError extends Error implements IHumanError {
   private static readonly annotationConfig = {
     surroundingLines: 1,
     relativePath: '',
@@ -107,6 +130,7 @@ export class DeclarationError extends Error {
   public readonly dontColor = true;
 
   constructor(
+    public readonly code: ErrorCode,
     public readonly node: ts.Node,
     public readonly originalMessage: string,
     config?: IAnnotationConfig,
@@ -115,10 +139,31 @@ export class DeclarationError extends Error {
   }
 
   /**
+   * Converts the error to a JSON representation.
+   */
+  public toJSON() {
+    return {
+      code: this.code,
+      codeName: ErrorCode[this.code],
+      file: this.node.getSourceFile().fileName,
+      charStart: this.node.pos,
+      chatEnd: this.node.end,
+      message: this.originalMessage,
+    };
+  }
+
+  /**
+   * @override
+   */
+  public getHumanMessage() {
+    return this.message;
+  }
+
+  /**
    * Creates a new DeclarationError using a relative path for the source file.
    */
   public makeRelative(relativePath: string): DeclarationError {
-    return new DeclarationError(this.node, this.originalMessage, {
+    return new DeclarationError(this.code, this.node, this.originalMessage, {
       ...DeclarationError.annotationConfig,
       relativePath,
     });

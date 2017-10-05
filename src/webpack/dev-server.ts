@@ -1,5 +1,7 @@
 import * as chalk from 'chalk';
 import * as express from 'express';
+import { DeclarationError } from '../metadata/error';
+import { EvilSniffer } from '../metadata/evilsniffer';
 import { Fetcher } from '../util';
 import writer from '../writer';
 
@@ -141,6 +143,19 @@ export function createApp(profile: Profile): express.Express {
         res.json(output);
       }),
     ),
+  );
+
+  app.get(
+    '/ensure-no-eval',
+    route(async () => {
+      try {
+        await new EvilSniffer().compile(process.env.MIIX_PROJECT);
+      } catch (e) {
+        return { hasEval: e instanceof DeclarationError };
+      }
+
+      return { hasEval: false };
+    }),
   );
 
   app.post(

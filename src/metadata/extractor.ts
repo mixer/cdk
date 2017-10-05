@@ -2,9 +2,8 @@
  * extractor.ts contains tools that run static analysis on the codebase to pull
  * out data from decorators.
  */
+import { TypeScriptWalker } from './ast';
 
-import * as glob from 'glob';
-import * as path from 'path';
 import * as ts from 'typescript';
 
 import {
@@ -14,8 +13,7 @@ import {
   ISceneOptions,
 } from '@mcph/miix-std/dist/internal';
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { readFile } from '../util';
-import { DeclarationError } from './error';
+import { DeclarationError, ErrorCode } from './error';
 
 type JsonType = string | number | object | boolean;
 
@@ -38,11 +36,11 @@ abstract class DecoratorExtractor<T extends object> {
    * Called whenever the walker encounters a decorator.
    */
   public guardedParse(decorator: ts.Decorator): void {
-    if (decorator.expression.kind !== ts.SyntaxKind.CallExpression) {
+    if (!ts.isCallExpression(decorator.expression)) {
       return;
     }
 
-    const call = <ts.CallExpression>decorator.expression;
+    const call = decorator.expression;
     if (!isAccessFor(this.name(), call.expression)) {
       return;
     }
@@ -56,6 +54,7 @@ abstract class DecoratorExtractor<T extends object> {
       call.arguments.length === 1,
       call,
       'Expected to be called with at most one argument',
+      ErrorCode.InvalidArgumentCount,
     );
 
     const [arg] = call.arguments;
@@ -63,6 +62,7 @@ abstract class DecoratorExtractor<T extends object> {
       arg.kind === ts.SyntaxKind.ObjectLiteralExpression,
       call,
       'Expected to be called with an object literal',
+      ErrorCode.InvalidArgumentType,
     );
 
     this.parse(<T>this.parseObjectLiteral(<ts.ObjectLiteralExpression>arg), decorator);
@@ -102,14 +102,17 @@ abstract class DecoratorExtractor<T extends object> {
       // fall through
     }
 
-    if (
-      node.kind >= ts.SyntaxKind.FirstLiteralToken &&
-      node.kind <= ts.SyntaxKind.LastLiteralToken
-    ) {
-      return (<ts.LiteralExpression>node).text;
+    if (ts.isLiteralExpression(node)) {
+      return node.text;
     }
 
-    this.assert(false, node, 'Only simple, JSON-compatible expressions are allowed here');
+    this.assert(
+      false,
+      node,
+      'Only simple, JSON-compatible expressions are allowed here',
+      ErrorCode.InvalidComplexExpression,
+    );
+
     return ''; // never
   }
 
@@ -127,15 +130,26 @@ abstract class DecoratorExtractor<T extends object> {
         typeof actualEnum[text] === 'number',
         node,
         `Invalid ${name} value, expected one of ${keys}`,
+        ErrorCode.InvalidEnumAccess,
       );
       return actualEnum[text];
     }
 
     const matches = <string[]>new RegExp(`(^|\\.)${name}\\.(.+)$`).exec(node.getText());
-    this.assert(!!matches, node, `Expected to be a lookup on ${name}, or one of ${keys}`);
+    this.assert(
+      !!matches,
+      node,
+      `Expected to be a lookup on ${name}, or one of ${keys}`,
+      ErrorCode.InvalidEnumAccess,
+    );
 
     const value = actualEnum[matches[2]];
-    this.assert(value, node, `Invalid ${name} value, should be one of ${keys}`);
+    this.assert(
+      value,
+      node,
+      `Invalid ${name} value, should be one of ${keys}`,
+      ErrorCode.InvalidEnumAccess,
+    );
 
     return value;
   }
@@ -168,6 +182,7 @@ abstract class DecoratorExtractor<T extends object> {
         child.kind === ts.SyntaxKind.PropertyAssignment,
         node,
         `Only "key": "value" assignments are allowed`,
+        ErrorCode.InvalidPropertyAssignment,
       );
 
       const key = this.parseLiteralKey(child.name);
@@ -177,12 +192,12 @@ abstract class DecoratorExtractor<T extends object> {
     return output;
   }
 
-  protected assert(value: boolean, node: ts.Node, message: string): void {
+  protected assert(value: boolean, node: ts.Node, message: string, code: ErrorCode): void {
     if (value) {
       return; // all good
     }
 
-    throw new DeclarationError(node, `${message} in @${this.name()}()`);
+    throw new DeclarationError(code, node, `${message} in @${this.name()}()`);
   }
 }
 
@@ -216,6 +231,7 @@ class ControlExtractor extends DecoratorExtractor<IControlOptions> {
       !this.controls[result.kind],
       decorator,
       `Control type "${result.kind}" declared multiple times`,
+      ErrorCode.RedeclaredControl,
     );
 
     result.inputs = result.inputs || [];
@@ -247,6 +263,7 @@ class SceneExtractor extends DecoratorExtractor<ISceneOptions> {
       !!(result.default || result.id),
       decorator,
       'Non-default scenes must have a defined ID',
+      ErrorCode.RequiredSceneID,
     );
 
     result.inputs = result.inputs || [];
@@ -279,6 +296,7 @@ class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IIn
       !!lastMapping,
       decorator,
       "Input on a class that didn't have a @Control or @Scene decorator",
+      ErrorCode.MissingResourceDecorator,
     );
 
     const prop = this.getPropertyDeclaration(decorator);
@@ -309,7 +327,12 @@ class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IIn
     while (node && node.kind !== ts.SyntaxKind.PropertyDeclaration) {
       node = node.parent;
     }
-    this.assert(!!node, decorator, 'Expected to be attached to a property declaration');
+    this.assert(
+      !!node,
+      decorator,
+      'Expected to be attached to a property declaration',
+      ErrorCode.InvalidDecoratorTarget,
+    );
     return <ts.PropertyDeclaration>node;
   }
 
@@ -319,6 +342,7 @@ class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IIn
       property,
       'You must either explicitly define a type for your property, or explcitly define ' +
         'one by passing something like { kind: Mixer.InputKind.Number }',
+      ErrorCode.CouldNotInferKind,
     );
 
     const type = <ts.TypeNode>property.type;
@@ -341,6 +365,7 @@ class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IIn
       false,
       type,
       `Could not infer the type for ${type.getText()}, please define a kind explicitly`,
+      ErrorCode.CouldNotInferKind,
     );
     return InputKind.Boolean; // never hit
   }
@@ -350,10 +375,11 @@ class InputExtractor extends DecoratorExtractor<IInputDescriptor> implements IIn
  * MetadataExtractor transverses TypeScript sources and generates an IPackageData
  * struct based off decorators in the code.
  */
-export class MetadataExtractor {
+export class MetadataExtractor extends TypeScriptWalker {
   private readonly extractors: DecoratorExtractor<any>[];
 
   constructor() {
+    super();
     const inputExtractor = new InputExtractor();
 
     this.extractors = [
@@ -363,42 +389,11 @@ export class MetadataExtractor {
     ];
   }
 
-  public async compile(sourceDir: string): Promise<Partial<IPackageConfig>> {
-    return Promise.all(
-      glob.sync(path.join(sourceDir, 'src/**/*.{ts,tsx,jsx,js}')).map(async file => {
-        return this.parseFile(sourceDir, file);
-      }),
-    ).then(() => this.gatherResult());
-  }
-
-  public async parseFile(sourceDir: string, file: string): Promise<IPackageConfig> {
-    return readFile(file)
-      .then(contents => {
-        const sourceFile = ts.createSourceFile(
-          file,
-          contents.toString(),
-          ts.ScriptTarget.ES2015,
-          true,
-        );
-        try {
-          this.visit(sourceFile);
-        } catch (e) {
-          if (e instanceof DeclarationError) {
-            throw e.makeRelative(sourceDir);
-          }
-
-          throw e;
-        }
-      })
-      .then(() => this.gatherResult());
-  }
-
-  public parseString(str: string): IPackageConfig {
-    this.visit(ts.createSourceFile('string', str, ts.ScriptTarget.ES2015, true));
-    return this.gatherResult();
-  }
-
-  private gatherResult(): IPackageConfig {
+  /**
+   * Returns the package config parsed from the AST, after calls to walker
+   * functions.
+   */
+  public gatherResult(): IPackageConfig {
     const metadata: Partial<IPackageConfig> = {};
     this.extractors.forEach(e => {
       e.augment(metadata);
@@ -406,7 +401,7 @@ export class MetadataExtractor {
     return <IPackageConfig>metadata;
   }
 
-  private visit(node: ts.Node): any {
+  protected visit(node: ts.Node): any {
     switch (node.kind) {
       case ts.SyntaxKind.Decorator:
         this.extractors.forEach(e => {

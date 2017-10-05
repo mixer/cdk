@@ -6,7 +6,7 @@ import { MetadataExtractor } from '../src/metadata/extractor';
 describe('metadata', () => {
   describe('extractor', () => {
     const expectType = (expected: Partial<IInputDescriptor>, str: string) => {
-      expect(new MetadataExtractor().parseString(str)).to.containSubset({
+      expect(new MetadataExtractor().parseString(str).gatherResult()).to.containSubset({
         controls: {
           button: {
             inputs: [expected],
@@ -17,10 +17,14 @@ describe('metadata', () => {
 
     it('extracts a scene', () => {
       expect(
-        new MetadataExtractor().parseString(`
-          @Scene({ id: 'foo', default: true })
-          class MyScene {}
-        `),
+        new MetadataExtractor()
+          .parseString(
+            `
+            @Scene({ id: 'foo', default: true })
+            class MyScene {}
+          `,
+          )
+          .gatherResult(),
       ).to.containSubset({
         scenes: {
           foo: { id: 'foo', default: true },
@@ -30,10 +34,14 @@ describe('metadata', () => {
 
     it('extracts a control', () => {
       expect(
-        new MetadataExtractor().parseString(`
-          @Control({ kind: 'button' })
-          class MyScene {}
-        `),
+        new MetadataExtractor()
+          .parseString(
+            `
+            @Control({ kind: 'button' })
+            class MyScene {}
+          `,
+          )
+          .gatherResult(),
       ).to.containSubset({
         controls: {
           button: { kind: 'button' },
@@ -43,10 +51,14 @@ describe('metadata', () => {
 
     it('allows for namespaced decorators', () => {
       expect(
-        new MetadataExtractor().parseString(`
-          @Mixer.Control({ kind: 'button' })
-          class MyScene {}
-        `),
+        new MetadataExtractor()
+          .parseString(
+            `
+            @Mixer.Control({ kind: 'button' })
+            class MyScene {}
+          `,
+          )
+          .gatherResult(),
       ).to.containSubset({
         controls: {
           button: { kind: 'button' },
@@ -56,15 +68,19 @@ describe('metadata', () => {
 
     it('parses data kinds', () => {
       expect(
-        new MetadataExtractor().parseString(`
-          @Mixer.Control({
-            kind: 'button',
-            level: 42,
-            'quoted': [{ deeplyNested: true, isLame: false }],
-            1: \`some numeric prop\`,
-          })
-          class MyScene {}
-        `),
+        new MetadataExtractor()
+          .parseString(
+            `
+            @Mixer.Control({
+              kind: 'button',
+              level: 42,
+              'quoted': [{ deeplyNested: true, isLame: false }],
+              1: \`some numeric prop\`,
+            })
+            class MyScene {}
+          `,
+          )
+          .gatherResult(),
       ).to.containSubset({
         controls: {
           button: {
@@ -80,92 +96,76 @@ describe('metadata', () => {
     it('infers the basic types from inputs', () => {
       expectType(
         { kind: InputKind.Number, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input()
           public foo: number;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.String, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input()
           public foo: string;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.Boolean, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input()
           public foo: boolean;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.Dimensions, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input()
           public foo: IDimensions;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.Dimensions, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input()
           public foo: Mixer.IDimensions;
-        }
-      `,
+        }`,
       );
     });
 
     it('explcitly defines input types', () => {
       expectType(
         { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input({ kind: InputKind.Color })
           public foo: number;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input({ kind: Mixer.InputKind.Color })
           public foo: number;
-        }
-      `,
+        }`,
       );
 
       expectType(
         { kind: InputKind.Color, alias: 'foo', propertyName: 'foo' },
-        `
-        @Control({ kind: 'button' })
+        `@Control({ kind: 'button' })
         class MyScene {
           @Input({ kind: 'Color' })
           public foo: number;
-        }
-      `,
+        }`,
       );
     });
 
@@ -178,7 +178,7 @@ describe('metadata', () => {
         }
       `;
 
-      expect(new MetadataExtractor().parseString(str)).to.containSubset({
+      expect(new MetadataExtractor().parseString(str).gatherResult()).to.containSubset({
         controls: {
           button: {
             inputs: [
@@ -196,64 +196,64 @@ describe('metadata', () => {
 
     describe('invalid cases', () => {
       it('errors on shorthand props', () => {
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
-          @Control({ kind })
-          class MyScene {}
-        `),
-        ).to.throw(/Only "key": "value" assignments are allowed in @Control/);
+            @Control({ kind })
+            class MyScene {}
+          `);
+        }).to.throw(/Only "key": "value" assignments are allowed in @Control/);
       });
 
       it('errors on wrong input enum', () => {
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
             @Control({ kind: 'button' })
             class MyScene {
               @Input({ kind: InputWut.Color })
               public foo: number;
             }
-        `),
-        ).to.throw(/Expected to be a lookup on InputKind/);
+          `);
+        }).to.throw(/Expected to be a lookup on InputKind/);
       });
 
       it('errors on bad input enum property', () => {
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
             @Control({ kind: 'button' })
             class MyScene {
               @Input({ kind: InputKind.Wut })
               public foo: number;
             }
-        `),
-        ).to.throw(/Invalid InputKind value/);
+          `);
+        }).to.throw(/Invalid InputKind value/);
       });
 
       it('errors on bad input enum string property', () => {
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
             @Control({ kind: 'button' })
             class MyScene {
               @Input({ kind: InputKind.Wut })
               public foo: number;
             }
-        `),
-        ).to.throw(/Invalid InputKind value/);
+          `);
+        }).to.throw(/Invalid InputKind value/);
       });
 
       it('errors on complex types', () => {
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
-          @Control({ kind: someFunc() })
-          class MyScene {}
-        `),
-        ).to.throw(/Only simple, JSON-compatible expressions are allowed here in @Control/);
+            @Control({ kind: someFunc() })
+            class MyScene {}
+          `);
+        }).to.throw(/Only simple, JSON-compatible expressions are allowed here in @Control/);
 
-        expect(() =>
+        expect(() => {
           new MetadataExtractor().parseString(`
-          @Control({ kind: class {} })
-          class MyScene {}
-        `),
-        ).to.throw(/Only simple, JSON-compatible expressions are allowed here in @Control/);
+            @Control({ kind: class {} })
+            class MyScene {}
+          `);
+        }).to.throw(/Only simple, JSON-compatible expressions are allowed here in @Control/);
       });
     });
   });
