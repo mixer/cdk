@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import { ShortCodeAccessDeniedError, ShortCodeExpireError } from '../src/errors';
+import { Profile } from '../src/profile';
 import { OAuthClient, OAuthTokens } from '../src/shortcode';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
 
@@ -15,7 +16,7 @@ describe('shortcode oauth', () => {
     oauth = new OAuthClient(
       {
         clientId: 'clientId',
-        scopes: ['interactive:manage:self', 'interactive:play'],
+        scopes: Profile.necessaryScopes,
       },
       requester,
     );
@@ -32,7 +33,7 @@ describe('shortcode oauth', () => {
       expiresAt: new Date(Date.now() + mockTokenResponse.expires_in * 1000),
       accessToken: 'access_token',
       refreshToken: 'refresh_token',
-      scopes: ['interactive:manage:self', 'interactive:play'],
+      scopes: Profile.necessaryScopes,
     });
   };
 
@@ -106,7 +107,7 @@ describe('shortcode oauth', () => {
         .withArgs('post', '/oauth/shortcode', {
           client_id: 'clientId',
           client_secret: undefined,
-          scope: 'interactive:manage:self interactive:play',
+          scope: Profile.necessaryScopes.join(' '),
         })
         .resolves({
           status: 200,

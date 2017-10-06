@@ -1,6 +1,7 @@
 import { expect, use } from 'chai';
 import * as sinon from 'sinon';
 
+import { Profile } from '../src/profile';
 import { OAuthTokens } from '../src/shortcode';
 import { IRequester } from '../src/util';
 import writer from '../src/writer';
@@ -22,7 +23,7 @@ export function createExpiredOAuthTokens() {
   return new OAuthTokens({
     accessToken: 'expired_access_token',
     refreshToken: 'expired_refresh_token',
-    scopes: ['interactive:manage:self', 'interactive:play'],
+    scopes: Profile.necessaryScopes,
     expiresAt: new Date(Date.now() - 1),
   });
 }
@@ -31,7 +32,7 @@ export function createValidOAuthTokens() {
   return new OAuthTokens({
     accessToken: 'access_token',
     refreshToken: 'refresh_token',
-    scopes: ['interactive:manage:self', 'interactive:play'],
+    scopes: Profile.necessaryScopes,
     expiresAt: new Date(Date.now() + 10000),
   });
 }
