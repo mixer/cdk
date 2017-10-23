@@ -70,7 +70,7 @@ export function createApp(profile: Profile): express.Express {
           .with(await profile.tokens())
           .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
 
-        if (joinRes.status === 400) {
+        if (joinRes.status === 404 || joinRes.status === 400) {
           res.status(409).send(); // remap
           return;
         }
