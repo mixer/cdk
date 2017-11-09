@@ -1,37 +1,38 @@
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import * as ora from 'ora';
 
-import { Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
 import { Fetcher } from '../util';
 import writer from '../writer';
-import { failSpiner } from './options';
+import { failSpiner, IGlobalOptions } from './options';
 
-export default async function(options: { tarball: string }): Promise<void> {
-  const fetcher = new Fetcher().with(await new Profile().tokens());
-  const bundler = new Bundler();
+export interface IUploadOptions extends IGlobalOptions {
+  tarball: string;
+}
+
+export default async function(options: IUploadOptions): Promise<void> {
+  const fetcher = new Fetcher().with(await options.project.profile.tokens());
+  const bundler = new Bundler(options.project);
 
   if (!await bundler.checkEvil(writer)) {
     return;
   }
 
   const spinner = ora('Starting...').start();
-  let config: IPackageConfig | undefined;
   let filename = options.tarball;
   if (!filename) {
-    const output = await new Bundler()
+    const output = await bundler
       .bundle(progress => {
         spinner.text = progress;
       })
       .catch(failSpiner(spinner));
 
-    config = output.config;
     filename = output.filename;
   }
 
   spinner.text = 'Uploading to Mixer...';
-  config = await new Uploader(fetcher).upload(filename, config).catch(failSpiner(spinner));
+  await new Uploader(fetcher, options.project).upload(filename).catch(failSpiner(spinner));
 
+  const config = await options.project.packageConfig();
   spinner.succeed(`${config.name}@${config.version} uploaded successfully!`);
 }

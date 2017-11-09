@@ -1,9 +1,9 @@
 import * as marked from 'marked';
 import * as path from 'path';
 
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { PackageIntegrityError, PublishHttpError, PublishPrivateError } from '../errors';
 import { findReadme } from '../npm';
+import { Project } from '../project';
 import { IRequester, readFile } from '../util';
 
 /**
@@ -28,12 +28,13 @@ export class Publisher {
   /**
    * Publishes a package, making it accessible to everyone.
    */
-  public async publish(dir: string, config: IPackageConfig): Promise<void> {
+  public async publish(project: Project): Promise<void> {
+    const config = await project.packageConfig();
     if (config.private) {
       throw new PublishPrivateError();
     }
 
-    const readme = await this.renderReadme(dir);
+    const readme = await this.renderReadme(project.baseDir());
     return this.requester
       .json('post', `${this.getPath(config.name, config.version)}/publish`, {
         readme,

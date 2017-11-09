@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import nodeFetch from 'node-fetch';

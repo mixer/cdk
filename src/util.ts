@@ -185,7 +185,7 @@ export class Fetcher implements IRequester {
   public async run(path: string, init: RequestInit = {}): Promise<Response> {
     init.headers = init.headers || {};
     if (process.env.MIIX_HEADERS) {
-      Object.assign(init.headers, JSON.parse(process.env.MIIX_HEADERS));
+      Object.assign(init.headers, JSON.parse(process.env.MIIX_HEADERS!));
     }
 
     this.policies.forEach(p => Object.assign(init.headers, p.header()));

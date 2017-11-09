@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
@@ -81,7 +81,7 @@ export class Profile {
   }
 
   constructor(
-    private readonly file: string = process.env.MIIX_PROFILE,
+    private readonly file: string,
     private readonly oauthClient: OAuthClient = new OAuthClient({
       clientId: '9789aae60656644524be9530889ba8884c0095834ae75f50',
       scopes: Profile.necessaryScopes,

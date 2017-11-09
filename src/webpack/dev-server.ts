@@ -1,13 +1,12 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as express from 'express';
 import { merge } from 'lodash';
 import { isHttpableError, NotInteractiveError } from '../errors';
-import { createPackage } from '../metadata/metadata';
-import { findPackageJson, mustLoadPackageJson } from '../npm';
 
 import { DeclarationError } from '../metadata/error';
 import { EvilSniffer } from '../metadata/evilsniffer';
-import { GrantCancelledError, Profile } from '../profile';
+import { GrantCancelledError } from '../profile';
+import { Project } from '../project';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
 import { Fetcher, writeFile } from '../util';
@@ -52,15 +51,14 @@ function route(handler: RouteHandler) {
  * endpoints for saving environment/profile settings as well as making calls
  * out to the Mixer API on behalf of the logged in user.
  */
-export function createApp(profile: Profile): express.Express {
+export function createApp(project: Project): express.Express {
   const app = express();
-  const projectDir = process.env.MIIX_PROJECT;
 
   app.use(require('body-parser').json());
 
   function requireAuth(fn: RouteHandler): RouteHandler {
     return async (req, res) => {
-      if (await profile.hasAuthenticated()) {
+      if (await project.profile.hasAuthenticated()) {
         return fn(req, res);
       }
 
@@ -79,9 +77,9 @@ export function createApp(profile: Profile): express.Express {
     '/connect-participant',
     route(
       requireAuth(async req => {
-        const udata = await profile.user();
+        const udata = await project.profile.user();
         const joinRes = await new Fetcher()
-          .with(await profile.tokens())
+          .with(await project.profile.tokens())
           .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
 
         if (joinRes.status === 404 || joinRes.status === 400) {
@@ -103,16 +101,16 @@ export function createApp(profile: Profile): express.Express {
   app.get(
     '/login',
     route(async () => {
-      if (await profile.hasAuthenticated()) {
+      if (await project.profile.hasAuthenticated()) {
         grantingCode = undefined;
-        return await profile.user();
+        return await project.profile.user();
       }
       if (grantingCode) {
         return { code: grantingCode };
       }
 
       return new Promise(resolve => {
-        profile
+        project.profile
           .grant({
             prompt: code => {
               grantingCode = code;
@@ -135,8 +133,8 @@ export function createApp(profile: Profile): express.Express {
     '/interactive-versions',
     route(
       requireAuth(async (_req, res) => {
-        const user = await profile.user();
-        const fetcher = new Fetcher().with(await profile.tokens());
+        const user = await project.profile.user();
+        const fetcher = new Fetcher().with(await project.profile.tokens());
 
         let output: object[] = [];
         for (let page = 0; true; page++) {
@@ -162,7 +160,7 @@ export function createApp(profile: Profile): express.Express {
     '/ensure-no-eval',
     route(async () => {
       try {
-        await new EvilSniffer().compile(projectDir);
+        await new EvilSniffer().compile(project.baseDir());
       } catch (e) {
         return { hasEval: e instanceof DeclarationError };
       }
@@ -171,14 +169,14 @@ export function createApp(profile: Profile): express.Express {
     }),
   );
 
-  app.get('/metadata', route(async () => createPackage(projectDir)));
+  app.get('/metadata', route(async () => await project.clone().packageConfig()));
 
   app.post(
     '/modify-package',
     route(async req => {
-      const packageJson = mustLoadPackageJson(projectDir);
+      const packageJson = await project.clone().packageJson();
       merge(packageJson, req.body);
-      await writeFile(findPackageJson(projectDir)!, JSON.stringify(packageJson, null, 2));
+      await writeFile(project.baseDir('package.json'), JSON.stringify(packageJson, null, 2));
     }),
   );
 
@@ -187,7 +185,7 @@ export function createApp(profile: Profile): express.Express {
     route(
       requireAuth(async (req, res) => {
         const updateRes = await new Fetcher()
-          .with(await profile.tokens())
+          .with(await project.profile.tokens())
           .json('put', `/interactive/versions/${req.params.versionId}`, req.body);
 
         res.status(updateRes.status).json(await updateRes.json());
@@ -198,25 +196,27 @@ export function createApp(profile: Profile): express.Express {
   app.post(
     '/start-version-upload/:versionId',
     route(
-      requireAuth(async (req, res) => {
-        const fetcher = new Fetcher().with(await profile.tokens());
+      requireAuth(async req => {
+        const fetcher = new Fetcher().with(await project.profile.tokens());
 
         // The writer will write progress to the console for diagnostic purposes.
         writer.write('Starting version upload');
 
-        const output = await new Bundler().bundle(progress => {
+        const dupe = project.clone();
+        const config = await dupe.packageConfig();
+        const output = await new Bundler(dupe).bundle(progress => {
           writer.write(progress);
         });
+
         writer.write('Uploading tarball');
-        const config = await new Uploader(fetcher).upload(output.filename, output.config);
+        await new Uploader(fetcher, dupe).upload(output.filename);
+
         writer.write('Updating linked version');
         await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
           bundle: `${config.name}_${config.version}`,
         });
-        writer.write('Complete');
 
-        res.status(204).send();
-        return;
+        writer.write('Complete');
       }),
     ),
   );

@@ -1,8 +1,10 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { expect } from 'chai';
 import * as path from 'path';
+import * as sinon from 'sinon';
 
 import { PackageIntegrityError, PublishPrivateError, UnexpectedHttpError } from '../src/errors';
+import { Project } from '../src/project';
 import { Publisher } from '../src/publish/publisher';
 import { MockRequester } from './_setup';
 
@@ -28,21 +30,26 @@ describe('Publisher', () => {
   });
 
   it('refuses to publish private packages', async () => {
-    await expect(
-      publisher.publish('', { ...mockConfig, private: true }),
-    ).to.eventually.be.rejectedWith(PublishPrivateError);
+    const project = new Project('', '');
+    sinon.stub(project, 'packageConfig').resolves({ ...mockConfig, private: true });
+
+    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(PublishPrivateError);
   });
 
   it('requires readmes', async () => {
-    await expect(publisher.publish(__dirname, { ...mockConfig })).to.eventually.be.rejectedWith(
+    const project = new Project('', __dirname);
+    sinon.stub(project, 'packageConfig').resolves(mockConfig);
+    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(
       PackageIntegrityError,
-      /readme.md is missing/,
+      /readme\.md is missing/,
     );
   });
 
   it('works otherwise', async () => {
+    const project = new Project('', projectPath);
+    sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 200 });
-    await publisher.publish(projectPath, mockConfig);
+    await publisher.publish(project);
 
     expect(requester.json).to.have.been.calledWith(
       'post',
@@ -57,8 +64,10 @@ describe('Publisher', () => {
   });
 
   it('formats errors nicely', async () => {
+    const project = new Project('', projectPath);
+    sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 400, text: async () => 'You messed up!' });
-    await expect(publisher.publish(projectPath, { ...mockConfig })).to.eventually.be.rejectedWith(
+    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(
       UnexpectedHttpError,
       /Unexpected status code 400/,
     );
