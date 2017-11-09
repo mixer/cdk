@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material';
 
 import 'rxjs/add/operator/toPromise';
 
@@ -22,7 +22,7 @@ export interface IResponseError<T> {
  */
 @Injectable()
 export class HttpErrorService {
-  constructor(private readonly snackRef: MdSnackBar) {}
+  constructor(private readonly snackRef: MatSnackBar) {}
 
   /**
    * Handled a named error from the API.

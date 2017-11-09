@@ -1,43 +1,43 @@
 <editor-login-walkthrough (loggedIn)="onLoggedIn()">
   <ng-container *ngIf="(projects | async)?.length > 0">
-    <md-accordion>
-      <md-expansion-panel
+    <mat-accordion>
+      <mat-expansion-panel
         *ngFor="let project of (projects | async); let i = index"
         [expanded]="(expandedProject | async) === i"
         (opened)="expandedProject.next(i)">
-        <md-expansion-panel-header>
-          <md-panel-title>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
             {{ project.name }}
-          </md-panel-title>
-          <md-panel-description>
+          </mat-panel-title>
+          <mat-panel-description>
             Updated {{ getLastUpdatedAgo(project) }}
-          </md-panel-description>
-        </md-expansion-panel-header>
+          </mat-panel-description>
+        </mat-expansion-panel-header>
 
-        <md-list>
-          <md-list-item *ngFor="let version of project.versions">
+        <mat-list>
+          <mat-list-item *ngFor="let version of project.versions">
             <span style="flex:1">
               {{ version.version }}
               <small>Updated {{ getTimeAgo(version.updatedAt) }}</small>
             </span>
-            <button md-button md-raised-button (click)="select(version.id)">Link</button>
-          </md-list-item>
-        </md-list>
+            <button mat-button mat-raised-button (click)="select(version.id)">Link</button>
+          </mat-list-item>
+        </mat-list>
 
         <div class="new-button">
           <a
             href="https://mixer.com/lab/interactive/tool/{{ project.id}}/create-version"
             target="_blank"
-            md-button>
+            mat-button>
             Add New Version
           </a>
         </div>
-      </md-expansion-panel>
-    </md-accordion>
+      </mat-expansion-panel>
+    </mat-accordion>
     <div class="new-button">
       <a href="https://mixer.com/lab/interactive"
         target="_blank"
-        md-raised-button
+        mat-raised-button
         color="primary">
         Create New Game
       </a>
@@ -49,7 +49,7 @@
     <div class="new-button">
       <a href="https://mixer.com/lab/interactive"
         target="_blank"
-        md-raised-button
+        mat-raised-button
         color="primary">
         Create New Game
       </a>

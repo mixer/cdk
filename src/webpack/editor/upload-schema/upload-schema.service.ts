@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import { MdDialog, MdSnackBar } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as JSON5 from 'json5';
 import { Observable } from 'rxjs/Observable';
@@ -22,9 +22,9 @@ export class UploadSchemaService {
   constructor(
     private readonly project: ProjectService,
     private readonly store: Store<IProject>,
-    private readonly dialog: MdDialog,
+    private readonly dialog: MatDialog,
     private readonly http: Http,
-    private readonly snackRef: MdSnackBar,
+    private readonly snackRef: MatSnackBar,
   ) {}
 
   /**
