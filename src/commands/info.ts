@@ -2,24 +2,22 @@ import { pick } from 'lodash';
 import { inspect } from 'util';
 
 import { UnexpectedHttpError } from '../errors';
-import { Profile } from '../profile';
 import { Fetcher, IRequester } from '../util';
 import writer from '../writer';
+import { IGlobalOptions } from './options';
 
-export interface IInfoOptions {
+export interface IInfoOptions extends IGlobalOptions {
   bundle: string;
   verbose: boolean;
   json: boolean;
 }
 
 export default async function(options: IInfoOptions): Promise<void> {
-  const profile = new Profile();
-
   let fetcher: IRequester = new Fetcher();
   let loggedIn = false;
-  if (await profile.hasAuthenticated()) {
+  if (await options.project.profile.hasAuthenticated()) {
     loggedIn = true;
-    fetcher = fetcher.with(await profile.tokens());
+    fetcher = fetcher.with(await options.project.profile.tokens());
   }
 
   const res = await fetcher.json('get', `/interactive/bundles/${options.bundle}`);

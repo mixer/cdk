@@ -7,6 +7,7 @@ const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
 const { isHumanError } = require('../dist/src/errors');
 const { findPackageJson } = require('../dist/src/npm');
+const { Project } = require('../dist/src/project');
 const packageDir = findPackageJson(process.cwd()) || process.cwd();
 
 let packageJson = {};
@@ -26,6 +27,8 @@ const execute = argv => {
       process.env[`MIIX_${opt.toUpperCase()}`] = argv[opt];
     }
   });
+
+  argv.project = new Project(process.env.MIIX_PROFILE, process.env.MIIX_PROJECT);
 
   Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))

@@ -2,28 +2,21 @@ import { createHash } from 'crypto';
 import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
 
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { BundleNameTakenError, UploaderHttpError } from '../errors';
-import { createPackage } from '../metadata/metadata';
+import { Project } from '../project';
 import { IRequester } from '../util';
 
 /**
  * Uploader tosses a packaged bundle to the Mixer servers.
  */
 export class Uploader {
-  constructor(
-    private readonly requester: IRequester,
-    private readonly projectDir: string = process.env.MIIX_PROJECT,
-  ) {}
+  constructor(private readonly requester: IRequester, private readonly project: Project) {}
 
   /**
    * Uploads the bundle output to
    */
-  public async upload(filename: string, config?: IPackageConfig): Promise<IPackageConfig> {
-    if (!config) {
-      config = await createPackage(this.projectDir);
-    }
-
+  public async upload(filename: string): Promise<void> {
+    const config = await this.project.packageConfig();
     const checksum = await this.makeChecksum(filename);
     const form = new FormData();
     form.append('checksum', checksum);
@@ -39,7 +32,7 @@ export class Uploader {
       })
       .then(async res => {
         if (res.status < 300) {
-          return config!;
+          return;
         }
         if (res.status === 403) {
           throw new BundleNameTakenError(res, await res.text());

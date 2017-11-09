@@ -1,12 +1,16 @@
 import * as ora from 'ora';
 
-import { Profile } from '../profile';
 import { Publisher } from '../publish/publisher';
 import { Fetcher } from '../util';
 import writer from '../writer';
-import { failSpiner } from './options';
+import { failSpiner, IGlobalOptions } from './options';
 
-export default async function(options: { package: string; force: boolean }): Promise<void> {
+export interface IUnpublishOptions extends IGlobalOptions {
+  package: string;
+  force: boolean;
+}
+
+export default async function(options: IUnpublishOptions): Promise<void> {
   const [name, version] = options.package.split('@');
   if (!version) {
     throw new Error(`--package must be given in the form "name@version"`);
@@ -21,7 +25,7 @@ export default async function(options: { package: string; force: boolean }): Pro
   }
 
   const spinner = ora('Unpublishing from Mixer...').start();
-  const fetcher = new Fetcher().with(await new Profile().tokens());
+  const fetcher = new Fetcher().with(await options.project.profile.tokens());
   await new Publisher(fetcher).unpublish(name, version).catch(failSpiner(spinner));
   spinner.succeed(`Successfully unpublished ${name}@${version}`);
 }

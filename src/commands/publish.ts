@@ -1,7 +1,5 @@
 import * as ora from 'ora';
 
-import { createPackage } from '../metadata/metadata';
-import { Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Publisher } from '../publish/publisher';
 import { Uploader } from '../publish/uploader';
@@ -25,9 +23,8 @@ export default async function(options: IPublishOptions): Promise<void> {
   }
 
   const spinner = ora('Starting...').start();
-  const bundler = new Bundler();
-  const fetcher = new Fetcher().with(await new Profile().tokens());
-  const config = await createPackage(options.project);
+  const bundler = new Bundler(options.project);
+  const fetcher = new Fetcher().with(await options.project.profile.tokens());
 
   if (!await bundler.checkEvil(writer)) {
     return;
@@ -36,7 +33,7 @@ export default async function(options: IPublishOptions): Promise<void> {
   if (!options.skipBundle) {
     let filename = options.tarball;
     if (!filename) {
-      const output = await new Bundler()
+      const output = await bundler
         .bundle(progress => {
           spinner.text = progress;
         })
@@ -45,10 +42,12 @@ export default async function(options: IPublishOptions): Promise<void> {
     }
 
     spinner.text = 'Uploading to Mixer...';
-    await new Uploader(fetcher).upload(filename, config).catch(failSpiner(spinner));
+    await new Uploader(fetcher, options.project).upload(filename).catch(failSpiner(spinner));
   }
 
   spinner.text = 'Publishing...';
-  await new Publisher(fetcher).publish(options.project, config).catch(failSpiner(spinner));
+  await new Publisher(fetcher).publish(options.project).catch(failSpiner(spinner));
+
+  const config = await options.project.packageConfig();
   spinner.succeed(`Published ${config.name}@${config.version}`);
 }
