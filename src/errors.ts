@@ -10,6 +10,19 @@ export interface IHumanError extends Error {
   getHumanMessage(): string;
 }
 
+/**
+ * IHttpableError is an error that can be handled as an HTTP response. Exposes
+ * a method to return the status code of the error.
+ */
+export interface IHttpableError extends Error {
+  statusCode(): number;
+  metadata?(): any;
+}
+
+export function isHttpableError(err: Error): err is IHttpableError {
+  return err instanceof Error && typeof (<any>err).statusCode === 'function';
+}
+
 export function isHumanError(err: Error): err is IHumanError {
   return err instanceof Error && typeof (<any>err).getHumanMessage === 'function';
 }
@@ -186,11 +199,6 @@ export class PublishPrivateError extends Error implements IHumanError {
  */
 export class UploaderHttpError extends PublishHttpError {
   public getHumanMessage(): string {
-    // 403 means we're trying to upload onto someone else's bundle
-    if (this.res.status === 403) {
-      return `That bundle name is already taken, shucks!`;
-    }
-
     // Hapi seems to be a little weird about this, it *should* properly
     // return a 413 but on my box it gives this error instead.
     if (
@@ -204,5 +212,39 @@ export class UploaderHttpError extends PublishHttpError {
     }
 
     return super.getHumanMessage();
+  }
+}
+
+/**
+ * BundleNameTakenError is thrown when the user tries to upload a
+ * control bundle whose name is already in use.
+ */
+export class BundleNameTakenError extends UploaderHttpError {
+  public getHumanMessage() {
+    return `That bundle name is already taken, shucks!`;
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 400;
+  }
+}
+
+/**
+ * NotInteractiveError is thrown from the connect-participant call on
+ * the dev server if the integration isn't interactive yet.
+ */
+export class NotInteractiveError extends Error implements IHttpableError {
+  constructor() {
+    super('The requested channel is not interactive yet.');
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 409;
   }
 }

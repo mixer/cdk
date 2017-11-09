@@ -1,12 +1,16 @@
 import * as chalk from 'chalk';
 import * as express from 'express';
+import { merge } from 'lodash';
+import { isHttpableError, NotInteractiveError } from '../errors';
+import { createPackage } from '../metadata/metadata';
+import { findPackageJson, mustLoadPackageJson } from '../npm';
 
 import { DeclarationError } from '../metadata/error';
 import { EvilSniffer } from '../metadata/evilsniffer';
 import { GrantCancelledError, Profile } from '../profile';
 import { Bundler } from '../publish/bundler';
 import { Uploader } from '../publish/uploader';
-import { Fetcher } from '../util';
+import { Fetcher, writeFile } from '../util';
 import writer from '../writer';
 
 type RouteHandler = (req: express.Request, res: express.Response) => Promise<object | void>;
@@ -20,16 +24,25 @@ function route(handler: RouteHandler) {
         }
 
         if (!data) {
-          res.status(204);
+          res.status(204).send();
           return;
         }
 
         res.json(data);
       })
       .catch(err => {
-        const contents = err.stack || err.message || String(err);
-        writer.write(chalk.red(`Error in ${req.method} ${req.path}:\n${contents}`));
-        res.status(500).send(contents);
+        if (isHttpableError(err)) {
+          res.status(err.statusCode()).json({
+            name: err.constructor.name,
+            message: err.message,
+            stack: err.stack,
+            metadata: err.metadata ? err.metadata() : undefined,
+          });
+        } else {
+          const contents = err.stack || err.message || String(err);
+          writer.write(chalk.red(`Error in ${req.method} ${req.path}:\n${contents}`));
+          res.status(500).send(contents);
+        }
       });
   };
 }
@@ -41,6 +54,7 @@ function route(handler: RouteHandler) {
  */
 export function createApp(profile: Profile): express.Express {
   const app = express();
+  const projectDir = process.env.MIIX_PROJECT;
 
   app.use(require('body-parser').json());
 
@@ -64,15 +78,14 @@ export function createApp(profile: Profile): express.Express {
   app.get(
     '/connect-participant',
     route(
-      requireAuth(async (req, res) => {
+      requireAuth(async req => {
         const udata = await profile.user();
         const joinRes = await new Fetcher()
           .with(await profile.tokens())
           .json('get', `/interactive/${Number(req.query.channelID) || udata.channel}`);
 
         if (joinRes.status === 404 || joinRes.status === 400) {
-          res.status(409).send(); // remap
-          return;
+          throw new NotInteractiveError(); // remap
         }
 
         if (joinRes.status !== 200) {
@@ -149,12 +162,23 @@ export function createApp(profile: Profile): express.Express {
     '/ensure-no-eval',
     route(async () => {
       try {
-        await new EvilSniffer().compile(process.env.MIIX_PROJECT);
+        await new EvilSniffer().compile(projectDir);
       } catch (e) {
         return { hasEval: e instanceof DeclarationError };
       }
 
       return { hasEval: false };
+    }),
+  );
+
+  app.get('/metadata', route(async () => createPackage(projectDir)));
+
+  app.post(
+    '/modify-package',
+    route(async req => {
+      const packageJson = mustLoadPackageJson(projectDir);
+      merge(packageJson, req.body);
+      await writeFile(findPackageJson(projectDir)!, JSON.stringify(packageJson, null, 2));
     }),
   );
 
@@ -179,20 +203,17 @@ export function createApp(profile: Profile): express.Express {
 
         // The writer will write progress to the console for diagnostic purposes.
         writer.write('Starting version upload');
-        try {
-          const output = await new Bundler().bundle(progress => {
-            writer.write(progress);
-          });
-          writer.write('Uploading tarball');
-          const config = await new Uploader(fetcher).upload(output.filename, output.config);
-          writer.write('Updating linked version');
-          await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
-            bundle: `${config.name}_${config.version}`,
-          });
-          writer.write('Complete');
-        } catch (e) {
-          res.status(400).send(e.stack);
-        }
+
+        const output = await new Bundler().bundle(progress => {
+          writer.write(progress);
+        });
+        writer.write('Uploading tarball');
+        const config = await new Uploader(fetcher).upload(output.filename, output.config);
+        writer.write('Updating linked version');
+        await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
+          bundle: `${config.name}_${config.version}`,
+        });
+        writer.write('Complete');
 
         res.status(204).send();
         return;

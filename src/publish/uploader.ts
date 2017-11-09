@@ -3,7 +3,7 @@ import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
 
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { UploaderHttpError } from '../errors';
+import { BundleNameTakenError, UploaderHttpError } from '../errors';
 import { createPackage } from '../metadata/metadata';
 import { IRequester } from '../util';
 
@@ -40,6 +40,9 @@ export class Uploader {
       .then(async res => {
         if (res.status < 300) {
           return config!;
+        }
+        if (res.status === 403) {
+          throw new BundleNameTakenError(res, await res.text());
         }
 
         throw new UploaderHttpError(res, await res.text());
