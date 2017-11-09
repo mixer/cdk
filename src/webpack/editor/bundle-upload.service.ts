@@ -83,7 +83,7 @@ export class BundleUploadService {
       duration: 10000,
     });
     errSnack.onAction().subscribe(() => {
-      window.open('about:blank').document.body.innerHTML += err.text ? err.text() : err.stack;
+      window.open('about:blank')!.document.body.innerHTML += err.text ? err.text() : err.stack;
     });
   }
 

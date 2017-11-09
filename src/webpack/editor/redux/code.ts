@@ -1,3 +1,5 @@
+import { IStateDump } from '@mcph/miix-std/dist/internal';
+
 /**
  * Orientation is given to size() to determine the device orientation.
  * Landscape is the default orientation.
@@ -49,13 +51,13 @@ export const enum Action {
   SetGroups = 'CODE_SET_GROUPS',
 }
 
-export const stateToProp = {
+export const stateToProp: { [key: number]: keyof IStateDump } = {
   [CodeState.Scenes]: 'scenes',
   [CodeState.Participant]: 'participant',
   [CodeState.Groups]: 'groups',
 };
 
-export const stateToUpdateAction = {
+export const stateToUpdateAction: { [key: number]: Action } = {
   [CodeState.Scenes]: Action.SetScenes,
   [CodeState.Participant]: Action.SetParticipant,
   [CodeState.Groups]: Action.SetGroups,
