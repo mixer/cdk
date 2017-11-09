@@ -1,9 +1,7 @@
 import { fork } from 'child_process';
 import { createServer } from 'http';
-import { join } from 'path';
 
 import { getPackageExecutable } from '../npm';
-import { Profile } from '../profile';
 import { never } from '../util';
 import { createApp } from '../webpack/dev-server';
 import { devEnvironmentVar } from '../webpack/plugin';
@@ -27,9 +25,8 @@ function defaultArgs(original: string[], defaults: { [key: string]: string | boo
 
 export default async function(options: IGlobalOptions): Promise<void> {
   const argDelimiter = process.argv.indexOf('--');
-  const profile = new Profile(options.profile);
   const port = await portfinder.getPortPromise();
-  const server = createServer(createApp(profile)).listen(port);
+  const server = createServer(createApp(options.project)).listen(port);
   let args = argDelimiter > -1 ? process.argv.slice(argDelimiter + 1) : [];
 
   args = defaultArgs(args, {
@@ -38,7 +35,7 @@ export default async function(options: IGlobalOptions): Promise<void> {
   });
 
   server.on('listening', () => {
-    const wds = getPackageExecutable(join(options.project, 'node_modules', 'webpack-dev-server'));
+    const wds = getPackageExecutable(options.project.baseDir('node_modules', 'webpack-dev-server'));
 
     const child = fork(wds, args, {
       cwd: process.cwd(),

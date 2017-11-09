@@ -6,7 +6,7 @@ import * as path from 'path';
 import { getBundlePath, IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { MixerPluginError } from '../errors';
 import { createPackage } from '../metadata/metadata';
-import { getProjectPath } from '../npm';
+import { getProjectPath, mustLoadPackageJson } from '../npm';
 import { readFile, wrapErr } from '../util';
 
 // webpack typings are pretty much useless here :(
@@ -230,7 +230,8 @@ export class MixerPlugin {
 
     compiler.plugin('emit', async (compilation: any, callback: any) => {
       try {
-        this.package = await createPackage(projectPath);
+        const packageJson = mustLoadPackageJson(projectPath);
+        this.package = await createPackage(packageJson, projectPath);
 
         const todo: Promise<void>[] = [this.addProductionFiles(compiler, compilation)];
         if (process.env[devEnvironmentVar]) {

@@ -1,7 +1,6 @@
 import * as Joi from 'joi';
 
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { mustLoadPackageJson } from '../npm';
 import { MetadataExtractor } from './extractor';
 
 const inputSchema = Joi.object({
@@ -61,10 +60,9 @@ const packageSchema = Joi.object({
  * createPackage is the top-level function to read source and package files
  * from the directory and combine them into a single config.
  */
-export async function createPackage(dir: string): Promise<IPackageConfig> {
-  const packageJson = mustLoadPackageJson(dir);
+export async function createPackage(packageJson: any, baseDir: string): Promise<IPackageConfig> {
   const extractor = new MetadataExtractor();
-  await extractor.compile(dir);
+  await extractor.compile(baseDir);
 
   const packaged = {
     name: packageJson.name,

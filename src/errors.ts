@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { get } from 'lodash';
 import { Response } from 'node-fetch';
 import { inspect } from 'util';

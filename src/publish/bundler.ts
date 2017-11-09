@@ -5,8 +5,8 @@ import * as path from 'path';
 import { PackageIntegrityError } from '../errors';
 import { DeclarationError } from '../metadata/error';
 import { EvilSniffer } from '../metadata/evilsniffer';
-import { createPackage } from '../metadata/metadata';
 import { findReadme, getPackageExecutable } from '../npm';
+import { Project } from '../project';
 import { awaitChildProcess, copy, exists, readDir } from '../util';
 import { Writer } from '../writer';
 
@@ -25,13 +25,13 @@ export interface IBundlerOutput {
  * that can be uploaded to Mixer.
  */
 export class Bundler {
-  constructor(private readonly projectDir: string = process.env.MIIX_PROJECT) {}
+  constructor(private readonly project: Project) {}
 
   public async bundle(
     progressReporter: (message: string) => void = () => undefined,
   ): Promise<IBundlerOutput> {
     progressReporter('Reading control metadata');
-    const config = await createPackage(this.projectDir);
+    const config = await this.project.packageConfig();
 
     progressReporter('Running webpack bundler');
     const filename = path.join(process.cwd(), `${config.name}.tar.gz`);
@@ -54,7 +54,7 @@ export class Bundler {
    */
   public async checkEvil(writer: Writer): Promise<boolean> {
     try {
-      await new EvilSniffer().compile(this.projectDir);
+      await new EvilSniffer().compile(this.project.baseDir());
     } catch (e) {
       if (!(e instanceof DeclarationError)) {
         throw e;
@@ -84,17 +84,16 @@ export class Bundler {
       );
     }
 
-    const readme = findReadme(this.projectDir);
+    const readme = findReadme(this.project.baseDir());
     if (!readme) {
       throw new PackageIntegrityError(
-        `An readme.md is missing in your project (${path.join(
-          this.projectDir,
+        `An readme.md is missing in your project (${this.project.baseDir(
           'readme.md',
         )} should exist)`,
       );
     }
 
-    const packageJson = path.join(this.projectDir, 'package.json');
+    const packageJson = this.project.baseDir('package.json');
     if (!await exists(packageJson)) {
       throw new PackageIntegrityError(
         `An package.json is missing in your project (${packageJson} should exist)`,
@@ -107,8 +106,8 @@ export class Bundler {
    */
   private async createTarball(output: string, target: string): Promise<void> {
     await Promise.all([
-      copy(path.resolve(this.projectDir, 'readme.md'), path.resolve(output, 'readme.md')),
-      copy(path.resolve(this.projectDir, 'package.json'), path.resolve(output, 'package.json')),
+      copy(this.project.baseDir('readme.md'), path.resolve(output, 'readme.md')),
+      copy(this.project.baseDir('package.json'), path.resolve(output, 'package.json')),
     ]);
 
     await tar.create(
@@ -126,14 +125,14 @@ export class Bundler {
    */
   private getOutputPath(): string {
     // tslint:disable-next-line
-    return require(path.join(this.projectDir, 'webpack.config.js')).output.path;
+    return require(this.project.baseDir('webpack.config.js')).output.path;
   }
 
   /**
    * Runs webpack to create a production bundle.
    */
   private async runWebpack(): Promise<void> {
-    const wds = getPackageExecutable(path.join(this.projectDir, 'node_modules', 'webpack'));
+    const wds = getPackageExecutable(this.project.baseDir('node_modules', 'webpack'));
 
     return awaitChildProcess(
       fork(wds, ['--display=minimal'], {

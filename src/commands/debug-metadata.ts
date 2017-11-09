@@ -5,7 +5,7 @@ import { IGlobalOptions } from './options';
 export default async function(options: IGlobalOptions): Promise<void> {
   const extractor = new MetadataExtractor();
   try {
-    await extractor.compile(options.project);
+    await extractor.compile(options.project.baseDir());
   } catch (e) {
     if (e instanceof DeclarationError) {
       process.stdout.write(JSON.stringify(e, null, 2));
