@@ -1,7 +1,7 @@
 <a href="https://mixer.com/i/studio"
   target="_blank"
-  mdTooltip="To the Interactive Studio"
-  mdTooltipPosition="below"
+  matTooltip="To the Interactive Studio"
+  matTooltipPosition="below"
   class="logo">
 </a>
 
@@ -13,47 +13,49 @@
 
 <div class="spacer"></div>
 
-<button md-icon-button [disabled]="!(isMobile | async)" (click)="rotateDevice()">
-  <md-icon svgIcon="screen-rotation"></md-icon>
+<button mat-icon-button [disabled]="!(isMobile | async)" (click)="rotateDevice()">
+  <mat-icon svgIcon="screen-rotation"></mat-icon>
 </button>
 
 <div class="sizing mat-theme-contrast">
-  <md-select
-    placeholder="Device"
-    [ngModel]="(frame | async)?.chosenDevice"
-    (ngModelChange)="chooseDevice($event)">
-    <md-option *ngFor="let device of devices; let i = index" [value]="i">
-      {{ device.displayName }}
-    </md-option>
-  </md-select>
-  <md-input-container>
-    <input mdInput placeholder="Width" type="number" min="0"
+  <mat-form-field>
+    <mat-select
+      placeholder="Device"
+      [ngModel]="(frame | async)?.chosenDevice"
+      (ngModelChange)="chooseDevice($event)">
+      <mat-option *ngFor="let device of devices; let i = index" [value]="i">
+        {{ device.displayName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-input-container>
+    <input matInput placeholder="Width" type="number" min="0"
       [ngModel]="(frame | async)?.width"
       (ngModelChange)="setWidth($event)">
-  </md-input-container>
+  </mat-input-container>
   <div class="times">x</div>
-  <md-input-container>
-    <input mdInput placeholder="Height" type="number" min="0"
+  <mat-input-container>
+    <input matInput placeholder="Height" type="number" min="0"
       [ngModel]="(frame | async)?.height"
       (ngModelChange)="setHeight($event)">
-  </md-input-container>
+  </mat-input-container>
 </div>
 
 <div class="tools">
-  <button md-icon-button [mdMenuTriggerFor]="syncMenu">
-    <md-icon svgIcon="upload"></md-icon>
+  <button mat-icon-button [matMenuTriggerFor]="syncMenu">
+    <mat-icon svgIcon="upload"></mat-icon>
   </button>
-  <button md-icon-button
-    mdTooltipPosition="below"
-    mdTooltip="Connect to Interactive"
+  <button mat-icon-button
+    matTooltipPosition="below"
+    matTooltip="Connect to Interactive"
     (click)="connect($event)">
-    <md-icon svgIcon="rocket"></md-icon>
+    <mat-icon svgIcon="rocket"></mat-icon>
   </button>
 </div>
 
-<md-menu #syncMenu="mdMenu">
-  <button md-menu-item *ngIf="!(isVersionLinked | async)" (click)="openLinkDialog()">Link to Interactive Version</button>
-  <button md-menu-item *ngIf="isVersionLinked | async" (click)="unlink()">Unlink from Interactive Version</button>
-  <button md-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadBundle()">Upload Control Bundle</button>
-  <button md-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadSchema()">Upload Schema</button>
-</md-menu>
+<mat-menu #syncMenu="matMenu">
+  <button mat-menu-item *ngIf="!(isVersionLinked | async)" (click)="openLinkDialog()">Link to Interactive Version</button>
+  <button mat-menu-item *ngIf="isVersionLinked | async" (click)="unlink()">Unlink from Interactive Version</button>
+  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadBundle()">Upload Control Bundle</button>
+  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadSchema()">Upload Schema</button>
+</mat-menu>

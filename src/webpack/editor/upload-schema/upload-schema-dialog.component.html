@@ -1,21 +1,21 @@
 <editor-login-walkthrough (loggedIn)="onLoggedIn()">
   <p>This will overwrite your existing control schema. Are you sure you want to do this?</p>
 
-  <md-checkbox [(ngModel)]="dontShowAgain">
+  <mat-checkbox [(ngModel)]="dontShowAgain">
     Don't ask again for this project
-  </md-checkbox>
+  </mat-checkbox>
 
-  <div md-dialog-actions>
+  <div mat-dialog-actions>
     <button
-      md-button
+      mat-button
       (click)="onSelected(false)"
       tabindex="-1">
       Cancel
     </button>
     <span style="flex:1"></span>
     <button
-      md-button
-      md-raised-button
+      mat-button
+      mat-raised-button
       color="primary"
       (click)="onSelected(true)"
       tabindex="2">

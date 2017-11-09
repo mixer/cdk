@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MdDialogRef } from '@angular/material';
+import { MatDialogRef } from '@angular/material';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 export enum State {
@@ -39,7 +39,7 @@ export class UploadSchemaDialogComponent {
    */
   public dontShowAgain = false;
 
-  constructor(private readonly dialogRef: MdDialogRef<IUploadSchemaResult>) {}
+  constructor(private readonly dialogRef: MatDialogRef<IUploadSchemaResult>) {}
 
   public onLoggedIn() {
     this.state.next(State.Approving);

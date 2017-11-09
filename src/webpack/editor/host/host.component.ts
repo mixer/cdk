@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MdIconRegistry } from '@angular/material';
+import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
@@ -38,7 +38,7 @@ export class HostComponent {
     .map(s => (s.state === CodeState.Closed ? 0 : s.width));
 
   constructor(
-    icons: MdIconRegistry,
+    icons: MatIconRegistry,
     sanitizer: DomSanitizer,
     private readonly store: Store<IProject>,
   ) {

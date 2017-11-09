@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Http } from '@angular/http';
-import { MdDialogRef, MdSnackBar } from '@angular/material';
+import { MatDialogRef, MatSnackBar } from '@angular/material';
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
@@ -32,8 +32,8 @@ export class RenameBundleDialogComponent implements OnInit {
 
   constructor(
     private readonly http: Http,
-    private readonly dialogRef: MdDialogRef<boolean>,
-    private readonly snackRef: MdSnackBar,
+    private readonly dialogRef: MatDialogRef<boolean>,
+    private readonly snackRef: MatSnackBar,
     private readonly httpErr: HttpErrorService,
   ) {}
 
