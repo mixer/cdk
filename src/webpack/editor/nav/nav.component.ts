@@ -85,7 +85,7 @@ export class NavComponent {
   }
 
   public uploadBundle() {
-    this.bundle.upload();
+    this.bundle.upload().catch(() => undefined);
   }
 
   private launch() {
