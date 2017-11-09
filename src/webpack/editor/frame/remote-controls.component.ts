@@ -7,7 +7,7 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as json5 from 'json5';
 import { throttle } from 'lodash';
@@ -50,7 +50,7 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
 
   constructor(
     private readonly store: Store<IProject>,
-    private readonly snackRef: MdSnackBar,
+    private readonly snackRef: MatSnackBar,
     private readonly project: ProjectService,
     private readonly controls: ControlStateSyncService,
   ) {}

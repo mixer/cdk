@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Http } from '@angular/http';
-import { MdDialogRef, MdSnackBar } from '@angular/material';
+import { MatDialogRef, MatSnackBar } from '@angular/material';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
@@ -72,8 +72,8 @@ export class LinkDialogComponent {
 
   constructor(
     private readonly http: Http,
-    private readonly dialogRef: MdDialogRef<number>,
-    private readonly snackRef: MdSnackBar,
+    private readonly dialogRef: MatDialogRef<number>,
+    private readonly snackRef: MatSnackBar,
   ) {}
 
   public onLoggedIn() {

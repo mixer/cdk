@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { MdDialogRef, MdSnackBar } from '@angular/material';
+import { MatDialogRef, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
@@ -60,8 +60,8 @@ export class LaunchDialogComponent {
 
   constructor(
     private readonly http: Http,
-    private readonly dialogRef: MdDialogRef<IInteractiveJoin>,
-    private readonly snackRef: MdSnackBar,
+    private readonly dialogRef: MatDialogRef<IInteractiveJoin>,
+    private readonly snackRef: MatSnackBar,
     private readonly store: Store<IProject>,
   ) {}
 

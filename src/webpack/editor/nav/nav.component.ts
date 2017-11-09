@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MdDialog } from '@angular/material';
+import { MatDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 import { ChannelSelectDialog } from '../launch-dialog/channel-select-dialog.component';
@@ -30,7 +30,7 @@ export class NavComponent {
   constructor(
     private readonly project: ProjectService,
     private readonly store: Store<IProject>,
-    private readonly dialog: MdDialog,
+    private readonly dialog: MatDialog,
     private readonly schema: UploadSchemaService,
     private readonly bundle: BundleUploadService,
   ) {}

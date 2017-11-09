@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import { MdDialog, MdSnackBar } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 
 import { HttpErrorService } from './http-error.service';
@@ -32,8 +32,8 @@ export class BundleUploadService {
   constructor(
     private readonly store: Store<IProject>,
     private readonly http: Http,
-    private readonly snackRef: MdSnackBar,
-    private readonly dialog: MdDialog,
+    private readonly snackRef: MatSnackBar,
+    private readonly dialog: MatDialog,
     private readonly httpErr: HttpErrorService,
   ) {}
 

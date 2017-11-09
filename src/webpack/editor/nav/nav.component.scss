@@ -38,16 +38,16 @@
   color: #fff;
   height: 46px;
 
-  md-input-container,
-  md-select {
+  mat-input-container,
+  mat-form-field {
     margin: 0 $dimension-gutter-md;
   }
 
-  md-select {
+  mat-form-field {
     width: 200px;
   }
 
-  md-input-container {
+  mat-input-container {
     width: 100px;
   }
 
@@ -63,7 +63,7 @@
   }
 }
 
-md-icon::ng-deep > svg {
+mat-icon::ng-deep > svg {
   fill: #fff;
 
   button[disabled] & {
