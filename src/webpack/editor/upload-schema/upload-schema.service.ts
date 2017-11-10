@@ -62,7 +62,7 @@ export class UploadSchemaService {
     return this.store
       .take(1)
       .switchMap(s =>
-        this.http.post(apiUrl(`update-interactive-version/${s.sync.interactiveVersionId}`), {
+        this.http.post(apiUrl(`update-interactive-version/${s.sync.interactiveVersion!.id}`), {
           controls: {
             scenes: JSON5.parse(s.code.scenes.join('\n')),
           },

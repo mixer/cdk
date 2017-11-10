@@ -12,3 +12,10 @@ $base-theme: mat-dark-theme(
   mat-palette($mat-purple)
 );
 @include angular-material-theme($base-theme);
+
+
+[mat-dialog-actions] {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}

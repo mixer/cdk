@@ -4,6 +4,7 @@ import { MatDialogRef, MatSnackBar } from '@angular/material';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
+import { IInteractiveVersion, IInteractiveVersionWithGame } from '../redux/sync';
 import { apiUrl } from '../util/env';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { reportHttpError } from '../util/report-issue';
@@ -16,24 +17,9 @@ export enum State {
 
 /**
  * Partial typings for an InteractiveProject resource on Mixer.
- * {@see https://dev.mixer.com/rest.html#InteractiveVersion}
- */
-export interface IInteractiveVersion {
-  id: number;
-  version: string;
-  state: string;
-  changelog: string;
-  versionOrder: number;
-  installation: string;
-  createdaAt: string;
-  updatedAt: string;
-}
-
-/**
- * Partial typings for an InteractiveProject resource on Mixer.
  * {@see https://dev.mixer.com/rest.html#InteractiveGame}
  */
-export interface IInteractiveGame {
+export interface IGameWithNestedVersions {
   name: string;
   versions: IInteractiveVersion[];
 }
@@ -63,7 +49,7 @@ export class LinkDialogComponent {
   /**
    * List of interactive projects the user owns.
    */
-  public projects = new MemorizingSubject<IInteractiveGame[]>();
+  public projects = new MemorizingSubject<IGameWithNestedVersions[]>();
 
   /**
    * Currently expanded project, listing its owned versions.
@@ -72,7 +58,7 @@ export class LinkDialogComponent {
 
   constructor(
     private readonly http: Http,
-    private readonly dialogRef: MatDialogRef<number>,
+    private readonly dialogRef: MatDialogRef<IInteractiveVersionWithGame>,
     private readonly snackRef: MatSnackBar,
   ) {}
 
@@ -85,7 +71,7 @@ export class LinkDialogComponent {
    * getLastUpdatedAgo returns the "time ago" of the last updated version
    * of the game.
    */
-  public getLastUpdatedAgo(game: IInteractiveGame): string {
+  public getLastUpdatedAgo(game: IGameWithNestedVersions): string {
     const timestamp = this.getLastUpdatedDate(game);
     if (timestamp === 0) {
       return 'never';
@@ -105,7 +91,7 @@ export class LinkDialogComponent {
    * getLastUpdatedDate returns the most recent updatedAt of a version of
    * the Interactive game, returning 0 if there are no attached versions.
    */
-  public getLastUpdatedDate(game: IInteractiveGame): number {
+  public getLastUpdatedDate(game: IGameWithNestedVersions): number {
     const mostRecentUpdate = game.versions
       .map(version => new Date(version.updatedAt))
       .sort((a, b) => a.getTime() - b.getTime())
@@ -117,8 +103,8 @@ export class LinkDialogComponent {
   /**
    * Chooses the version to link, and closes the dialog.
    */
-  public select(interactiveVersionId: number) {
-    this.dialogRef.close(interactiveVersionId);
+  public select(interactiveVersion: IInteractiveVersion, game: IGameWithNestedVersions) {
+    this.dialogRef.close({ ...interactiveVersion, game });
   }
 
   /**
@@ -128,7 +114,7 @@ export class LinkDialogComponent {
   private loadProjects() {
     this.http.get(apiUrl('interactive-versions')).subscribe(
       res => {
-        const games: IInteractiveGame[] = res.json();
+        const games: IGameWithNestedVersions[] = res.json();
         games.sort((a, b) => this.getLastUpdatedDate(b) - this.getLastUpdatedDate(a));
         this.projects.next(games);
         this.state.next(State.Selecting);

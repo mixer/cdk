@@ -20,13 +20,13 @@
               {{ version.version }}
               <small>Updated {{ getTimeAgo(version.updatedAt) }}</small>
             </span>
-            <button mat-button mat-raised-button (click)="select(version.id)">Link</button>
+            <button mat-button mat-raised-button (click)="select(version, project)">Link</button>
           </mat-list-item>
         </mat-list>
 
         <div class="new-button">
           <a
-            href="https://mixer.com/lab/interactive/tool/{{ project.id}}/create-version"
+            href="https://mixer.com/lab/interactive/tool/{{ project.id }}/create-version"
             target="_blank"
             mat-button>
             Add New Version
