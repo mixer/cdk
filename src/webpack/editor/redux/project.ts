@@ -66,6 +66,13 @@ export class ProjectService {
     this.store.dispatch({ type: Code.Action.SetState, state });
   }
 
+  /**
+   * Updates the width of the code block, in pixels.
+   */
+  public setCodeWidth(width: number) {
+    this.store.dispatch({ type: Code.Action.Resize, width });
+  }
+
   // Connect actions ---------------------------------------------------------
 
   /**

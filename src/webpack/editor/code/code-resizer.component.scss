@@ -1,0 +1,76 @@
+@import '../../../../static/editor/declarations';
+
+$handle-width: 10px;
+$dot-size: 4px;
+$dot-spacing: 15px;
+$dot-color: lighten($color-editor-background, 20%);
+
+:host {
+  @include swift-ease-out('opacity', 'background');
+
+  position: absolute;
+  right: 0;
+  width: $handle-width;
+  top: 0;
+  bottom: 0;
+  background: $color-editor-background;
+  cursor: col-resize;
+  z-index: 50;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+  }
+
+  &::before {
+    top: 50%;
+    left: 0;
+    transform: translate($handle-width / 2 - $dot-size / 2, $dot-size / -2);
+    background: $dot-color;
+    width: $dot-size;
+    height: $dot-size;
+    border-radius: 50%;
+    box-shadow: 0 (-$dot-spacing) 0 $dot-color, 0 $dot-spacing 0 $dot-color ;
+  }
+
+  &::after {
+    @include swift-ease-out('background');
+
+    right: 100%;
+    width: 100vw;
+    pointer-events: none;
+    background: rgba($color-primary, 0.1);
+    opacity: 0;
+  }
+
+  &:hover,
+  &.active {
+    background: $color-editor-active-line;
+  }
+
+  &.active {
+    right: auto;
+    left: $handle-width / -2;
+
+    &::after {
+      opacity: 1;
+    }
+
+    // "guard" over the iframe since drag events are imperceptible there.
+    div {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 100vw;
+    }
+  }
+
+  &.will-hide::after {
+    background: rgba($color-danger, 0.3);
+  }
+}

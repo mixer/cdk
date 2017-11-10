@@ -23,7 +23,7 @@ export const MaxEditableState = CodeState.Groups; // tslint:disable-line
 export interface ICodeState {
   state: CodeState;
   /**
-   * given in a percent of screen width, 0 to 100
+   * given in pixels, 0 to 100
    */
   width: number;
   /**
@@ -125,7 +125,7 @@ const initialControls = `[
 
 export const initialState = {
   state: CodeState.Scenes,
-  width: 50,
+  width: 500,
   participant: initialParticipant.split('\n'),
   scenes: initialControls.split('\n'),
   groups: initialGroups.split('\n'),
