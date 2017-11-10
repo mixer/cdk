@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as CodeMirror from 'codemirror';
-import * as patch from 'fast-json-patch';
 import * as json5 from 'json5';
 
 import 'codemirror/addon/fold/brace-fold';
@@ -194,42 +193,13 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
 
   private updateEditorContents(lines: string[]) {
     this.isTriggeringChange = true;
-
-    // Wrap in an operation block so CM can bulk DOM updates
-    this.cm.operation(() => {
-      const original = this.cm.getValue().split('\n');
-      const doc = this.cm.getDoc();
-
-      patch.compare(original, lines).forEach(op => {
-        const line = Number(op.path.slice(1));
-        const fromLine = (<any>op).from && Number((<any>op).from.slice(1));
-
-        switch (op.op) {
-          case 'replace':
-            doc.replaceRange(op.value, { line, ch: 0 }, { line, ch: original[line].length });
-            break;
-          case 'remove':
-            doc.replaceRange('', { line, ch: 0 }, { line: line + 1, ch: 0 });
-            break;
-          case 'add':
-            doc.replaceRange(`${op.value}\n`, { line, ch: 0 });
-            break;
-          case 'copy':
-            doc.replaceRange(`${original[fromLine]}\n`, { line, ch: 0 });
-            break;
-          case 'move':
-            const srcLine = Number(op.from.slice(1));
-            doc.replaceRange('', { line: srcLine, ch: 0 }, { line: srcLine + 1, ch: 0 });
-            doc.replaceRange(`${original[srcLine]}\n`, { line, ch: 0 });
-            break;
-          default:
-          // ignored, test or _get
-        }
-
-        patch.applyOperation(original, op);
-      });
-    });
-
+    let formatted = lines.join('\n');
+    try {
+      formatted = json5.stringify(json5.parse(formatted), null, 2);
+    } catch (e) {
+      // ignored
+    }
+    this.cm.setValue(`${formatted}\n`);
     this.isTriggeringChange = false;
   }
 }
