@@ -102,8 +102,8 @@ export class ProjectService {
     this.store.dispatch({ type: Sync.Action.Unlink });
   }
 
-  public syncLink(interactiveVersionId: number) {
-    this.store.dispatch({ type: Sync.Action.Link, id: interactiveVersionId });
+  public syncLink(interactiveVersion: Sync.IInteractiveVersionWithGame) {
+    this.store.dispatch({ type: Sync.Action.Link, version: interactiveVersion });
   }
 
   public syncDontConfirmSchema() {

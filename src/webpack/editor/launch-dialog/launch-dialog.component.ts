@@ -5,8 +5,10 @@ import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 import { IProject } from '../redux/project';
+import { IInteractiveVersion } from '../redux/sync';
 
 import 'rxjs/add/observable/interval';
+import 'rxjs/add/operator/combineLatest';
 import 'rxjs/add/operator/publishReplay';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/take';
@@ -20,6 +22,7 @@ export enum State {
   LoggingIn,
   Connecting,
   AwaitingGameClient,
+  NotifyMismatched,
 }
 
 /**
@@ -30,7 +33,7 @@ export enum State {
 @Component({
   selector: 'launch-dialog',
   templateUrl: './launch-dialog.component.html',
-  styleUrls: ['../dialog.scss'],
+  styleUrls: ['../dialog.scss', './launch-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LaunchDialogComponent {
@@ -43,6 +46,15 @@ export class LaunchDialogComponent {
    * Curre state of the component.
    */
   public state = new BehaviorSubject(State.LoggingIn);
+
+  /**
+   * Mismatched version data, used to display a message if the user is
+   * connecting to a version different than what's linked to their project.
+   */
+  public versionMismatch: {
+    intendedVersion: IInteractiveVersion;
+    actualVersion: IInteractiveVersion;
+  };
 
   /**
    * Dots used to subtly indicate progress.
@@ -58,6 +70,11 @@ export class LaunchDialogComponent {
     .publishReplay(1)
     .refCount();
 
+  /**
+   * Data loaded from a successful join response.
+   */
+  private loadedData: IInteractiveJoin;
+
   constructor(
     private readonly http: Http,
     private readonly dialogRef: MatDialogRef<IInteractiveJoin>,
@@ -71,6 +88,20 @@ export class LaunchDialogComponent {
   }
 
   /**
+   * Closes the dialog with the data to connect to Interactive.
+   */
+  public acceptConnect() {
+    this.dialogRef.close(this.loadedData);
+  }
+
+  /**
+   * Cancels connecting and closes the dialog.
+   */
+  public cancelConnect() {
+    this.dialogRef.close();
+  }
+
+  /**
    * Attempts to create a connection to Interactive. Closes the dialog
    * when it successfully does so.
    */
@@ -81,14 +112,30 @@ export class LaunchDialogComponent {
       .switchMap(channelID =>
         this.http.get(apiUrl('connect-participant'), { params: { channelID } }),
       )
+      .combineLatest(this.store.map(s => s.sync.interactiveVersion))
       .subscribe(
-        res => {
+        ([res, version]) => {
           const data: IInteractiveJoin = res.json();
+          this.loadedData = data;
+
+          // If the game client is not connected, wait for it to do so.
           if (!data.address) {
             this.waitForConnect();
-          } else {
-            this.dialogRef.close(data);
+            return;
           }
+
+          // Prompt the user is the game version the client is connecting
+          // with is different than the one they have linked.
+          if (version && version.id !== data.version.id) {
+            this.versionMismatch = {
+              intendedVersion: version,
+              actualVersion: data.version,
+            };
+            this.state.next(State.NotifyMismatched);
+            return;
+          }
+
+          this.acceptConnect();
         },
         (err: Response) => {
           switch (err.status) {
@@ -102,7 +149,7 @@ export class LaunchDialogComponent {
                 .subscribe(() => {
                   reportHttpError('Unknown error in launch dialog', err);
                 });
-              this.dialogRef.close();
+              this.cancelConnect();
               break;
           }
         },

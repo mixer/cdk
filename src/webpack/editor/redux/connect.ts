@@ -1,4 +1,5 @@
 import { IStateDump } from '@mcph/miix-std/dist/internal';
+import { IInteractiveVersion } from './sync';
 
 /**
  * Orientation is given to size() to determine the device orientation.
@@ -33,6 +34,11 @@ export interface IInteractiveJoin {
    * Access key for Interactive
    */
   key: string;
+
+  /**
+   * Version ID it's connecting to.
+   */
+  version: IInteractiveVersion;
 }
 
 /**

@@ -25,7 +25,7 @@ export class NavComponent {
   public frame: Observable<IFrameState> = this.store.select('frame');
   public isMobile = this.frame.map(s => devices[s.chosenDevice].isMobile);
   public devices: ReadonlyArray<IDevice> = devices;
-  public isVersionLinked = this.store.map(s => !!s.sync.interactiveVersionId);
+  public isVersionLinked = this.store.map(s => !!s.sync.interactiveVersion);
 
   constructor(
     private readonly project: ProjectService,

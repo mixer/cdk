@@ -1,4 +1,35 @@
 /**
+ * Partial typings for an InteractiveVersion resource on Mixer.
+ * {@see https://dev.mixer.com/rest.html#InteractiveVersion}
+ */
+export interface IInteractiveVersion {
+  id: number;
+  version: string;
+  state: string;
+  changelog: string;
+  versionOrder: number;
+  installation: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Partial typings for an InteractiveGame resource on Mixer.
+ * {@see https://dev.mixer.com/rest.html#InteractiveGame}
+ */
+export interface IInteractiveGame {
+  id: number;
+  name: string;
+}
+
+/**
+ * Describes an InteractiveVersion with a nested parent game.
+ */
+export interface IInteractiveVersionWithGame extends IInteractiveVersion {
+  game: IInteractiveGame;
+}
+
+/**
  * ISyncstate is the state describing which Mixer interactive version the
  * controls are linked to.
  */
@@ -6,7 +37,7 @@ export interface ISyncState {
   /**
    * Interactive version the controls are linked to.
    */
-  interactiveVersionId: null | number;
+  interactiveVersion: null | IInteractiveVersionWithGame;
 
   /**
    * Whether to prompt each time the user wants to upload a control schema.
@@ -21,18 +52,18 @@ export const enum Action {
 }
 
 export const initialState = {
-  interactiveVersionId: null,
+  interactiveVersion: null,
   confirmSchemaUpload: true,
 };
 
 export function reducer(state: ISyncState, action: any): ISyncState {
   switch (action.type) {
     case Action.Link:
-      return { ...state, interactiveVersionId: action.id };
+      return { ...state, interactiveVersion: action.version };
     case Action.Unlink:
       return {
         ...state,
-        interactiveVersionId: null,
+        interactiveVersion: null,
         confirmSchemaUpload: true,
       };
     case Action.DontConfirmSchema:

@@ -57,7 +57,7 @@ export class BundleUploadService {
       .toPromise()
       .then(s =>
         this.http
-          .post(apiUrl(`start-version-upload/${s.sync.interactiveVersionId}`), {})
+          .post(apiUrl(`start-version-upload/${s.sync.interactiveVersion!.id}`), {})
           .toPromise(),
       )
       .then(() => {
