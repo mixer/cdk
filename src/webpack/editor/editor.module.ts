@@ -19,6 +19,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StoreModule } from '@ngrx/store';
+import { CodeResizerComponent } from './code/code-resizer.component';
 
 import { BundleUploadService } from './bundle-upload.service';
 import { CodeComponent } from './code/code.component';
@@ -68,6 +69,7 @@ require('../../../static/editor/style.scss');
     ChannelSelectDialog,
     CodeComponent,
     CodeNavComponent,
+    CodeResizerComponent,
     FrameComponent,
     FrameControlsComponent,
     HostComponent,
@@ -77,8 +79,8 @@ require('../../../static/editor/style.scss');
     LoginWalkthroughComponent,
     NavComponent,
     RemoteControlsComponent,
-    UploadSchemaDialogComponent,
     RenameBundleDialogComponent,
+    UploadSchemaDialogComponent,
   ],
   entryComponents: [
     ChannelSelectDialog,
