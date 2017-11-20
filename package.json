@@ -13,11 +13,13 @@
     "test:unit": "mocha",
     "test:lint": "tslint --type-check --project tsconfig.json '{src,test}/**/*.ts'",
     "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js && npm run test:lint -- --fix",
-    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\"",
+    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\" \"bin/*\"",
     "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test}/**/*.ts\"",
     "build": "rimraf dist && npm-run-all --parallel --silent build:ts build:editor",
     "build:ts": "tsc",
-    "build:editor": "webpack --config src/webpack/editor/webpack.config.js",
+    "build:editor": "webpack --config src/ui/editor/webpack.config.js",
+    "app": "tsc && npm run -s build:editor && electron bin/electron",
+    "app:debug": "npm run -s app -- --debug",
     "prepare": "npm run -s build"
   },
   "nyc": {
@@ -97,6 +99,7 @@
     "codemirror": "^5.28.0",
     "core-js": "^2.5.0",
     "css-loader": "^0.28.4",
+    "electron": "^1.7.9",
     "eventemitter3": "^2.0.3",
     "fast-json-patch": "^2.0.4",
     "mocha": "^3.5.0",

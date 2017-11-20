@@ -4,10 +4,10 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import { getBundlePath, IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { MixerPluginError } from '../errors';
-import { createPackage } from '../metadata/metadata';
-import { getProjectPath, mustLoadPackageJson } from '../npm';
-import { readFile, wrapErr } from '../util';
+import { MixerPluginError } from './server/errors';
+import { createPackage } from './server/metadata/metadata';
+import { getProjectPath, mustLoadPackageJson } from './server/npm';
+import { readFile, wrapErr } from './server/util';
 
 // webpack typings are pretty much useless here :(
 

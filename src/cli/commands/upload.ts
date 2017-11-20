@@ -1,10 +1,11 @@
 import * as ora from 'ora';
 
-import { Bundler } from '../publish/bundler';
-import { Uploader } from '../publish/uploader';
-import { Fetcher } from '../util';
+import { WriterReporter } from '../../server/metadata/evilsniffer';
+import { Bundler } from '../../server/publish/bundler';
+import { Uploader } from '../../server/publish/uploader';
+import { Fetcher } from '../../server/util';
+import { failSpiner, IGlobalOptions } from '../options';
 import writer from '../writer';
-import { failSpiner, IGlobalOptions } from './options';
 
 export interface IUploadOptions extends IGlobalOptions {
   tarball: string;
@@ -14,7 +15,7 @@ export default async function(options: IUploadOptions): Promise<void> {
   const fetcher = new Fetcher().with(await options.project.profile.tokens());
   const bundler = new Bundler(options.project);
 
-  if (!await bundler.checkEvil(writer)) {
+  if (!await new WriterReporter(options.project).checkEvil(writer)) {
     return;
   }
 

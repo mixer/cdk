@@ -1,10 +1,10 @@
 import { pick } from 'lodash';
 import { inspect } from 'util';
 
-import { UnexpectedHttpError } from '../errors';
-import { Fetcher, IRequester } from '../util';
+import { UnexpectedHttpError } from '../../server/errors';
+import { Fetcher, IRequester } from '../../server/util';
+import { IGlobalOptions } from '../options';
 import writer from '../writer';
-import { IGlobalOptions } from './options';
 
 export interface IInfoOptions extends IGlobalOptions {
   bundle: string;

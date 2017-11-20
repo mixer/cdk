@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import * as ora from 'ora';
 
-import { Bundler } from '../publish/bundler';
-import { IGlobalOptions } from './options';
+import { Bundler } from '../../server/publish/bundler';
+import { IGlobalOptions } from '../options';
 
 export default async function(options: IGlobalOptions): Promise<void> {
   const spinner = ora('Starting...').start();

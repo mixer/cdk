@@ -1,16 +1,15 @@
 import chalk from 'chalk';
 import * as express from 'express';
 import { merge } from 'lodash';
-import { isHttpableError, NotInteractiveError } from '../errors';
 
-import { DeclarationError } from '../metadata/error';
-import { EvilSniffer } from '../metadata/evilsniffer';
-import { GrantCancelledError } from '../profile';
-import { Project } from '../project';
-import { Bundler } from '../publish/bundler';
-import { Uploader } from '../publish/uploader';
-import { Fetcher, writeFile } from '../util';
-import writer from '../writer';
+import { isHttpableError, NotInteractiveError } from './errors';
+import { DeclarationError } from './metadata/error';
+import { EvilSniffer } from './metadata/evilsniffer';
+import { GrantCancelledError } from './profile';
+import { Project } from './project';
+import { Bundler } from './publish/bundler';
+import { Uploader } from './publish/uploader';
+import { Fetcher, writeFile } from './util';
 
 type RouteHandler = (req: express.Request, res: express.Response) => Promise<object | void>;
 
@@ -39,7 +38,7 @@ function route(handler: RouteHandler) {
           });
         } else {
           const contents = err.stack || err.message || String(err);
-          writer.write(chalk.red(`Error in ${req.method} ${req.path}:\n${contents}`));
+          console.error(chalk.red(`Error in ${req.method} ${req.path}:\n${contents}`));
           res.status(500).send(contents);
         }
       });
@@ -169,12 +168,12 @@ export function createApp(project: Project): express.Express {
     }),
   );
 
-  app.get('/metadata', route(async () => await project.clone().packageConfig()));
+  app.get('/metadata', route(async () => project.packageConfig()));
 
   app.post(
     '/modify-package',
     route(async req => {
-      const packageJson = await project.clone().packageJson();
+      const packageJson = await project.packageJson();
       merge(packageJson, req.body);
       await writeFile(project.baseDir('package.json'), JSON.stringify(packageJson, null, 2));
     }),
@@ -198,25 +197,13 @@ export function createApp(project: Project): express.Express {
     route(
       requireAuth(async req => {
         const fetcher = new Fetcher().with(await project.profile.tokens());
+        const config = await project.packageConfig();
+        const output = await new Bundler(project).bundle();
 
-        // The writer will write progress to the console for diagnostic purposes.
-        writer.write('Starting version upload');
-
-        const dupe = project.clone();
-        const config = await dupe.packageConfig();
-        const output = await new Bundler(dupe).bundle(progress => {
-          writer.write(progress);
-        });
-
-        writer.write('Uploading tarball');
-        await new Uploader(fetcher, dupe).upload(output.filename);
-
-        writer.write('Updating linked version');
+        await new Uploader(fetcher, project).upload(output.filename);
         await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
           bundle: `${config.name}_${config.version}`,
         });
-
-        writer.write('Complete');
       }),
     ),
   );

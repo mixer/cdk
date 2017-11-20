@@ -6,8 +6,8 @@ import * as ora from 'ora';
 import * as path from 'path';
 import * as tar from 'tar';
 
-import { UnexpectedHttpError } from '../errors';
-import { awaitChildProcess, readFile, writeFile } from '../util';
+import { UnexpectedHttpError } from '../../server/errors';
+import { awaitChildProcess, readFile, writeFile } from '../../server/util';
 import writer from '../writer';
 
 const launchpadUrl = 'https://github.com/mixer/interactive-launchpad/archive/master.tar.gz';

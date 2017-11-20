@@ -1,9 +1,9 @@
 import * as ora from 'ora';
 
-import { Publisher } from '../publish/publisher';
-import { Fetcher } from '../util';
+import { Publisher } from '../../server/publish/publisher';
+import { Fetcher } from '../../server/util';
+import { failSpiner, IGlobalOptions } from '../options';
 import writer from '../writer';
-import { failSpiner, IGlobalOptions } from './options';
 
 export interface IUnpublishOptions extends IGlobalOptions {
   package: string;

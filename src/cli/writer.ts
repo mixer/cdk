@@ -9,13 +9,6 @@ export class Writer {
   private readline = readline.createInterface(process.stdin, process.stdout);
 
   /**
-   * Swaps the function used for writing.
-   */
-  public use(fn: (...args: any[]) => void) {
-    this.fn = fn;
-  }
-
-  /**
    * Writes a message out to the console.
    */
   public write(...message: any[]) {

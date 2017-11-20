@@ -1,11 +1,9 @@
-import chalk from 'chalk';
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
-import { ShortCodeExpireError, UnexpectedHttpError } from './errors';
+import { NoAuthenticationError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
 import { api, exists, Fetcher, IRequester, readFile, wrapErr } from './util';
-import writer from './writer';
 
 interface IHostProfile {
   tokens: IOAuthTokenData;
@@ -38,21 +36,6 @@ export interface IGrantNotifier {
    * Whether we should cancel lookup up the code.
    */
   isCancelled(): boolean;
-}
-
-/**
- * ConsoleGrantNotifier is a grant notifier that prints out to the console.
- */
-export class ConsoleGrantNotifier implements IGrantNotifier {
-  public prompt(code: string) {
-    writer.write(
-      `Go to ${chalk.blue(`${api()}/go`)} and enter the code ` + `${chalk.blue(code)} to log in!`,
-    );
-  }
-
-  public isCancelled() {
-    return false;
-  }
 }
 
 /**
@@ -131,7 +114,7 @@ export class Profile {
   /**
    * Prompts the user to grant the tokens anew, and saves the profile.
    */
-  public async grant(notifier: IGrantNotifier = new ConsoleGrantNotifier()): Promise<OAuthTokens> {
+  public async grant(notifier: IGrantNotifier): Promise<OAuthTokens> {
     await this.tryLoadFile();
 
     let tokens: OAuthTokens | undefined;
@@ -182,15 +165,15 @@ export class Profile {
     }
 
     if (!await this.tryLoadFile()) {
-      await this.grant();
+      throw new NoAuthenticationError();
     } else if (!this.tokensObj!.granted(Profile.necessaryScopes)) {
-      await this.grant();
+      throw new NoAuthenticationError();
     } else if (this.tokensObj!.expired()) {
       try {
         await this.refresh();
       } catch (err) {
         if (err instanceof UnexpectedHttpError && err.tryJson()!.error === 'invalid_grant') {
-          await this.grant();
+          throw new NoAuthenticationError();
         } else {
           throw err;
         }
@@ -220,8 +203,7 @@ export class Profile {
    */
   private async refresh(): Promise<void> {
     if (!this.tokensObj) {
-      await this.grant();
-      return;
+      throw new Error('Cannot refresh without an available tokensObj');
     }
 
     this.tokensObj = await this.oauthClient.refresh(this.tokensObj);

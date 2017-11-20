@@ -5,9 +5,9 @@ const path = require('path');
 const chalk = require('chalk');
 const pkg = require(path.resolve(__dirname, '..', 'package.json'));
 
-const { isHumanError } = require('../dist/src/errors');
-const { findPackageJson } = require('../dist/src/npm');
-const { Project } = require('../dist/src/project');
+const { isHumanError } = require('../dist/src/server/errors');
+const { findPackageJson } = require('../dist/src/server/npm');
+const { Project } = require('../dist/src/server/project');
 const packageDir = findPackageJson(process.cwd()) || process.cwd();
 
 let packageJson = {};
@@ -30,7 +30,7 @@ const execute = argv => {
 
   argv.project = new Project(process.env.MIIX_PROFILE, process.env.MIIX_PROJECT);
 
-  Promise.resolve(require(`../dist/src/commands/${argv._[0]}`).default(argv))
+  Promise.resolve(require(`../dist/src/cli/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
     .catch(err => {
       if (isHumanError(err)) {
@@ -87,7 +87,7 @@ const yargs = require('yargs')
       argv.option('tarball', {
         description:
           'Control archive to upload as created with `miix pack`. ' +
-            'Will be created automatically if one is not specified.',
+          'Will be created automatically if one is not specified.',
         alias: 't',
       }),
     execute
@@ -117,7 +117,7 @@ const yargs = require('yargs')
         .option('tarball', {
           description:
             'Control archive to upload as created with `miix pack`. ' +
-              'Will be created automatically if one is not specified.',
+            'Will be created automatically if one is not specified.',
           alias: 't',
         })
         .option('skip-bundle', {
@@ -155,7 +155,7 @@ const yargs = require('yargs')
         .option('dir', {
           description:
             'The folder to extract into. Will be created if it does ' +
-              'not exist. Defaults to ./<projectName>',
+            'not exist. Defaults to ./<projectName>',
         })
         .option('npm', {
           description: 'npm path to use when installing the quickstart dependencies',

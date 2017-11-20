@@ -3,9 +3,13 @@ import { expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
-import { PackageIntegrityError, PublishPrivateError, UnexpectedHttpError } from '../src/errors';
-import { Project } from '../src/project';
-import { Publisher } from '../src/publish/publisher';
+import {
+  PackageIntegrityError,
+  PublishPrivateError,
+  UnexpectedHttpError,
+} from '../src/server/errors';
+import { Project } from '../src/server/project';
+import { Publisher } from '../src/server/publish/publisher';
 import { MockRequester } from './_setup';
 
 describe('Publisher', () => {

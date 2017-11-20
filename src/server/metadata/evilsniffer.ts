@@ -1,7 +1,9 @@
 import * as ts from 'typescript';
-import { DeclarationError, ErrorCode } from './error';
 
-import { MetadataExtractor } from './extractor';
+import { Writer } from '../../cli/writer';
+import { Project } from '../project';
+import { TypeScriptWalker } from './ast';
+import { DeclarationError, ErrorCode } from './error';
 
 function isCallToGlobal(node: ts.Node, fn: string): ts.NodeArray<ts.Expression> | undefined {
   if (!ts.isCallExpression(node) && !ts.isNewExpression(node)) {
@@ -60,7 +62,7 @@ const identifiers: ((node: ts.Node) => boolean)[] = [
  * EvilSniffer walks the TypeScript project and errors if it sees dangerous
  * method like `eval`, `new Function`, `setTimeout(str)`, and so on.
  */
-export class EvilSniffer extends MetadataExtractor {
+export class EvilSniffer extends TypeScriptWalker {
   protected visit(node: ts.Node): any {
     if (identifiers.some(id => id(node))) {
       throw new DeclarationError(
@@ -72,5 +74,38 @@ export class EvilSniffer extends MetadataExtractor {
     }
 
     return ts.forEachChild(node, child => this.visit(child));
+  }
+}
+
+/**
+ * WriterReporter prompts the user whether to continue if dangerous
+ * eval functions are found.
+ */
+export class WriterReporter {
+  constructor(private readonly project: Project) {}
+
+  /**
+   * Checks that eval functions are not used, or asks the user to confirm
+   * they they understand the risks using the writer. Returns whether
+   * publishing should be continued.
+   */
+  public async checkEvil(writer: Writer): Promise<boolean> {
+    try {
+      await new EvilSniffer().compile(this.project.baseDir());
+    } catch (e) {
+      if (!(e instanceof DeclarationError)) {
+        throw e;
+      }
+
+      writer.write(`${e.getHumanMessage()}\n\n`);
+      return await writer.confirm(
+        'Using these unsafe functions is strongly discouraged, and may cause your ' +
+          'controls to be banned from Mixer. Read more about why this is at ' +
+          'https://aka.ms/dont-be-eval.',
+        false,
+      );
+    }
+
+    return true;
   }
 }

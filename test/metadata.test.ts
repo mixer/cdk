@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 
 import { IInputDescriptor, InputKind } from '@mcph/miix-std/dist/internal';
-import { EvilSniffer } from '../src/metadata/evilsniffer';
-import { MetadataExtractor } from '../src/metadata/extractor';
-import { readFile } from '../src/util';
+import { EvilSniffer } from '../src/server/metadata/evilsniffer';
+import { MetadataExtractor } from '../src/server/metadata/extractor';
+import { readFile } from '../src/server/util';
 
 describe('metadata', () => {
   describe('extractor', () => {

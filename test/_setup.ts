@@ -1,10 +1,9 @@
-import { expect, use } from 'chai';
+import { use } from 'chai';
 import * as sinon from 'sinon';
 
-import { Profile } from '../src/profile';
-import { OAuthTokens } from '../src/shortcode';
-import { IRequester } from '../src/util';
-import writer from '../src/writer';
+import { Profile } from '../src/server/profile';
+import { OAuthTokens } from '../src/server/shortcode';
+import { IRequester } from '../src/server/util';
 
 use(require('sinon-chai'));
 use(require('chai-subset'));
@@ -35,38 +34,4 @@ export function createValidOAuthTokens() {
     scopes: Profile.necessaryScopes,
     expiresAt: new Date(Date.now() + 10000),
   });
-}
-
-export interface IExpectWriter {
-  clear(): void;
-  expectToNotHaveWritten(): void;
-  expectToHaveWritten(str: string | RegExp): void;
-}
-
-export function stubWriter(): IExpectWriter {
-  let stub = sinon.stub();
-  writer.use(stub);
-  const dumpLogs = () => `Logs were: ${JSON.stringify(stub.args, null, 2)}`;
-
-  return {
-    clear(): void {
-      stub = sinon.stub();
-      writer.use(stub);
-    },
-    expectToNotHaveWritten(): void {
-      expect(stub.args.length).to.eql(0, `Expected not to have written. ${dumpLogs()}`);
-    },
-    expectToHaveWritten: (str: string | RegExp) => {
-      expect(
-        stub.args.some(args => {
-          const message = args.join(' ');
-          if (str instanceof RegExp) {
-            return str.test(message);
-          }
-
-          return message.indexOf(str) > -1;
-        }),
-      ).to.equal(true, `Expected to have logged ${str}. ${dumpLogs()}`);
-    },
-  };
 }

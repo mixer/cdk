@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 
-import { ShortCodeAccessDeniedError, ShortCodeExpireError } from '../src/errors';
-import { Profile } from '../src/profile';
-import { OAuthClient, OAuthTokens } from '../src/shortcode';
+import { ShortCodeAccessDeniedError, ShortCodeExpireError } from '../src/server/errors';
+import { Profile } from '../src/server/profile';
+import { OAuthClient, OAuthTokens } from '../src/server/shortcode';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
 
 describe('shortcode oauth', () => {

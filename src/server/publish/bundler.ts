@@ -3,12 +3,9 @@ import { fork } from 'child_process';
 import * as path from 'path';
 
 import { PackageIntegrityError } from '../errors';
-import { DeclarationError } from '../metadata/error';
-import { EvilSniffer } from '../metadata/evilsniffer';
 import { findReadme, getPackageExecutable } from '../npm';
 import { Project } from '../project';
 import { awaitChildProcess, copy, exists, readDir } from '../util';
-import { Writer } from '../writer';
 
 const tar = require('tar'); // typings are pretty bad for this module.
 
@@ -45,31 +42,6 @@ export class Bundler {
     await this.createTarball(outputDir, filename);
 
     return { filename, config };
-  }
-
-  /**
-   * Checks that eval functions are not used, or asks the user to confirm
-   * they they understand the risks using the writer. Returns whether
-   * publishing should be continued.
-   */
-  public async checkEvil(writer: Writer): Promise<boolean> {
-    try {
-      await new EvilSniffer().compile(this.project.baseDir());
-    } catch (e) {
-      if (!(e instanceof DeclarationError)) {
-        throw e;
-      }
-
-      writer.write(`${e.getHumanMessage()}\n\n`);
-      return await writer.confirm(
-        'Using these unsafe functions is strongly discouraged, and may cause your ' +
-          'controls to be banned from Mixer. Read more about why this is at ' +
-          'https://aka.ms/dont-be-eval.',
-        false,
-      );
-    }
-
-    return true;
   }
 
   /**

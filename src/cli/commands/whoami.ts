@@ -1,5 +1,5 @@
+import { IGlobalOptions } from '../options';
 import writer from '../writer';
-import { IGlobalOptions } from './options';
 
 export default async function({ project }: IGlobalOptions) {
   if (!await project.profile.hasAuthenticated()) {
