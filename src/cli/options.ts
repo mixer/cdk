@@ -1,5 +1,5 @@
-import { isHumanError } from '../errors';
-import { Project } from '../project';
+import { isHumanError } from '../server/errors';
+import { Project } from '../server/project';
 
 export interface IGlobalOptions {
   /**

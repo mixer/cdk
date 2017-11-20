@@ -1,11 +1,12 @@
 import * as ora from 'ora';
 
-import { Bundler } from '../publish/bundler';
-import { Publisher } from '../publish/publisher';
-import { Uploader } from '../publish/uploader';
-import { Fetcher } from '../util';
+import { WriterReporter } from '../../server/metadata/evilsniffer';
+import { Bundler } from '../../server/publish/bundler';
+import { Publisher } from '../../server/publish/publisher';
+import { Uploader } from '../../server/publish/uploader';
+import { Fetcher } from '../../server/util';
+import { failSpiner, IGlobalOptions } from '../options';
 import writer from '../writer';
-import { failSpiner, IGlobalOptions } from './options';
 
 export interface IPublishOptions extends IGlobalOptions {
   force: boolean;
@@ -26,7 +27,7 @@ export default async function(options: IPublishOptions): Promise<void> {
   const bundler = new Bundler(options.project);
   const fetcher = new Fetcher().with(await options.project.profile.tokens());
 
-  if (!await bundler.checkEvil(writer)) {
+  if (!await new WriterReporter(options.project).checkEvil(writer)) {
     return;
   }
 

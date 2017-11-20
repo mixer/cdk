@@ -8,7 +8,7 @@ import {
   getPackageExecutable,
   getProjectPath,
   mustLoadPackageJson,
-} from '../src/npm';
+} from '../src/server/npm';
 
 describe('npm', () => {
   it('findPackageJson', () => {

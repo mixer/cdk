@@ -1,12 +1,12 @@
 import { fork } from 'child_process';
 import { createServer } from 'http';
 
-import { getPackageExecutable } from '../npm';
-import { never } from '../util';
-import { createApp } from '../webpack/dev-server';
-import { devEnvironmentVar } from '../webpack/plugin';
-import { IDevEnvironment } from '../webpack/typings';
-import { IGlobalOptions } from './options';
+import { getPackageExecutable } from '../../server/npm';
+import { createApp } from '../../server/server';
+import { never } from '../../server/util';
+import { IDevEnvironment } from '../../ui/typings';
+import { devEnvironmentVar } from '../../webpack-plugin';
+import { IGlobalOptions } from '../options';
 
 const portfinder = require('portfinder');
 portfinder.basePort = 13370;

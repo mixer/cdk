@@ -248,3 +248,27 @@ export class NotInteractiveError extends Error implements IHttpableError {
     return 409;
   }
 }
+
+/**
+ * NoAuthenticationError is thrown when attempting to execute an action
+ * which requires authentication which is not present.
+ */
+export class NoAuthenticationError extends Error implements IHttpableError, IHumanError {
+  constructor() {
+    super('You must log in to do that.');
+  }
+
+  /**
+   * @override
+   */
+  public getHumanMessage(): string {
+    return 'You must be logged in to do that, run `miix login`.';
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 401;
+  }
+}
