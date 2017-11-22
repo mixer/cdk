@@ -183,9 +183,10 @@ export function createApp(project: Project): express.Express {
     '/update-interactive-version/:versionId',
     route(
       requireAuth(async (req, res) => {
+        const body = { ...req.body, controlVersion: '2.0' };
         const updateRes = await new Fetcher()
           .with(await project.profile.tokens())
-          .json('put', `/interactive/versions/${req.params.versionId}`, req.body);
+          .json('put', `/interactive/versions/${req.params.versionId}`, body);
 
         res.status(updateRes.status).json(await updateRes.json());
       }),
