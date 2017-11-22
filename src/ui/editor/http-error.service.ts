@@ -17,6 +17,23 @@ export interface IResponseError<T> {
 }
 
 /**
+ * IJoiError is the error result returned if Joi validation fails.
+ */
+export interface IJoiError {
+  isJoi: true;
+  name: 'ValidationError';
+  details: {
+    context: {
+      key: string;
+      label: string;
+    };
+    message: string;
+    path: string[];
+    type: string;
+  }[];
+}
+
+/**
  * The HttpError services wraps handling of common errors into an easily
  * reusable pattern.
  */
@@ -39,7 +56,28 @@ export class HttpErrorService {
         throw res;
       }
       if (json.name !== errName) {
-        throw errName;
+        throw res;
+      }
+
+      return Promise.resolve(handler(json, res));
+    };
+  }
+
+  /**
+   * Handles Joi errors from the server.
+   */
+  public joi<T>(
+    handler: (err: IJoiError, res: Response) => T | Promise<T>,
+  ): (res: Response) => Promise<T> {
+    return res => {
+      let json: IJoiError;
+      try {
+        json = res.json();
+      } catch (err) {
+        throw res;
+      }
+      if (json.isJoi !== true) {
+        throw res;
       }
 
       return Promise.resolve(handler(json, res));

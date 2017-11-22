@@ -52,7 +52,7 @@ export class LocalStateSyncService implements OnDestroy {
    * Attaches listeners to the iframe.
    */
   public bind(frame: HTMLIFrameElement): this {
-    this.rpc = new RPC(frame.contentWindow);
+    this.rpc = new RPC(frame.contentWindow, '1.0');
     this.rpc.expose('controlsReady', () => {
       this.sendInitialState();
     });
