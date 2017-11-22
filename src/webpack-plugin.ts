@@ -31,7 +31,7 @@ export const devEnvironmentVar = '__MIIX_DEV_SERVER';
 /**
  * The path to the "static" folder relative to this module.
  */
-const staticPath = path.resolve(__dirname, '../../../static');
+const staticPath = path.resolve(__dirname, '../../static');
 
 /**
  * Path prefix for miix dev server assets.
@@ -255,8 +255,8 @@ export class MixerPlugin {
           compilation.assets['editor.html'] = contentsToAsset(result);
         }),
       this.addFiles(compilation, {
-        'editor.main.js': path.resolve(__dirname, 'editor/main.bundle.js'),
-        'editor.polyfills.js': path.resolve(__dirname, 'editor/polyfills.bundle.js'),
+        'editor.main.js': path.resolve(__dirname, 'ui/editor/main.bundle.js'),
+        'editor.polyfills.js': path.resolve(__dirname, 'ui/editor/polyfills.bundle.js'),
       }),
       this.addStaticAssets(compilation),
     ]);
