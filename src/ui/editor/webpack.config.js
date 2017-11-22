@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 const paths = {};
 paths.root = path.resolve(__dirname, '../../../');
-paths.dist = path.resolve(paths.root, 'dist/src/webpack/editor');
+paths.dist = path.resolve(paths.root, 'dist/src/ui/editor');
 paths.static = path.resolve(paths.root, 'static/editor');
 paths.globalStyles = path.resolve(paths.static, 'style.scss');
 
