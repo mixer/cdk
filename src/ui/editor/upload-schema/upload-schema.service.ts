@@ -10,8 +10,8 @@ import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/switchMap';
 
+import { HttpErrorService } from '../http-error.service';
 import { IProject, ProjectService } from '../redux/project';
-import { reportHttpError } from '../util/report-issue';
 import { IUploadSchemaResult, UploadSchemaDialogComponent } from './upload-schema-dialog.component';
 
 /**
@@ -24,6 +24,7 @@ export class UploadSchemaService {
     private readonly store: Store<IProject>,
     private readonly dialog: MatDialog,
     private readonly http: Http,
+    private readonly httpErr: HttpErrorService,
     private readonly snackRef: MatSnackBar,
   ) {}
 
@@ -35,23 +36,25 @@ export class UploadSchemaService {
     this.confirmCanUpload()
       .filter(Boolean)
       .switchMap(() => this.uploadCurrentControls())
-      .subscribe(
-        () => this.snackRef.open('Schema uploaded', undefined, { duration: 2000 }),
-        err => {
-          // Catch JSON5 parsing exceptions
-          if (err instanceof SyntaxError) {
-            this.snackRef.open(`Your control schema contains errors: ${err.message}`);
-            return;
-          }
-
-          this.snackRef
-            .open('An unknown error occurred', 'Report', { duration: 5000 })
-            .onAction()
-            .subscribe(() => {
-              reportHttpError('Unknown error in controls upload', err);
-            });
-        },
-      );
+      .take(1)
+      .toPromise()
+      .then(() => this.snackRef.open('Schema uploaded', undefined, { duration: 2000 }))
+      .catch(
+        this.httpErr.joi(err => {
+          // todo(connor4312): I would like to show these errors inline and
+          // highlighted in the code editor, but doing so involves a notable
+          // amount of work to parse into the right place. Toast for now.
+          const { message, path } = err.details[0];
+          this.snackRef.open(
+            `Error uploading control: ${message} in "${path.join('.')}".`,
+            undefined,
+            { duration: 7000 },
+          );
+        }),
+      )
+      .catch(SyntaxError, err => {
+        this.snackRef.open(`Your control schema contains errors: ${err.message}`);
+      });
   }
 
   /**
