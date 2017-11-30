@@ -3,7 +3,7 @@ import * as json5 from 'json5';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
-import { getBundlePath, IPackageConfig } from '@mcph/miix-std/dist/internal';
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { MixerPluginError } from './server/errors';
 import { createPackage } from './server/metadata/metadata';
 import { getProjectPath, mustLoadPackageJson } from './server/npm';
@@ -52,7 +52,7 @@ abstract class HTMLInjector {
       throw new MixerPluginError('Your homepage is missing a <head> section!');
     }
 
-    this.append(head, ...(await this.injectHead(compiler)));
+    this.prepend(head, ...(await this.injectHead(compiler)));
     return parse5.serialize(parsed);
   }
 
@@ -73,13 +73,13 @@ abstract class HTMLInjector {
     }
   }
 
-  private append(parent: parse5.AST.HtmlParser2.Node, ...elements: string[]) {
+  private prepend(parent: parse5.AST.HtmlParser2.Node, ...elements: string[]) {
     if (!(<any>parent).childNodes) {
       throw new Error('Attempted to append to non-parent node');
     }
 
     const casted = <parse5.AST.HtmlParser2.ParentNode>parent;
-    elements.forEach(element => casted.childNodes.push(this.stringToNode(element)));
+    elements.forEach(element => casted.childNodes.unshift(this.stringToNode(element)));
   }
 
   private stringToNode(src: string): parse5.AST.HtmlParser2.Node {
@@ -134,7 +134,6 @@ class HomepageRenderer extends HTMLInjector {
     output.push(
       `<script>window.mixerPackageConfig=${JSON.stringify(this.packaged)};` +
         `window.mixerLocales=${JSON.stringify(this.locales)}</script>`,
-      `<script src="./mixer.js"></script>`,
     );
 
     return output;
@@ -273,7 +272,6 @@ export class MixerPlugin {
         .then(result => {
           compilation.assets['index.html'] = contentsToAsset(result);
         }),
-      this.addFiles(compilation, { 'mixer.js': getBundlePath() }),
     ]);
   }
 
