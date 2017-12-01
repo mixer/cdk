@@ -7,6 +7,7 @@ import { never } from '../../server/util';
 import { IDevEnvironment } from '../../ui/typings';
 import { devEnvironmentVar } from '../../webpack-plugin';
 import { IGlobalOptions } from '../options';
+import { ensureWebpackDependencies } from '../prereqs';
 
 const portfinder = require('portfinder');
 portfinder.basePort = 13370;
@@ -24,6 +25,8 @@ function defaultArgs(original: string[], defaults: { [key: string]: string | boo
 }
 
 export default async function(options: IGlobalOptions): Promise<void> {
+  await ensureWebpackDependencies(options.project);
+
   const argDelimiter = process.argv.indexOf('--');
   const port = await portfinder.getPortPromise();
   const server = createServer(createApp(options.project)).listen(port);

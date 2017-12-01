@@ -5,6 +5,7 @@ import { Bundler } from '../../server/publish/bundler';
 import { Uploader } from '../../server/publish/uploader';
 import { Fetcher } from '../../server/util';
 import { failSpiner, IGlobalOptions } from '../options';
+import { ensureWebpackDependencies } from '../prereqs';
 import writer from '../writer';
 
 export interface IUploadOptions extends IGlobalOptions {
@@ -12,6 +13,7 @@ export interface IUploadOptions extends IGlobalOptions {
 }
 
 export default async function(options: IUploadOptions): Promise<void> {
+  await ensureWebpackDependencies(options.project);
   const fetcher = new Fetcher().with(await options.project.profile.tokens());
   const bundler = new Bundler(options.project);
 

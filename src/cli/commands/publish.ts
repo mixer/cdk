@@ -6,6 +6,7 @@ import { Publisher } from '../../server/publish/publisher';
 import { Uploader } from '../../server/publish/uploader';
 import { Fetcher } from '../../server/util';
 import { failSpiner, IGlobalOptions } from '../options';
+import { ensureWebpackDependencies } from '../prereqs';
 import writer from '../writer';
 
 export interface IPublishOptions extends IGlobalOptions {
@@ -32,6 +33,7 @@ export default async function(options: IPublishOptions): Promise<void> {
   }
 
   if (!options.skipBundle) {
+    await ensureWebpackDependencies(options.project);
     let filename = options.tarball;
     if (!filename) {
       const output = await bundler

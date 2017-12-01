@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { existsSync } from 'fs';
 import { readDir } from './util';
 
 /**
@@ -87,4 +88,12 @@ export async function findReadme(dir: string): Promise<string | undefined> {
   } catch (e) {
     return undefined;
   }
+}
+
+/**
+ * Returns whether all requested dependencies are installed in node_modules
+ * relative to the project base directory.
+ */
+export async function isPackagedInstalled(baseDir: string, ...dependencies: string[]) {
+  return !dependencies.some(dep => !existsSync(path.join(baseDir, 'node_modules', dep)));
 }

@@ -178,6 +178,10 @@ class LocalePackager {
    * (from the file basenames) to their contents.
    */
   public async compile(pattern: string): Promise<{ [locale: string]: object }> {
+    if (!pattern) {
+      return {};
+    }
+
     const files = glob.sync(pattern);
     const output: { [locale: string]: object } = {};
 

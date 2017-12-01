@@ -3,6 +3,12 @@ import * as Joi from 'joi';
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { MetadataExtractor } from './extractor';
 
+export interface IBundleConfig extends IPackageConfig {
+  toolchain?: {
+    kind: string;
+  };
+}
+
 const inputSchema = Joi.object({
   propertyName: Joi.string().required(),
   alias: Joi.string().required(),
