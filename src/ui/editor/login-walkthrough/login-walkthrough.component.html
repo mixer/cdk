@@ -1,4 +1,4 @@
-<ng-container *ngIf="(loggedIn | async) === null">
+<mat-dialog-content *ngIf="(loggedIn | async) === null">
   <div class="loader"></div>
   <div class="status">
     <ng-container *ngIf="(code | async) !== null">
@@ -9,8 +9,8 @@
         Getting a login code...
     </ng-container>
   </div>
-</ng-container>
+</mat-dialog-content>
 
-<ng-container *ngIf="(loggedIn | async) === undefined">
+<mat-dialog-content *ngIf="(loggedIn | async) === undefined">
   <ng-content></ng-content>
-</ng-container>
+</mat-dialog-content>
