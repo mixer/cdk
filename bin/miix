@@ -159,7 +159,7 @@ const yargs = require('yargs')
         })
         .option('npm', {
           description: 'npm path to use when installing the quickstart dependencies',
-          default: 'npm',
+          default: /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
         })
         .demand('projectName'),
     execute
