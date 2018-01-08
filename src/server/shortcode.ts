@@ -203,6 +203,7 @@ export class OAuthClient {
     const res = await this.fetcher.json('post', '/oauth/token', {
       grant_type: 'refresh_token',
       refresh_token: tokens.data.refreshToken,
+      client_id: this.options.clientId,
     });
 
     if (res.status >= 300) {
