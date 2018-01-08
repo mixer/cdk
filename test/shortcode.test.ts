@@ -72,6 +72,7 @@ describe('shortcode oauth', () => {
         .withArgs('post', '/oauth/token', {
           grant_type: 'refresh_token',
           refresh_token: 'expired_refresh_token',
+          client_id: 'clientId',
         })
         .resolves({
           json: async () => mockTokenResponse,
