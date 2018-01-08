@@ -7,6 +7,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
+import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
@@ -53,6 +54,11 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   public static readonly padding = 32;
 
   /**
+   * Aspect ratio of the fitted, virtual video.
+   */
+  public static readonly videoRatio = 16 / 9;
+
+  /**
    * Background to display behind the frame.
    */
   public readonly background: SafeStyle = this.sanitizer.bypassSecurityTrustStyle(
@@ -84,6 +90,12 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
    * Whether the controls should be connected to production.
    */
   public isConnectedToRemote = this.store.map(s => s.connect.state === ConnectState.Active);
+
+  /**
+   * Observable for the computed video position, fitted with a 16:9 ratio into
+   * the bounds provided by the controls.
+   */
+  public videoFilledSize = this.controls.getVideoSize().map(rect => this.getFittedVideo(rect));
 
   constructor(
     public readonly el: ElementRef,
@@ -117,6 +129,10 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
       .subscribe(state => {
         this.refreshBlocks(state);
       });
+
+    this.videoFilledSize.takeUntilDestroyed(this).subscribe(rect => {
+      this.controls.updateFittedVideoSize(rect);
+    });
   }
 
   public ngOnDestroy() {
@@ -148,5 +164,47 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
     this.controlsBlock = controlBlock;
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
+  }
+
+  private getFittedVideo(rect: IVideoPositionOptions): ClientRect {
+    const backdropRect = (<HTMLElement>this.el.nativeElement).querySelector(
+      '.block-video',
+    )!.getBoundingClientRect();
+
+    const out = {
+      left: 0,
+      right: 0,
+      bottom: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+      ...rect,
+    };
+
+    // Normalize any bottom/right bounds to width/height to make things easier.
+
+    if (!out.width) {
+      out.width = backdropRect.width - out.left - out.right;
+      delete rect.right;
+    }
+    if (!rect.height) {
+      rect.height = backdropRect.height - out.top - out.bottom;
+      delete rect.bottom;
+    }
+
+    if (out.width / out.height > FrameComponent.videoRatio) {
+      const newWidth = out.height * FrameComponent.videoRatio;
+      out.left = out.left + (out.width - newWidth) / 2;
+      out.width = newWidth;
+    } else {
+      const newHeight = out.width / FrameComponent.videoRatio;
+      out.top = out.top + (out.height - newHeight) / 2;
+      out.height = newHeight;
+    }
+
+    out.right = backdropRect.width - backdropRect.left;
+    out.bottom = backdropRect.height - backdropRect.top;
+
+    return out;
   }
 }
