@@ -18,6 +18,7 @@ import { devices } from './devices';
 @Injectable()
 export class ControlStateSyncService {
   private videoSizeSubj = new MemorizingSubject<IVideoPositionOptions>();
+  private fittedSizeSubj = new MemorizingSubject<ClientRect>();
   private refreshSubj = new Subject<void>();
 
   constructor(private readonly store: Store<IProject>) {}
@@ -30,10 +31,24 @@ export class ControlStateSyncService {
   }
 
   /**
+   * Updates the fitted size of the video sent to controls.
+   */
+  public updateFittedVideoSize(rect: ClientRect) {
+    this.fittedSizeSubj.next(rect);
+  }
+
+  /**
    * Observable that emits when the video size/position changes.
    */
   public getVideoSize(): Observable<IVideoPositionOptions> {
     return this.videoSizeSubj;
+  }
+
+  /**
+   * Observable of the fitted, actual position/size of the video relative to the frame.
+   */
+  public getFittedVideoSize(): Observable<ClientRect> {
+    return this.fittedSizeSubj;
   }
 
   /**

@@ -77,6 +77,16 @@ export class LocalStateSyncService implements OnDestroy {
         this.bind(frame);
       });
 
+    this.controlsState
+      .getFittedVideoSize()
+      .takeUntil(this.closed)
+      .subscribe(rect => {
+        this.rpc.call('updateVideoPosition', {
+          connectedPlayer: { ...rect, channelId: 1 },
+          costreamPlayers: [],
+        }, false);
+      });
+
     return this;
   }
 
