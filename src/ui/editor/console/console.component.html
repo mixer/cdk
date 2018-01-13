@@ -1,0 +1,54 @@
+<div class="toggles">
+  <a class="message-kind"
+    (click)="toggleFilterKind(Message.SentMethod)"
+    [class.active]="hasFilterKind(Message.SentMethod) | async">
+    Server Calls
+  </a>
+  <a class="message-kind"
+    (click)="toggleFilterKind(Message.SentReply)"
+    [class.active]="hasFilterKind(Message.SentReply) | async">
+    Server Replies
+  </a>
+  <a class="message-kind"
+    (click)="toggleFilterKind(Message.ReceivedMethod)"
+    [class.active]="hasFilterKind(Message.ReceivedMethod) | async">
+    Control Calls
+  </a>
+  <a class="message-kind"
+    (click)="toggleFilterKind(Message.ReceivedReply)"
+    [class.active]="hasFilterKind(Message.ReceivedReply) | async">
+    Control Replies
+  </a>
+  <a class="message-kind"
+    (click)="toggleFilterKind(Message.Error)"
+    [class.active]="hasFilterKind(Message.Error) | async">
+    Control Errors
+  </a>
+  <span style="flex:1"></span>
+  <mat-icon svgIcon="clear" (click)="console.clear()"></mat-icon>
+</div>
+<div #container class="content" [class.hasExpanded]="!!(expandedId | async)">
+  <ng-container *ngFor="let item of (messages | async); trackBy: console.trackBy">
+      <div *ngIf="(expandedId | async) === item.message.id"
+        class="line expanded" [attr.data-line-type]="Message[item.message.kind]"
+        (click)="toggleExpansion(item.message.id)">
+        <editor-expanded-message [item]="item"></editor-expanded-message>
+      </div>
+      <div *ngIf="(expandedId | async) !== item.message.id"
+        class="line"
+        [class.hovered]="(hoveredPair | async) === item.message.id"
+        [attr.data-line-type]="Message[item.message.kind]"
+        (click)="toggleExpansion(item.message.id)"
+        (mouseenter)="hoveredMessage(item.message)"
+        (mouseout)="hoveredPair.next(null)"
+        [innerHtml]="item.message.text | safe">
+      </div>
+  </ng-container>
+</div>
+<form (ngSubmit)="sendCommand()" class="repl">
+  <input type="text" placeholder="Call control method, e.g. updateSettings({ platform: 'mobile' })"
+    name="command"
+    [ngModel]="commandInput | async"
+    (ngModelChange)="commandInput.next($event)">
+</form>
+<code-resizer></code-resizer>

@@ -95,7 +95,10 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
    * Observable for the computed video position, fitted with a 16:9 ratio into
    * the bounds provided by the controls.
    */
-  public videoFilledSize = this.controls.getVideoSize().map(rect => this.getFittedVideo(rect));
+  public videoFilledSize = this.controls
+    .getVideoSize()
+    .map(rect => this.getFittedVideo(rect))
+    .filter(rect => !!rect);
 
   constructor(
     public readonly el: ElementRef,
@@ -131,7 +134,7 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
       });
 
     this.videoFilledSize.takeUntilDestroyed(this).subscribe(rect => {
-      this.controls.updateFittedVideoSize(rect);
+      this.controls.updateFittedVideoSize(rect!);
     });
   }
 
@@ -166,11 +169,13 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
     this.cdRef.detectChanges();
   }
 
-  private getFittedVideo(rect: IVideoPositionOptions): ClientRect {
-    const backdropRect = (<HTMLElement>this.el.nativeElement).querySelector(
-      '.block-video',
-    )!.getBoundingClientRect();
+  private getFittedVideo(rect: IVideoPositionOptions): ClientRect | null {
+    const videoBlock = (<HTMLElement>this.el.nativeElement).querySelector('.block-video');
+    if (!videoBlock) {
+      return null;
+    }
 
+    const backdropRect = videoBlock.getBoundingClientRect();
     const out = {
       left: 0,
       right: 0,

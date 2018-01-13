@@ -77,6 +77,7 @@ export class ControlStateSyncService {
       .map(isMobile => ({
         language: navigator.language,
         placesVideo: !isMobile,
+        platform: <'mobile' | 'desktop'>(isMobile ? 'mobile' : 'desktop'),
       }));
   }
 }

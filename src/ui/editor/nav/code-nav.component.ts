@@ -21,7 +21,7 @@ import { IProject, ProjectService } from '../redux/project';
  */
 @Component({
   selector: 'editor-code-nav',
-  template: '{{ value }}',
+  templateUrl: './code-nav.component.html',
   styleUrls: ['./code-nav.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -32,6 +32,11 @@ export class CodeNavComponent implements OnInit, OnDestroy {
   @Input('value') public value: keyof typeof CodeState;
 
   /**
+   * Icon to display in the
+   */
+  @Input('icon') public icon: string;
+
+  /**
    * Element role (button for accessibility)
    */
   @HostBinding('attr.role') public role = 'button';
@@ -39,7 +44,7 @@ export class CodeNavComponent implements OnInit, OnDestroy {
   /**
    * Whether the nav item is active.
    */
-  @HostBinding('class.active') private isActive = false;
+  public isActive = false;
 
   constructor(
     private readonly store: Store<IProject>,

@@ -23,7 +23,6 @@ describe('Publisher', () => {
     version: '0.1.0',
     description: 'My awesome bundle',
     homepage: 'https://mixer.com',
-    display: { mode: 'flex' },
     controls: {},
     scenes: {},
   };

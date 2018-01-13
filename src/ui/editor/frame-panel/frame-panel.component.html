@@ -1,0 +1,73 @@
+<div class="tools small-tools">
+  <button (click)="refresh()"
+    mat-icon-button
+    matTooltip="Refresh Controls"
+    matTooltipPosition="below">
+    <mat-icon svgIcon="refresh"></mat-icon>
+  </button>
+
+  <button *ngIf="canFullscreen"
+    (click)="fullscreen()"
+    mat-icon-button
+    matTooltip="Toggle Fullscreen"
+    matTooltipPosition="below">
+    <mat-icon svgIcon="fullscreen"></mat-icon>
+  </button>
+
+  <button *ngIf="areControlsConnected | async"
+    (click)="exitRemote()"
+    mat-icon-button
+    matTooltip="Disconnect Controls"
+    matTooltipPosition="below">
+    <mat-icon svgIcon="close"></mat-icon>
+  </button>
+</div>
+
+<span style="flex:1"></span>
+
+<button mat-icon-button [disabled]="!(isMobile | async)" (click)="rotateDevice()">
+  <mat-icon svgIcon="screen-rotation"></mat-icon>
+</button>
+
+<div class="sizing ">
+  <mat-form-field>
+    <mat-select
+      placeholder="Device"
+      [ngModel]="(frame | async)?.chosenDevice"
+      (ngModelChange)="chooseDevice($event)">
+      <mat-option *ngFor="let device of devices; let i = index" [value]="i">
+        {{ device.displayName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-input-container>
+    <input matInput placeholder="Width" type="number" min="0"
+      [ngModel]="(frame | async)?.width"
+      (ngModelChange)="setWidth($event)">
+  </mat-input-container>
+  <div class="times">x</div>
+  <mat-input-container>
+    <input matInput placeholder="Height" type="number" min="0"
+      [ngModel]="(frame | async)?.height"
+      (ngModelChange)="setHeight($event)">
+  </mat-input-container>
+</div>
+
+<div class="tools">
+  <button mat-icon-button [matMenuTriggerFor]="syncMenu">
+    <mat-icon svgIcon="upload"></mat-icon>
+  </button>
+  <button mat-icon-button
+    matTooltipPosition="left"
+    matTooltip="Connect to Interactive"
+    (click)="connect($event)">
+    <mat-icon svgIcon="rocket"></mat-icon>
+  </button>
+</div>
+
+<mat-menu #syncMenu="matMenu">
+  <button mat-menu-item *ngIf="!(isVersionLinked | async)" (click)="openLinkDialog()">Link to Interactive Version</button>
+  <button mat-menu-item *ngIf="isVersionLinked | async" (click)="unlink()">Unlink from Interactive Version</button>
+  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadBundle()">Upload Control Bundle</button>
+  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadSchema()">Upload Schema</button>
+</mat-menu>

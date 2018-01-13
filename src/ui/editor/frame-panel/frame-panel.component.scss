@@ -1,0 +1,55 @@
+@import '../../../../static/editor/declarations';
+
+:host {
+  @include layout-row-center();
+  height: $dimension-navbar-height;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.sizing {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  color: #fff;
+  height: 46px;
+
+  mat-input-container,
+  mat-form-field {
+    margin: 0 $dimension-gutter-md;
+  }
+
+  mat-form-field {
+    width: 200px;
+  }
+
+  mat-input-container {
+    width: 100px;
+  }
+
+  .times {
+    font-weight: 200;
+    color: rgba(#fff, 0.5);
+  }
+}
+
+.tools {
+  button {
+    margin: 0 $dimension-gutter-sm;
+  }
+}
+
+
+.small-tools mat-icon {
+  width: 16px;
+}
+
+mat-icon::ng-deep > svg {
+  fill: #fff;
+
+  button[disabled] & {
+    fill: rgba(#fff, 0.5);
+  }
+}

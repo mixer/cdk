@@ -1,21 +1,26 @@
 @import '../../../../static/editor/declarations';
 
 :host {
-  @include layout-row-center();
-  height: $dimension-navbar-height;
-  background: $color-primary;
+  @include layout-column-center();
+  width: $dimension-sidenav-width;
+  height: 100vh;
+  background: $color-editor-background;
 }
 
 .logo {
   display: block;
-  width: $dimension-navbar-height;
-  height: $dimension-navbar-height;
-  background: url(asset('merge-white.svg')) center center no-repeat;
-  background-size: $dimension-navbar-height / 2;
+  width: $dimension-sidenav-width;
+  height: $dimension-sidenav-width;
+  background: url(asset('merge-white.svg')) center center no-repeat $color-primary;
+  background-size: $dimension-sidenav-width / 2;
+
+  &:hover {
+    background-color: lighten($color-primary, 10%);
+  }
 }
 
 .nav {
-  @include layout-row-center();
+  @include layout-column-center();
 
   &, li {
     margin: 0;
@@ -24,49 +29,5 @@
 
   li {
     list-style-type: none;
-  }
-}
-
-.spacer {
-  flex: 1;
-}
-
-.sizing {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  color: #fff;
-  height: 46px;
-
-  mat-input-container,
-  mat-form-field {
-    margin: 0 $dimension-gutter-md;
-  }
-
-  mat-form-field {
-    width: 200px;
-  }
-
-  mat-input-container {
-    width: 100px;
-  }
-
-  .times {
-    font-weight: 200;
-    color: rgba(#fff, 0.5);
-  }
-}
-
-.tools {
-  button {
-    margin: 0 $dimension-gutter-sm;
-  }
-}
-
-mat-icon::ng-deep > svg {
-  fill: #fff;
-
-  button[disabled] & {
-    fill: rgba(#fff, 0.5);
   }
 }

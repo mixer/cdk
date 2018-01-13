@@ -1,0 +1,19 @@
+<ng-container *ngIf="wasSent">
+  Sent at {{ item.createdAt.toISOString() }} to the controls:
+</ng-container>
+<ng-container *ngIf="!wasSent">
+  Received at {{ item.createdAt.toISOString() }} from the controls:
+</ng-container>
+
+<span [innerHtml]="(item.message.expansion() | safe)"></span>
+
+<ng-container *ngIf="pair">
+  <ng-container *ngIf="isReply">
+    The above message is in reply to:
+  </ng-container>
+  <ng-container *ngIf="!isReply">
+    The above message received the following reply:
+  </ng-container>
+
+  <span [innerHtml]="(pair.message.expansion() | safe)"></span>
+</ng-container>

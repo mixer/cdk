@@ -8,6 +8,7 @@ import '../util/takeUntilDestroyed';
 
 import { RPC } from '@mcph/miix-std/dist/internal';
 import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
+import { ConsoleService } from '../console/console.service';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
 import { ControlStateSyncService } from './control-state-sync.service';
@@ -33,7 +34,11 @@ export class LocalStateSyncService implements OnDestroy {
   private sources = [new ControlsSource(), new GroupSource(), new ParticipantSource()];
   private closed = new MemorizingSubject<void>();
 
-  constructor(private readonly controlsState: ControlStateSyncService, store: Store<IProject>) {
+  constructor(
+    private readonly controlsState: ControlStateSyncService,
+    private readonly console: ConsoleService,
+    store: Store<IProject>,
+  ) {
     this.sources.forEach(source => {
       source
         .getEvents(store.select('code'))
@@ -53,24 +58,26 @@ export class LocalStateSyncService implements OnDestroy {
    */
   public bind(frame: HTMLIFrameElement): this {
     this.rpc = new RPC(frame.contentWindow, '1.0');
+    this.console.bindToRPC(this.rpc);
     this.rpc.expose('controlsReady', () => {
       this.sendInitialState();
     });
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.controlsState.setVideoSize(data);
     });
-    this.rpc.expose('sendInteractivePacket', _input => {
-      // todo(connor4312): log
-    });
+
+    const refresh = this.controlsState.getRefresh();
+
     Observable.fromEvent(frame, 'loaded')
       .takeUntil(this.closed)
+      .takeUntil(refresh)
       .subscribe(() => {
         this.state = State.Loading;
       });
 
-    this.controlsState
-      .getRefresh()
+    refresh
       .takeUntil(this.closed)
+      .take(1)
       .subscribe(() => {
         this.rpc.destroy();
         frame.src = frame.src;
@@ -80,6 +87,7 @@ export class LocalStateSyncService implements OnDestroy {
     this.controlsState
       .getFittedVideoSize()
       .takeUntil(this.closed)
+      .takeUntil(refresh)
       .subscribe(rect => {
         this.rpc.call(
           'updateVideoPosition',

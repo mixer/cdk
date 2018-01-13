@@ -2,8 +2,8 @@
 
 .content {
   position: fixed;
-  top: $dimension-navbar-height;
-  left: 0;
+  top: 0;
+  left: $dimension-sidenav-width;
   right: 0;
   bottom: 0;
 }

@@ -1,26 +1,24 @@
 @import '../../../../static/editor/declarations';
 
-:host {
-  @include swift-ease-out('border-bottom-color', 'color');
-
-  display: inline-block;
-  padding: 6px 12px;
+button {
+  display: block;
+  width: $dimension-sidenav-width;
+  height: $dimension-sidenav-width;
   outline: 0 !important;
-  color: rgba(#fff, 0.75);
-  text-decoration: none;
-  cursor: pointer;
-  font-size: 14px;
-  margin: 2px $dimension-gutter-md 0;
   background: transparent;
-  border-bottom: 2px solid transparent;
+  border: 0;
+  cursor: pointer;
 
-  &.active {
-    background: #000;
-    color: #fff;
+  &.active,
+  &:hover {
+    background:$color-editor-active-line;
   }
 
-  &:hover {
-    border-bottom-color: #000;
-    color: #fff;
+  &:active {
+    background: $color-primary;
+  }
+
+  mat-icon::ng-deep > svg {
+    fill: rgba(#fff, 0.5);
   }
 }

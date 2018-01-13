@@ -22,6 +22,7 @@ $dimension-gutter-md: 16px;
 $dimension-gutter-lg: 32px;
 $dimension-gutter-xl: 64px;
 
+$dimension-sidenav-width: 65px;
 $dimension-navbar-height: 65px;
 $dimension-loader-size: 32px;
 $dimension-loader-border: 3px;
@@ -84,4 +85,16 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+@mixin layout-column-center() {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@mixin scroll-y($type: auto) {
+  overflow-y: $type;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
 }

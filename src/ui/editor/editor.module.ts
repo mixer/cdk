@@ -23,7 +23,10 @@ import { CodeResizerComponent } from './code/code-resizer.component';
 
 import { BundleUploadService } from './bundle-upload.service';
 import { CodeComponent } from './code/code.component';
-import { FrameControlsComponent } from './frame/frame-controls.component';
+import { ConsoleComponent } from './console/console.component';
+import { ConsoleService } from './console/console.service';
+import { ExpandedMessageComponent } from './console/expanded-message.component';
+import { FramePanelComponent } from './frame-panel/frame-panel.component';
 import { FrameComponent } from './frame/frame.component';
 import { LocalControlsComponent } from './frame/local-controls.component';
 import { RemoteControlsComponent } from './frame/remote-controls.component';
@@ -37,6 +40,7 @@ import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
 import { metaReducers, ProjectService, reducers } from './redux/project';
 import { RenameBundleDialogComponent } from './rename-bundle-dialog/rename-bundle-dialog.component';
+import { SafePipe } from './safe.pipe';
 import { UploadSchemaDialogComponent } from './upload-schema/upload-schema-dialog.component';
 import { UploadSchemaService } from './upload-schema/upload-schema.service';
 
@@ -70,8 +74,10 @@ require('../../../static/editor/style.scss');
     CodeComponent,
     CodeNavComponent,
     CodeResizerComponent,
+    ConsoleComponent,
+    ExpandedMessageComponent,
     FrameComponent,
-    FrameControlsComponent,
+    FramePanelComponent,
     HostComponent,
     LaunchDialogComponent,
     LinkDialogComponent,
@@ -80,6 +86,7 @@ require('../../../static/editor/style.scss');
     NavComponent,
     RemoteControlsComponent,
     RenameBundleDialogComponent,
+    SafePipe,
     UploadSchemaDialogComponent,
   ],
   entryComponents: [
@@ -89,7 +96,13 @@ require('../../../static/editor/style.scss');
     UploadSchemaDialogComponent,
     RenameBundleDialogComponent,
   ],
-  providers: [BundleUploadService, ProjectService, UploadSchemaService, HttpErrorService],
+  providers: [
+    BundleUploadService,
+    ProjectService,
+    UploadSchemaService,
+    HttpErrorService,
+    ConsoleService,
+  ],
   bootstrap: [HostComponent],
 })
 export class AppModule {}
