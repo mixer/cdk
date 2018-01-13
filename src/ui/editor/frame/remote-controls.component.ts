@@ -24,6 +24,7 @@ import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
 import { ICloseData, Participant } from '@mcph/miix-participant';
+import { ConsoleService } from '../console/console.service';
 import { IProject, ProjectService } from '../redux/project';
 import { exists } from '../util/ds';
 
@@ -53,6 +54,7 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
     private readonly snackRef: MatSnackBar,
     private readonly project: ProjectService,
     private readonly controls: ControlStateSyncService,
+    private readonly console: ConsoleService,
   ) {}
 
   public ngAfterContentInit() {
@@ -135,6 +137,10 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
             xAuthUser,
             key: join.key,
           });
+
+        this.participant.runOnRpc(rpc => {
+          this.console.bindToRPC(rpc);
+        });
       });
   }
 

@@ -1,3 +1,5 @@
+<editor-frame-panel></editor-frame-panel>
+
 <div class="device"
   [attr.data-frame]="(device | async)?.frame"
   [attr.data-orientation]="(state | async)?.orientation"
@@ -32,5 +34,3 @@
     <editor-remote-controls *ngIf="isConnectedToRemote | async"></editor-remote-controls>
   </div>
 </div>
-
-<editor-frame-controls></editor-frame-controls>

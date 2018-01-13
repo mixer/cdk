@@ -9,7 +9,7 @@ $dot-color: lighten($color-editor-background, 20%);
   @include swift-ease-out('opacity', 'background');
 
   position: absolute;
-  right: 0;
+  right: -$handle-width;
   width: $handle-width;
   top: 0;
   bottom: 0;

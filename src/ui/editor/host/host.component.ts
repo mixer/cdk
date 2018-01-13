@@ -18,6 +18,11 @@ const availableIcons = [
   'close',
   'fullscreen',
   'upload',
+  'tab-scenes',
+  'tab-participant',
+  'tab-group',
+  'tab-console',
+  'clear',
 ];
 
 /**
@@ -31,11 +36,21 @@ const availableIcons = [
 })
 export class HostComponent {
   /**
+   * The current state of the code editor.
+   */
+  public editorState = this.store.map(({ code }) => code.state);
+
+  /**
    * Width of the left-hand editor pane.
    */
   public editorWidth: Observable<number> = this.store
     .select('code')
     .map(s => (s.state === CodeState.Closed ? 0 : s.width));
+
+  /**
+   * Template hoist for the CodeState enum.
+   */
+  public CodeState = CodeState;
 
   constructor(
     icons: MatIconRegistry,

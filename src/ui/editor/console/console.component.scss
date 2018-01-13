@@ -1,0 +1,120 @@
+@import '../../../../static/editor/declarations';
+
+:host {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: $color-editor-background;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  @include scroll-y();
+
+  font-family: $font-family-mono;
+  font-size: 13px;
+  line-height: 1.5em;
+  flex-grow: 1;
+
+  &.nowrap .line {
+    white-space: nowrap;
+  }
+
+  &.hasExpanded .line {
+    opacity: 0.5;
+  }
+
+  .line {
+    color: #fff;
+    padding: 5px 8px 5px 20px;
+    overflow: hidden;
+    word-break: break-all;
+
+    &::before {
+      margin-left: -10px;
+      margin-right: 5px;
+    }
+
+    &:nth-child(odd) {
+      background:  rgba(#fff, 0.02);
+    }
+
+    &:hover,
+    &.hovered {
+      background: $color-editor-active-line;
+    }
+
+    &.expanded {
+      opacity: 1;
+    }
+
+    &[data-line-type="ReceivedMethod"],
+    &[data-line-type="ReceivedReply"] {
+      &::before {
+        content: '<<<';
+        color: $color-primary;
+      }
+    }
+
+    &[data-line-type="SentMethod"],
+    &[data-line-type="SentReply"] {
+      &::before {
+        content: '>>>';
+        color: $color-spark;
+      }
+    }
+
+    &[data-line-type="Error"] {
+      &::before {
+        content: '!!!';
+        color: $color-danger;
+      }
+    }
+  }
+}
+
+.repl {
+  display: flex;
+
+  input {
+    flex-grow: 1;
+    background: none;
+    border: none;
+    border-top: 1px solid #333;
+    padding: 16px;
+    font-family: $font-family-mono;
+    color: #fff;
+    outline: 0 !important;
+    font-size: 14px;
+
+    &::placeholder {
+      font-style: italic;
+    }
+  }
+}
+
+.toggles {
+  display: flex;
+  align-items: center;
+
+  .message-kind {
+    display: inline-block;
+    margin: $dimension-gutter-sm;
+    padding: $dimension-gutter-sm / 2;
+    margin-bottom: $dimension-gutter-sm;
+    color: rgba(#fff, 0.5);
+    cursor: pointer;
+    font-size: 0.8em;
+
+    &.active {
+      border-bottom: 2px solid $color-primary;
+      color: rgba(#fff, 0.8);
+    }
+  }
+
+  mat-icon {
+    color: rgba(#fff, 0.5);
+  }
+}

@@ -26,6 +26,7 @@ export class CodeResizerComponent {
   private el: HTMLElement;
   private nextWidth: number | null;
   private wantsToHide: boolean | null;
+  private contentRoot = document.querySelector('editor-host > .content')!;
 
   constructor(el: ElementRef, private readonly project: ProjectService) {
     this.el = el.nativeElement;
@@ -72,7 +73,8 @@ export class CodeResizerComponent {
   }
 
   private updatePosition(ev: MouseEvent | Touch) {
-    const width = Math.min(this.getMaxWidth(), ev.pageX);
+    const width =
+      Math.min(this.getMaxWidth(), ev.pageX) - this.contentRoot.getBoundingClientRect().left;
     this.el.style.transform = `translateX(${width}px)`;
     this.nextWidth = width;
 
