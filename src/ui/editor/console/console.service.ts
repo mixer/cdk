@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { IRPCMethod, IRPCReply, RPC } from '@mcph/miix-std/dist/internal';
+import { ILogEntry, IRPCMethod, IRPCReply, RPC } from '@mcph/miix-std/dist/internal';
 import { BehaviorSubject } from 'rxjs/Rx';
 
 import { Observable } from 'rxjs/Observable';
-import { ErrorMessage, IErrorMessage } from './messages/error-message';
+import { LogMessage } from './messages/log-message';
 import { IMessage, Message } from './messages/message';
 import { MethodMessage } from './messages/method-message';
 import { ReplyMessage } from './messages/reply-message';
@@ -89,10 +89,10 @@ export class ConsoleService {
   }
 
   /**
-   * errorFromIframe records an error message the iframe sent to us.
+   * addLog records a log message the iframe sent to us.
    */
-  public errorFromIframe(error: IErrorMessage) {
-    this.push(new ErrorMessage(error));
+  public addLog(entry: ILogEntry) {
+    this.push(new LogMessage(entry));
   }
 
   /**
@@ -141,11 +141,16 @@ export class ConsoleService {
     this.rpc = rpc;
 
     rpc.on('recvMethod', packet => {
-      if (packet.method === 'ready') {
-        this.clear();
+      switch (packet.method) {
+        case 'ready':
+          this.clear();
+          break;
+        case 'log':
+          // handled separately, ignore
+          break;
+        default:
+          this.callFromIframe(packet);
       }
-
-      this.callFromIframe(packet);
     });
     rpc.on('recvReply', packet => {
       this.replyFromIframe(packet);

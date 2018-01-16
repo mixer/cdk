@@ -36,7 +36,7 @@ export class ExpandedMessageComponent implements OnChanges {
 
   public ngOnChanges() {
     const { message } = this.item;
-    this.wasSent = [Message.Error, Message.SentMethod, Message.SentReply].includes(message.kind);
+    this.wasSent = [Message.SentMethod, Message.SentReply].includes(message.kind);
     this.pair = this.console.getPairMessage(message);
     this.isReply = Boolean(message.inReplyTo);
   }

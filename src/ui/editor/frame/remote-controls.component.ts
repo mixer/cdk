@@ -23,7 +23,7 @@ import 'rxjs/add/operator/startWith';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { ICloseData, Participant } from '@mcph/miix-participant';
+import { ICloseData, Participant } from '@mcph/miix-std/dist/participant';
 import { ConsoleService } from '../console/console.service';
 import { IProject, ProjectService } from '../redux/project';
 import { exists } from '../util/ds';
@@ -129,6 +129,9 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
           })
           .on('unload', () => {
             this.controls.requestRefresh();
+          })
+          .on('log', data => {
+            this.console.addLog(data);
           })
           .connect({
             contentAddress: '/?',

@@ -1,6 +1,5 @@
 @import '../../../../static/editor/declarations';
 
-$handle-width: 10px;
 $dot-size: 4px;
 $dot-spacing: 15px;
 $dot-color: lighten($color-editor-background, 20%);
@@ -9,8 +8,8 @@ $dot-color: lighten($color-editor-background, 20%);
   @include swift-ease-out('opacity', 'background');
 
   position: absolute;
-  right: -$handle-width;
-  width: $handle-width;
+  right: -$dimension-resizer-width;
+  width: $dimension-resizer-width;
   top: 0;
   bottom: 0;
   background: $color-editor-background;
@@ -28,7 +27,7 @@ $dot-color: lighten($color-editor-background, 20%);
   &::before {
     top: 50%;
     left: 0;
-    transform: translate($handle-width / 2 - $dot-size / 2, $dot-size / -2);
+    transform: translate($dimension-resizer-width / 2 - $dot-size / 2, $dot-size / -2);
     background: $dot-color;
     width: $dot-size;
     height: $dot-size;
@@ -53,7 +52,7 @@ $dot-color: lighten($color-editor-background, 20%);
 
   &.active {
     right: auto;
-    left: $handle-width / -2;
+    left: $dimension-resizer-width / -2;
 
     &::after {
       opacity: 1;
