@@ -9,7 +9,7 @@ export enum Message {
   ReceivedMethod,
   SentReply,
   ReceivedReply,
-  Error,
+  Log,
 }
 
 /**
@@ -60,4 +60,16 @@ export function messageLine(prefix: string, body: any, contentLimit: number = 15
   }
 
   return `${prefix}(${hljs.highlight('js', text).value}${sliced ? '...' : ')'}`;
+}
+
+/**
+ * Truncates the line with ellipses if it's too far over
+ * the target content length.
+ */
+export function truncateLine(text: string, contentLimit: number = 150): string {
+  if (text.length > contentLimit * 1.25) {
+    text = `${text.slice(0, contentLimit)}...`;
+  }
+
+  return text;
 }

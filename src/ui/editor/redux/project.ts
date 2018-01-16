@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { ActionReducer, Store } from '@ngrx/store';
 
 import { IStateDump } from '@mcph/miix-std/dist/internal';
+import { IFilter } from '../console/console.service';
 import * as Code from './code';
 import * as Connect from './connect';
+import * as Console from './console';
 import * as Frame from './frame';
 import * as Sync from './sync';
 
-const storedKeys: (keyof IProject)[] = ['frame', 'code', 'sync'];
+const storedKeys: (keyof IProject)[] = ['frame', 'code', 'sync', 'console'];
 
 /**
  * IProject is the application state for the project.
@@ -17,6 +19,7 @@ export interface IProject {
   code: Code.ICodeState;
   connect: Connect.IConnectState;
   sync: Sync.ISyncState;
+  console: Console.IConsoleState;
 }
 
 /**
@@ -116,6 +119,12 @@ export class ProjectService {
   public syncDontConfirmSchema() {
     this.store.dispatch({ type: Sync.Action.DontConfirmSchema });
   }
+
+  // Console actions ----------------------------------------------------------
+
+  public setConsoleFilter(filter: IFilter) {
+    this.store.dispatch({ type: Console.Action.SetFilter, filter });
+  }
 }
 
 /**
@@ -135,6 +144,7 @@ const initialState: IProject = (() => {
     code: Code.initialState,
     connect: Connect.initialState,
     sync: Sync.initialState,
+    console: Console.initialState,
     ...parsed,
   };
 })();
@@ -165,6 +175,7 @@ export const reducers: { [key in keyof IProject]: Function } = {
   code: Code.reducer,
   connect: Connect.reducer,
   sync: Sync.reducer,
+  console: Console.reducer,
 };
 
 /**
