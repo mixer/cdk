@@ -28,13 +28,17 @@
 
   .line {
     color: #fff;
-    padding: 5px 8px 5px 20px;
+    padding: 5px 8px 5px 3em;
     overflow: hidden;
     word-break: break-all;
+    cursor: pointer;
 
     &::before {
-      margin-left: -10px;
+      display: inline-block;
+      margin-left: -3em;
+      width: 3.5em;
       margin-right: 5px;
+      text-align: right;
     }
 
     &:nth-child(odd) {
@@ -54,7 +58,7 @@
     &[data-line-type="ReceivedReply"] {
       &::before {
         content: '<<<';
-        color: $color-primary;
+        color: $color-success;
       }
     }
 
@@ -62,14 +66,26 @@
     &[data-line-type="SentReply"] {
       &::before {
         content: '>>>';
-        color: $color-spark;
+        color: $color-highlight;
       }
     }
 
-    &[data-line-type="Error"] {
-      &::before {
-        content: '!!!';
+    &[data-line-type="Log"] {
+      &[data-line-level="error"]::before {
+        content: 'ERR';
         color: $color-danger;
+      }
+      &[data-line-level="warn"]::before {
+        content: 'WARN';
+        color: $color-spark;
+      }
+      &[data-line-level="info"]::before {
+        content: 'INFO';
+        color: $color-primary;
+      }
+      &[data-line-level="debug"]::before {
+        content: 'DEBG';
+        color: rgba(#fff, 0.5);
       }
     }
   }

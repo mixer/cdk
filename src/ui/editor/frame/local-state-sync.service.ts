@@ -6,7 +6,7 @@ import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { RPC } from '@mcph/miix-std/dist/internal';
+import { ILogEntry, RPC } from '@mcph/miix-std/dist/internal';
 import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import { ConsoleService } from '../console/console.service';
 import { MemorizingSubject } from '../util/memorizingSubject';
@@ -64,6 +64,9 @@ export class LocalStateSyncService implements OnDestroy {
     });
     this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.controlsState.setVideoSize(data);
+    });
+    this.rpc.expose<ILogEntry>('log', data => {
+      this.console.addLog(data);
     });
 
     const refresh = this.controlsState.getRefresh();

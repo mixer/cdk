@@ -6,10 +6,12 @@ import {
   ViewChild,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
+import { Store } from '@ngrx/store';
 import * as JSON5 from 'json5';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
+import { IProject, ProjectService } from '../redux/project';
 import { ConsoleService, IFilter, IMessageEntry } from './console.service';
 import { IMessage, Message } from './messages/message';
 
@@ -32,10 +34,7 @@ export class ConsoleComponent implements AfterContentInit {
   /**
    * Filter currently in use in the console display.
    */
-  public readonly filter = new BehaviorSubject<IFilter>({
-    pattern: '',
-    kinds: {},
-  });
+  public readonly filter: Observable<IFilter> = this.store.map(state => state.console.filter);
 
   /**
    * An observable of console messages to display.
@@ -79,7 +78,12 @@ export class ConsoleComponent implements AfterContentInit {
    */
   @ViewChild('container') public readonly container: ElementRef;
 
-  constructor(public readonly console: ConsoleService, private readonly snackRef: MatSnackBar) {}
+  constructor(
+    public readonly console: ConsoleService,
+    private readonly snackRef: MatSnackBar,
+    private readonly store: Store<IProject>,
+    private readonly project: ProjectService,
+  ) {}
 
   public ngAfterContentInit() {
     const el: HTMLElement = this.container.nativeElement;
@@ -90,20 +94,23 @@ export class ConsoleComponent implements AfterContentInit {
    * Updates the filter pattern for the console.
    */
   public setPattern(pattern: string) {
-    this.filter.next({ ...this.filter.getValue(), pattern });
+    this.filter.take(1).subscribe(filter => {
+      this.project.setConsoleFilter({ ...filter, pattern });
+    });
   }
 
   /**
    * Toggles whether one kind of message is show in the console, or not.
    */
   public toggleFilterKind(kind: Message) {
-    const existing = this.filter.getValue();
-    this.filter.next({
-      ...existing,
-      kinds: {
-        ...existing.kinds,
-        [kind]: (<any>existing.kinds)[kind] === false,
-      },
+    this.filter.take(1).subscribe(existing => {
+      this.project.setConsoleFilter({
+        ...existing,
+        kinds: {
+          ...existing.kinds,
+          [kind]: (<any>existing.kinds)[kind] === false,
+        },
+      });
     });
   }
 
