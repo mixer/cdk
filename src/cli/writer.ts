@@ -70,6 +70,8 @@ export class Writer {
         this.readline.question(`${question} ${defaultValue ? `[${defaultValue}] ` : ''}`, resolve);
       });
 
+      answer = answer.trim();
+
       if (!answer && defaultValue) {
         answer = defaultValue;
       }

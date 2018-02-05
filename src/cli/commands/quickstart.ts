@@ -41,21 +41,25 @@ async function installRepo(dir: string, npmPath: string): Promise<void> {
  * getDetails prompts the user for and loads overrides for the package.json file.
  */
 async function getDetails(bundleName: string) {
-  return {
-    name: await writer.ask('Bundle name:', bundleName, name => {
-      if (!/^[a-z0-9\-]{2,60}$/i.test(name)) {
-        return 'The bundle name must be alphanumeric with dashes';
-      }
+  const name = await writer.ask('Bundle name:', bundleName, n => {
+    if (!/^[a-z0-9\-]{2,60}$/i.test(n)) {
+      return 'The bundle name must be alphanumeric with dashes';
+    }
 
-      return undefined;
-    }),
-    description: await writer.ask('Bundle description:'),
+    return undefined;
+  });
+
+  const description = await writer.ask('Bundle description:');
+  const keywords = await writer.ask('Keywords (separated by commas):');
+  const license = await writer.ask('License:', 'MIT');
+
+  return {
+    name,
+    description: description ? description : undefined,
     version: '0.1.0',
     author: undefined,
-    keywords: (await writer.ask('Keywords (separated by commas):'))
-      .split(',')
-      .map(kw => kw.toLowerCase().trim()),
-    license: await writer.ask('License:', 'MIT'),
+    keywords: keywords ? keywords.split(',').map(kw => kw.toLowerCase().trim()) : [],
+    license,
   };
 }
 
