@@ -3,6 +3,7 @@
 :host {
   @include layout-row-center();
   height: $dimension-navbar-height;
+  color: #fff;
 }
 
 .spacer {
@@ -36,7 +37,8 @@
 }
 
 .tools {
-  button {
+  button,
+  mat-slide-toggle {
     margin: 0 $dimension-gutter-sm;
   }
 }

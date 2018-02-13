@@ -28,10 +28,12 @@ export class ParticipantSource extends Source<IParticipant> {
   /**
    * @override
    */
-  protected createPacket(source: IParticipant): ICall {
-    return {
-      method: 'onParticipantJoin',
-      params: { participants: [source] },
-    };
+  protected createPacket(source: IParticipant): ICall[] {
+    return [
+      {
+        method: 'onParticipantJoin',
+        params: { participants: [source] },
+      },
+    ];
   }
 }

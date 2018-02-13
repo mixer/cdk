@@ -1,11 +1,17 @@
 import { IScene } from '@mcph/miix-std/dist/internal';
+import { isEqual } from 'lodash';
+
 import { ICodeState } from '../../redux/code';
 import { ICall, ResourceComparator, Source } from './source';
+
+export interface IScenesData {
+  scenes: IScene[];
+}
 
 /**
  * ControlsSource is a Source for the Interactive scene/controls.
  */
-export class ControlsSource extends Source<IScene[]> {
+export class ControlsSource extends Source<IScenesData | IScene[]> {
   private updater = new ResourceComparator<IScene>({
     id: 'sceneID',
     create: scenes => ({
@@ -45,8 +51,26 @@ export class ControlsSource extends Source<IScene[]> {
   /**
    * @override
    */
-  public compare(previous: IScene[], next: IScene[]): ICall[] {
-    return this.updater.compare(previous, next);
+  public compare(previous: IScenesData | IScene[], next: IScenesData | IScene[]): ICall[] {
+    if (Array.isArray(previous)) {
+      previous = { scenes: previous };
+    }
+    if (Array.isArray(next)) {
+      next = { scenes: next };
+    }
+
+    const sceneUpdates = this.updater.compare(previous.scenes, next.scenes);
+
+    const prevWithoutScenes = { ...previous, scenes: null };
+    const nextWithoutScenes = { ...next, scenes: null };
+    if (!isEqual(nextWithoutScenes, prevWithoutScenes)) {
+      sceneUpdates.push({
+        method: 'onWorldUpdate',
+        params: next,
+      });
+    }
+
+    return sceneUpdates;
   }
 
   /**
@@ -59,10 +83,20 @@ export class ControlsSource extends Source<IScene[]> {
   /**
    * @override
    */
-  protected createPacket(source: IScene[]): ICall {
-    return {
-      method: 'onSceneCreate',
-      params: { scenes: source },
-    };
+  protected createPacket(source: IScenesData): ICall[] {
+    if (Array.isArray(source)) {
+      source = { scenes: source };
+    }
+
+    return [
+      {
+        method: 'onSceneCreate',
+        params: { scenes: source.scenes },
+      },
+      {
+        method: 'onWorldUpdate',
+        params: { ...source, scenes: undefined },
+      },
+    ];
   }
 }

@@ -126,7 +126,7 @@
     "zone.js": "^0.8.16"
   },
   "dependencies": {
-    "@mcph/miix-std": "^0.2.2",
+    "@mcph/miix-std": "^0.2.9",
     "body-parser": "^1.18.2",
     "chalk": "^2.3.0",
     "eventemitter3": "^2.0.3",

@@ -39,10 +39,12 @@ export class GroupSource extends Source<IGroup[]> {
   /**
    * @override
    */
-  protected createPacket(source: IGroup[]): ICall {
-    return {
-      method: 'onGroupCreate',
-      params: { groups: source },
-    };
+  protected createPacket(source: IGroup[]): ICall[] {
+    return [
+      {
+        method: 'onGroupCreate',
+        params: { groups: source },
+      },
+    ];
   }
 }
