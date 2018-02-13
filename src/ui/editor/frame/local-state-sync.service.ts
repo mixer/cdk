@@ -45,7 +45,7 @@ export class LocalStateSyncService implements OnDestroy {
         .takeUntil(this.closed)
         .subscribe(calls => {
           if (this.state === State.AwaitingValid) {
-            // this.sendInitialState();
+            this.sendInitialState();
           } else if (this.state === State.Ready) {
             this.sendInteractive(...calls);
           }
