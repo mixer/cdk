@@ -1,6 +1,6 @@
 {
   "name": "@mcph/miix-cli",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "dist/src/index.js",
   "bin": {
