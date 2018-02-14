@@ -12,6 +12,7 @@ import {
   MatListModule,
   MatMenuModule,
   MatSelectModule,
+  MatSlideToggleModule,
   MatSnackBarModule,
   MatTooltipModule,
 } from '@angular/material';
@@ -65,6 +66,7 @@ require('../../../static/editor/style.scss');
     MatListModule,
     MatMenuModule,
     MatSelectModule,
+    MatSlideToggleModule,
     MatSnackBarModule,
     MatTooltipModule,
     StoreModule.forRoot(<any>reducers, { metaReducers }),

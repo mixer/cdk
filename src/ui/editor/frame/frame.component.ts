@@ -92,13 +92,37 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   public isConnectedToRemote = this.store.map(s => s.connect.state === ConnectState.Active);
 
   /**
+   * Fired when something that happens chat changes the layout.
+   */
+  public layoutResized = Observable.combineLatest(
+    this.state.distinctUntilChanged(
+      (a, b) => a.chosenDevice === b.chosenDevice && a.orientation === b.orientation,
+    ),
+    this.store
+      .select('code')
+      .map(c => c.width)
+      .distinctUntilChanged(),
+    this.store
+      .select('code')
+      .map(c => c.state)
+      .distinctUntilChanged(),
+    Observable.fromEvent(window, 'resize')
+      .debounceTime(5)
+      .startWith(null),
+    state => state,
+  );
+
+  /**
    * Observable for the computed video position, fitted with a 16:9 ratio into
    * the bounds provided by the controls.
    */
   public videoFilledSize = this.controls
     .getVideoSize()
-    .map(rect => this.getFittedVideo(rect))
-    .filter(rect => !!rect);
+    .combineLatest(this.layoutResized.delay(1))
+    .map(([rect]) => this.getFittedVideo(rect))
+    .filter(rect => !!rect)
+    .publishReplay(1)
+    .refCount();
 
   constructor(
     public readonly el: ElementRef,
@@ -110,23 +134,7 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   ) {}
 
   public ngAfterContentInit() {
-    Observable.combineLatest(
-      this.state.distinctUntilChanged(
-        (a, b) => a.chosenDevice === b.chosenDevice && a.orientation === b.orientation,
-      ),
-      this.store
-        .select('code')
-        .map(c => c.width)
-        .distinctUntilChanged(),
-      this.store
-        .select('code')
-        .map(c => c.state)
-        .distinctUntilChanged(),
-      Observable.fromEvent(window, 'resize')
-        .debounceTime(5)
-        .startWith(null),
-      state => state,
-    )
+    this.layoutResized
       .delay(1)
       .takeUntilDestroyed(this)
       .subscribe(state => {
@@ -170,7 +178,7 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   }
 
   private getFittedVideo(rect: IVideoPositionOptions): ClientRect | null {
-    const videoBlock = (<HTMLElement>this.el.nativeElement).querySelector('.block-video');
+    const videoBlock = (<HTMLElement>this.el.nativeElement).querySelector('.frame-backdrop');
     if (!videoBlock) {
       return null;
     }
@@ -190,11 +198,11 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
 
     if (!out.width) {
       out.width = backdropRect.width - out.left - out.right;
-      delete rect.right;
+      delete out.right;
     }
     if (!rect.height) {
-      rect.height = backdropRect.height - out.top - out.bottom;
-      delete rect.bottom;
+      out.height = backdropRect.height - out.top - out.bottom;
+      delete out.bottom;
     }
 
     if (out.width / out.height > FrameComponent.videoRatio) {

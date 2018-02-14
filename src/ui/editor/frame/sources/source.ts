@@ -48,16 +48,16 @@ export abstract class Source<T> {
         }
 
         this.lastSrc = parsed;
-        return [this.createPacket(this.lastSrc)];
+        return this.createPacket(this.lastSrc);
       });
   }
 
   /**
    * Returns a packet to recreate the resources this source owns, if possible.
    */
-  public getCreatePacket(): ICall | undefined {
+  public getCreatePacket(): ICall[] {
     if (!this.lastSrc) {
-      return undefined;
+      return [];
     }
 
     return this.createPacket(this.lastSrc);
@@ -78,7 +78,7 @@ export abstract class Source<T> {
    * Returns a method call to make in order to create this source's resources,
    * from the given state.
    */
-  protected abstract createPacket(source: T): ICall;
+  protected abstract createPacket(source: T): ICall[];
 }
 
 export interface IResourceComparatorOptions<T> {

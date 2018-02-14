@@ -16,12 +16,14 @@ export interface IFrameState {
   height: number;
   dimensionsManuallySet: boolean;
   orientation: Orientation;
+  controlsReady: boolean;
 }
 
 export const enum Action {
   Select = 'FRAME_SELECT',
   SetDimensions = 'FRAME_SET_DIMENSIONS',
   Rotate = 'FRAME_ROTATE',
+  SetReady = 'FRAME_SET_READY',
 }
 
 export const initialState = {
@@ -30,6 +32,7 @@ export const initialState = {
   height: -1,
   dimensionsManuallySet: false,
   orientation: Orientation.Portrait,
+  controlsReady: true,
 };
 
 export function reducer(state: IFrameState, action: any): IFrameState {
@@ -41,6 +44,7 @@ export function reducer(state: IFrameState, action: any): IFrameState {
         height: -1,
         dimensionsManuallySet: false,
         orientation: Orientation.Landscape,
+        controlsReady: state.controlsReady,
       };
     case Action.SetDimensions:
       return {
@@ -57,6 +61,11 @@ export function reducer(state: IFrameState, action: any): IFrameState {
           state.orientation === Orientation.Landscape
             ? Orientation.Portrait
             : Orientation.Landscape,
+      };
+    case Action.SetReady:
+      return {
+        ...state,
+        controlsReady: action.isReady,
       };
     default:
       return state;

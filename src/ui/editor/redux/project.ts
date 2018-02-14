@@ -32,6 +32,13 @@ export class ProjectService {
   // Frame actions ------------------------------------------------------------
 
   /**
+   * Change whether the controls are ready.
+   */
+  public setControlsReady(isReady: boolean) {
+    this.store.dispatch({ type: Frame.Action.SetReady, isReady });
+  }
+
+  /**
    * Change the selected device.
    */
   public chooseDevice(deviceIndex: number) {

@@ -30,6 +30,7 @@ export class FramePanelComponent implements OnDestroy {
   public isMobile = this.frame.map(s => devices[s.chosenDevice].isMobile);
   public devices: ReadonlyArray<IDevice> = devices;
   public isVersionLinked = this.store.map(s => !!s.sync.interactiveVersion);
+  public controlsReady = this.store.map(s => s.frame.controlsReady);
 
   /**
    * Whether the controls are currently connect to a remote server.
@@ -74,6 +75,10 @@ export class FramePanelComponent implements OnDestroy {
 
   public chooseDevice(index: number) {
     this.project.chooseDevice(index);
+  }
+
+  public setReady(isReady: boolean) {
+    this.project.setControlsReady(isReady);
   }
 
   public rotateDevice() {

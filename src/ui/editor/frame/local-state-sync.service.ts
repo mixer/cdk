@@ -37,7 +37,7 @@ export class LocalStateSyncService implements OnDestroy {
   constructor(
     private readonly controlsState: ControlStateSyncService,
     private readonly console: ConsoleService,
-    store: Store<IProject>,
+    private readonly store: Store<IProject>,
   ) {
     this.sources.forEach(source => {
       source
@@ -125,7 +125,10 @@ export class LocalStateSyncService implements OnDestroy {
    * first call `controlsReady`.
    */
   private sendInitialState() {
-    const create = this.sources.map(src => src.getCreatePacket());
+    const create = this.sources
+      .map(src => src.getCreatePacket())
+      .reduce((prev, next) => prev.concat(next), []);
+
     if (create.some(packet => packet === undefined)) {
       this.state = State.AwaitingValid;
       return;
@@ -134,14 +137,24 @@ export class LocalStateSyncService implements OnDestroy {
     this.controlsState
       .getSettings()
       .takeUntil(this.closed)
+      .takeUntil(this.controlsState.getRefresh())
       .subscribe(settings => {
         this.rpc.call('updateSettings', settings, false);
       });
 
-    this.sendInteractive(...create.map(call => call!), {
-      method: 'onReady',
-      params: { isReady: true },
-    });
+    this.store
+      .map(s => s.frame.controlsReady)
+      .takeUntil(this.controlsState.getRefresh())
+      .takeUntil(this.closed)
+      .distinctUntilChanged()
+      .subscribe(isReady => {
+        this.sendInteractive({
+          method: 'onReady',
+          params: { isReady },
+        });
+      });
+
+    this.sendInteractive(...create.map(call => call!));
 
     this.state = State.Ready;
   }
