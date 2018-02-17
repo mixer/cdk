@@ -64,7 +64,7 @@ export class Profile {
   }
 
   constructor(
-    private readonly file: string,
+    public readonly file: string,
     private readonly oauthClient: OAuthClient = new OAuthClient({
       clientId: '9789aae60656644524be9530889ba8884c0095834ae75f50',
       scopes: Profile.necessaryScopes,

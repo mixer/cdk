@@ -8,30 +8,14 @@ import { SubprocessError } from './errors';
  * Promisified fs.readFile
  */
 export async function readFile(file: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    fs.readFile(file, 'utf8', (err, contents) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(contents);
-      }
-    });
-  });
+  return promiseCallback<string>(callback => fs.readFile(file, 'utf8', callback));
 }
 
 /**
  * Promisified fs.writeFile
  */
-export async function writeFile(file: string, contents: string | Buffer): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    fs.writeFile(file, contents, err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  });
+export async function writeFile(file: string, contents: string | Buffer): Promise<void> {
+  return promiseCallback(callback => fs.writeFile(file, contents, callback));
 }
 
 /**
@@ -60,12 +44,22 @@ export async function exists(file: string): Promise<boolean> {
  * Promisified fs.readDir
  */
 export async function readDir(dir: string): Promise<string[]> {
-  return new Promise<string[]>((resolve, reject) => {
-    fs.readdir(dir, (err, results) => {
+  return promiseCallback<string[]>(callback => fs.readdir(dir, callback));
+}
+
+/**
+ * Takes a function that wants a callback, and resolves when that callback
+ * is resolved upon or errored.
+ */
+export async function promiseCallback<R = any>(
+  fn: (callback: (err?: Error, result?: R) => void) => void,
+): Promise<R> {
+  return new Promise<R>((resolve, reject) => {
+    fn((err, result) => {
       if (err) {
         reject(err);
       } else {
-        resolve(results);
+        resolve(result);
       }
     });
   });

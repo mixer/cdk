@@ -1,0 +1,15 @@
+<code-resizer></code-resizer>
+
+<ul>
+  <li *ngFor="let save of (saves | async)">
+    <span class="saved-ago">
+      Save from: {{ save.ago }}
+      <small>{{ save.savedAt.format('dddd, MMMM Do, h:mm:ss a')}}</small>
+    </span>
+
+    <button mat-raised-button color="warn" (click)="loadBackupState()"
+      *ngIf="(swappedSave | async)?.loadedSave === save.name">Rollback</button>
+    <button mat-raised-button (click)="openSaveFile(save.name)"
+      *ngIf="(swappedSave | async)?.loadedSave !== save.name">Open</button>
+  </li>
+</ul>

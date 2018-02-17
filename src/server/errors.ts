@@ -272,3 +272,26 @@ export class NoAuthenticationError extends Error implements IHttpableError, IHum
     return 401;
   }
 }
+
+/**
+ * SaveNotFoundError
+ */
+export class SaveNotFoundError extends Error implements IHttpableError, IHumanError {
+  constructor() {
+    super('That save file was not found');
+  }
+
+  /**
+   * @override
+   */
+  public getHumanMessage(): string {
+    return 'That save file was not found';
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 404;
+  }
+}
