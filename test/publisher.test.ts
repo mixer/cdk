@@ -3,11 +3,7 @@ import { expect } from 'chai';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
-import {
-  PackageIntegrityError,
-  PublishPrivateError,
-  UnexpectedHttpError,
-} from '../src/server/errors';
+import { PublishPrivateError, UnexpectedHttpError } from '../src/server/errors';
 import { Project } from '../src/server/project';
 import { Publisher } from '../src/server/publish/publisher';
 import { MockRequester } from './_setup';
@@ -37,15 +33,6 @@ describe('Publisher', () => {
     sinon.stub(project, 'packageConfig').resolves({ ...mockConfig, private: true });
 
     await expect(publisher.publish(project)).to.eventually.be.rejectedWith(PublishPrivateError);
-  });
-
-  it('requires readmes', async () => {
-    const project = new Project('', __dirname);
-    sinon.stub(project, 'packageConfig').resolves(mockConfig);
-    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(
-      PackageIntegrityError,
-      /readme\.md is missing/,
-    );
   });
 
   it('works otherwise', async () => {
