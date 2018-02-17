@@ -91,19 +91,25 @@
   }
 }
 
+.repl input,
+.toggles input {
+  background: none;
+  border: none;
+  color: #fff;
+  outline: 0 !important;
+  font-size: 13px;
+  font-family: $font-family-mono;
+}
+
 .repl {
   display: flex;
+  flex-shrink: 0;
 
   input {
     flex-grow: 1;
-    background: none;
-    border: none;
     border-top: 1px solid #333;
-    padding: 16px;
+    padding: $dimension-gutter-md;
     font-family: $font-family-mono;
-    color: #fff;
-    outline: 0 !important;
-    font-size: 14px;
 
     &::placeholder {
       font-style: italic;
@@ -114,6 +120,13 @@
 .toggles {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  height: 40px;
+
+  input {
+    border-bottom: 1px solid #333;
+    margin-left: $dimension-gutter-md;
+  }
 
   .message-kind {
     display: inline-block;
@@ -132,5 +145,35 @@
 
   mat-icon {
     color: rgba(#fff, 0.5);
+    width: 1em;
+    margin: 0 0.5em;
+    height: 1em;
+    position: relative;
+    cursor: pointer;
+
+    &.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 0.3em;
+      height: 0.3em;
+      background: $color-danger;
+      border-radius: 50%;
+    }
+
+    &.selected {
+      color: #fff;
+    }
+  }
+
+  input {
+    flex-grow: 1;
+    padding: $dimension-gutter-sm / 2;
+    display: none;
+
+    &.visible {
+      display: block;
+    }
   }
 }

@@ -124,7 +124,7 @@ export class LinkDialogComponent {
           .open('An unknown error occurred', 'Report', { duration: 5000 })
           .onAction()
           .subscribe(() => {
-            reportHttpError('Unknown error in version seelct dialog', err);
+            reportHttpError('Unknown error in version select dialog', err);
           });
         this.dialogRef.close();
       },

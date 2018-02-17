@@ -1,25 +1,41 @@
 <div class="toggles">
-  <a class="message-kind"
-    (click)="toggleFilterKind(Message.SentMethod)"
-    [class.active]="hasFilterKind(Message.SentMethod) | async">
-    Server Calls
-  </a>
-  <a class="message-kind"
-    (click)="toggleFilterKind(Message.SentReply)"
-    [class.active]="hasFilterKind(Message.SentReply) | async">
-    Server Replies
-  </a>
-  <a class="message-kind"
-    (click)="toggleFilterKind(Message.ReceivedMethod)"
-    [class.active]="hasFilterKind(Message.ReceivedMethod) | async">
-    Control Calls
-  </a>
-  <a class="message-kind"
-    (click)="toggleFilterKind(Message.Log)"
-    [class.active]="hasFilterKind(Message.Log) | async">
-    Control Logs
-  </a>
+  <ng-container *ngIf="!(showFilter | async)">
+    <a class="message-kind"
+      (click)="toggleFilterKind(Message.SentMethod)"
+      [class.active]="hasFilterKind(Message.SentMethod) | async">
+      Server Calls
+    </a>
+    <a class="message-kind"
+      (click)="toggleFilterKind(Message.SentReply)"
+      [class.active]="hasFilterKind(Message.SentReply) | async">
+      Server Replies
+    </a>
+    <a class="message-kind"
+      (click)="toggleFilterKind(Message.ReceivedMethod)"
+      [class.active]="hasFilterKind(Message.ReceivedMethod) | async">
+      Control Calls
+    </a>
+    <a class="message-kind"
+      (click)="toggleFilterKind(Message.Log)"
+      [class.active]="hasFilterKind(Message.Log) | async">
+      Control Logs
+    </a>
+  </ng-container>
+
+  <input
+    #filterInput
+    name="filter"
+    [class.visible]="showFilter | async"
+    [ngModel]="(filter | async)?.pattern"
+    (ngModelChange)="setPattern($event)"
+    placeholder="Filter"
+    alt="e.g. /on.+Create/">
+
   <span style="flex:1"></span>
+  <mat-icon svgIcon="filter"
+    (click)="showFilter.next(!showFilter.getValue())"
+    [class.selected]="showFilter | async"
+    [class.active]="(filter | async)?.pattern"></mat-icon>
   <mat-icon svgIcon="clear" (click)="console.clear()"></mat-icon>
 </div>
 <div #container class="content" [class.hasExpanded]="!!(expandedId | async)">

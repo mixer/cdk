@@ -74,9 +74,19 @@ export class ConsoleComponent implements AfterContentInit {
   public commandInput = new BehaviorSubject('');
 
   /**
+   * Whether to show the search filter.
+   */
+  public showFilter = new BehaviorSubject(false);
+
+  /**
    * Reference to the container containing the console messages.
    */
   @ViewChild('container') public readonly container: ElementRef;
+
+  /**
+   * Reference to the filter input text field.
+   */
+  @ViewChild('filterInput') public readonly filterInput: ElementRef;
 
   constructor(
     public readonly console: ConsoleService,
@@ -88,6 +98,23 @@ export class ConsoleComponent implements AfterContentInit {
   public ngAfterContentInit() {
     const el: HTMLElement = this.container.nativeElement;
     el.scrollTop = el.scrollHeight;
+
+    const filterInput: HTMLElement = this.filterInput.nativeElement;
+    filterInput.addEventListener('keydown', ev => {
+      switch (ev.keyCode) {
+        case 13: // enter
+          this.showFilter.next(false);
+          break;
+        case 27: // escape
+          this.setPattern('');
+          this.showFilter.next(false);
+          break;
+        default:
+          return;
+      }
+
+      ev.preventDefault();
+    });
   }
 
   /**
