@@ -13,7 +13,7 @@ import { MouseButtons } from '../util/mouseButtons';
  */
 @Component({
   selector: 'code-resizer',
-  template: '<div></div>',
+  template: '',
   styleUrls: ['./code-resizer.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -44,6 +44,8 @@ export class CodeResizerComponent {
     }
 
     this.el.classList.add('active');
+    this.project.setFrameMasked(true);
+
     captureDrag(startEv)
       .takeUntilDestroyed(this)
       .subscribe(
@@ -54,6 +56,7 @@ export class CodeResizerComponent {
           throw err;
         },
         () => {
+          this.project.setFrameMasked(false);
           this.applyPosition();
         },
       );

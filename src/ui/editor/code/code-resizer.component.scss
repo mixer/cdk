@@ -57,16 +57,6 @@ $dot-color: lighten($color-editor-background, 20%);
     &::after {
       opacity: 1;
     }
-
-    // "guard" over the iframe since drag events are imperceptible there.
-    div {
-      position: absolute;
-      left: 100%;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 100vw;
-    }
   }
 
   &.will-hide::after {

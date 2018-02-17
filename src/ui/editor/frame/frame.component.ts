@@ -92,6 +92,11 @@ export class FrameComponent implements AfterContentInit, OnDestroy {
   public isConnectedToRemote = this.store.map(s => s.connect.state === ConnectState.Active);
 
   /**
+   * Whether the frame should be masked
+   */
+  public isMasked = this.store.map(s => s.frame.isMasked);
+
+  /**
    * Fired when something that happens chat changes the layout.
    */
   public layoutResized = Observable.combineLatest(

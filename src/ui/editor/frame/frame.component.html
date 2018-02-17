@@ -5,6 +5,7 @@
   [attr.data-orientation]="(state | async)?.orientation"
   [style.width.px]="(state | async)?.width"
   [style.height.px]="(state | async)?.height">
+  <div class="mask" *ngIf="isMasked | async"></div>
   <div class="frame"></div>
   <div class="background" [style.background-image]="background"></div>
   <div class="block"

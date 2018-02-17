@@ -6,9 +6,11 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
 import * as CodeMirror from 'codemirror';
 import * as json5 from 'json5';
+import { Observable } from 'rxjs/Observable';
 
 import 'codemirror/addon/fold/brace-fold';
 import 'codemirror/addon/fold/foldcode';
@@ -19,7 +21,6 @@ import 'codemirror/mode/javascript/javascript';
 import 'rxjs/add/operator/filter';
 import '../util/takeUntilDestroyed';
 
-import { IStateDump } from '@mcph/miix-std/dist/internal';
 import {
   CodeState,
   ICodeState,
@@ -28,7 +29,8 @@ import {
   stateToUpdateAction,
 } from '../redux/code';
 import { ConnectState } from '../redux/connect';
-import { IProject } from '../redux/project';
+import { IProject, ProjectService } from '../redux/project';
+import { captureDrag } from '../util/drag';
 
 CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   try {
@@ -100,7 +102,11 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
    */
   private el: HTMLElement;
 
-  constructor(private readonly store: Store<IProject>, el: ElementRef) {
+  constructor(
+    private readonly store: Store<IProject>,
+    private readonly project: ProjectService,
+    el: ElementRef,
+  ) {
     this.el = <HTMLElement>el.nativeElement;
   }
 
@@ -118,6 +124,26 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
         gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
       },
     ));
+
+    Observable.fromEvent<MouseEvent>(this.el, 'mousedown')
+      .filter(ev => (<HTMLElement>ev.target).classList.contains('cm-number'))
+      .switchMap(ev =>
+        captureDrag(ev)
+          .filter(o => Math.abs(ev.pageX - o.pageX) > 10)
+          .take(1)
+          .mapTo(ev),
+      )
+      .do(() => {
+        this.project.setFrameMasked(true);
+      })
+      .switchMap(ev => this.dragNumber(ev))
+      .subscribe(
+        () => undefined,
+        () => undefined,
+        () => {
+          this.project.setFrameMasked(false);
+        },
+      );
 
     this.store
       .select('code')
@@ -201,5 +227,43 @@ export class CodeComponent implements AfterContentInit, OnDestroy {
     }
     this.cm.setValue(`${formatted}\n`);
     this.isTriggeringChange = false;
+  }
+
+  private dragNumber(startEv: MouseEvent) {
+    const doc = this.cm.getDoc();
+    let pos: CodeMirror.Position;
+    const selections = doc.listSelections();
+    if (selections.length > 0) {
+      pos = selections[0].anchor;
+    } else {
+      pos = doc.getCursor();
+    }
+
+    const line = doc.getLine(pos.line);
+    let start = pos.ch;
+    while (/[0-9\.-]/.test(line[start - 1])) {
+      start--;
+    }
+
+    let end = pos.ch;
+    while (/[0-9\.-]/.test(line[end])) {
+      end++;
+    }
+
+    const originalValue = Number(line.slice(start, end));
+    const shouldRound = Math.abs(originalValue) >= 1;
+    if (isNaN(originalValue)) {
+      return Observable.of(null);
+    }
+
+    return captureDrag(startEv).do(ev => {
+      const inverter = ev.pageX > startEv.pageX ? 1 : -1;
+      const newAmount = originalValue * (1 + inverter * ((ev.pageX - startEv.pageX) / 500) ** 2);
+      const newText = String(shouldRound ? Math.round(newAmount) : newAmount);
+
+      doc.replaceRange(newText, { line: pos.line, ch: start }, { line: pos.line, ch: end });
+      end = start + newText.length;
+      doc.setSelection({ line: pos.line, ch: start }, { line: pos.line, ch: end });
+    });
   }
 }

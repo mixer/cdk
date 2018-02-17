@@ -17,6 +17,7 @@ export interface IFrameState {
   dimensionsManuallySet: boolean;
   orientation: Orientation;
   controlsReady: boolean;
+  isMasked: boolean;
 }
 
 export const enum Action {
@@ -24,6 +25,7 @@ export const enum Action {
   SetDimensions = 'FRAME_SET_DIMENSIONS',
   Rotate = 'FRAME_ROTATE',
   SetReady = 'FRAME_SET_READY',
+  Mask = 'FRAME_MASK',
 }
 
 export const initialState = {
@@ -33,18 +35,19 @@ export const initialState = {
   dimensionsManuallySet: false,
   orientation: Orientation.Portrait,
   controlsReady: true,
+  isMasked: false,
 };
 
 export function reducer(state: IFrameState, action: any): IFrameState {
   switch (action.type) {
     case Action.Select:
       return {
+        ...state,
         chosenDevice: action.index,
         width: -1,
         height: -1,
         dimensionsManuallySet: false,
         orientation: Orientation.Landscape,
-        controlsReady: state.controlsReady,
       };
     case Action.SetDimensions:
       return {
@@ -66,6 +69,11 @@ export function reducer(state: IFrameState, action: any): IFrameState {
       return {
         ...state,
         controlsReady: action.isReady,
+      };
+    case Action.Mask:
+      return {
+        ...state,
+        isMasked: action.isMasked,
       };
     default:
       return state;
