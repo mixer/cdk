@@ -56,15 +56,6 @@ export class Bundler {
       );
     }
 
-    const readme = findReadme(this.project.baseDir());
-    if (!readme) {
-      throw new PackageIntegrityError(
-        `An readme.md is missing in your project (${this.project.baseDir(
-          'readme.md',
-        )} should exist)`,
-      );
-    }
-
     const packageJson = this.project.baseDir('package.json');
     if (!await exists(packageJson)) {
       throw new PackageIntegrityError(
@@ -77,8 +68,10 @@ export class Bundler {
    * Compresses the output dir into the target tarball.
    */
   private async createTarball(output: string, target: string): Promise<void> {
+    const readme = findReadme(this.project.baseDir());
+
     await Promise.all([
-      copy(this.project.baseDir('readme.md'), path.resolve(output, 'readme.md')),
+      readme && copy(this.project.baseDir('readme.md'), path.resolve(output, 'readme.md')),
       copy(this.project.baseDir('package.json'), path.resolve(output, 'package.json')),
     ]);
 

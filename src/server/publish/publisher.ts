@@ -1,7 +1,7 @@
 import * as marked from 'marked';
 import * as path from 'path';
 
-import { PackageIntegrityError, PublishHttpError, PublishPrivateError } from '../errors';
+import { PublishHttpError, PublishPrivateError } from '../errors';
 import { findReadme } from '../npm';
 import { Project } from '../project';
 import { IRequester, readFile } from '../util';
@@ -54,9 +54,7 @@ export class Publisher {
   private async renderReadme(dir: string): Promise<string> {
     const fname = await findReadme(dir);
     if (!fname) {
-      throw new PackageIntegrityError(
-        `A readme.md is missing in your project (${path.join(dir, 'readme.md')} should exist)`,
-      );
+      return 'This project is missing a readme';
     }
 
     return marked(await readFile(path.join(dir, fname)));
