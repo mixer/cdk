@@ -67,6 +67,14 @@ export class ProjectService {
     this.store.dispatch({ type: Frame.Action.SetDimensions, width, height, isManual: false });
   }
 
+  /**
+   * Sets whether the frame is masked (covered by a transparent overlay).
+   * Useful when dragging thing.
+   */
+  public setFrameMasked(isMasked: boolean) {
+    this.store.dispatch({ type: Frame.Action.Mask, isMasked });
+  }
+
   // Code actions -------------------------------------------------------------
 
   /**

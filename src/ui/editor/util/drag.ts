@@ -20,7 +20,7 @@ export function captureDrag(ev: MouseEvent | TouchEvent): Observable<MouseEvent 
   if (ev instanceof MouseEvent) {
     return Observable.fromEvent<MouseEvent>(window, 'mousemove')
       .startWith(ev)
-      .takeUntil(Observable.fromEvent(window, 'mouseup'));
+      .takeUntil(dragCancelled(ev));
   }
 
   const match = touchMatcher(ev.touches[0]);
@@ -28,9 +28,16 @@ export function captureDrag(ev: MouseEvent | TouchEvent): Observable<MouseEvent 
     .startWith(ev)
     .map(match)
     .filter(Boolean)
-    .takeUntil(
-      Observable.fromEvent<TouchEvent>(window, 'touchend')
-        .map(match)
-        .filter(Boolean),
-    );
+    .takeUntil(dragCancelled(ev));
+}
+
+/**
+ * Returns an observable that fires once the drag stops.
+ */
+export function dragCancelled(ev: MouseEvent | TouchEvent): Observable<void> {
+  return ev instanceof MouseEvent
+    ? Observable.fromEvent(window, 'mouseup')
+    : Observable.fromEvent<TouchEvent>(window, 'touchend')
+        .map(touchMatcher(ev.touches[0]))
+        .filter(Boolean);
 }

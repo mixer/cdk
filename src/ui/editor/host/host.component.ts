@@ -10,19 +10,22 @@ import { CodeState } from '../redux/code';
 import { IProject } from '../redux/project';
 
 const availableIcons = [
+  'clear',
+  'close',
+  'editor',
+  'filter',
+  'fullscreen',
+  'redo',
+  'history',
+  'refresh',
   'rocket',
   'screen-rotation',
-  'undo',
-  'redo',
-  'refresh',
-  'close',
-  'fullscreen',
-  'upload',
-  'tab-scenes',
-  'tab-participant',
-  'tab-group',
   'tab-console',
-  'clear',
+  'tab-group',
+  'tab-participant',
+  'tab-scenes',
+  'undo',
+  'upload',
 ];
 
 /**

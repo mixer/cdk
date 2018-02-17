@@ -6,3 +6,7 @@
   left: 0;
   bottom: 0;
 }
+
+::ng-deep .cm-number {
+  cursor: ew-resize;
+}
