@@ -4,6 +4,7 @@
   <ng-container *ngIf="(editorWidth | async) > 0" [ngSwitch]="editorState | async">
     <ng-container *ngSwitchCase="CodeState.Closed"></ng-container>
     <editor-console [style.width.px]="editorWidth | async" *ngSwitchCase="CodeState.Console"></editor-console>
+    <editor-history [style.width.px]="editorWidth | async" *ngSwitchCase="CodeState.History"></editor-history>
     <editor-code [style.width.px]="editorWidth | async" *ngSwitchDefault></editor-code>
   </ng-container>
   <editor-frame [style.left.px]="editorWidth | async"></editor-frame>

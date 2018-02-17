@@ -10,6 +10,7 @@ export enum CodeState {
   Groups,
   Closed,
   Console,
+  History,
 }
 
 /**

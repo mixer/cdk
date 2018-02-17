@@ -19,10 +19,11 @@ import {
 import { BrowserModule } from '@angular/platform-browser';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { CodeResizerComponent } from './code/code-resizer.component';
 
 import { BundleUploadService } from './bundle-upload.service';
+import { CodeResizerComponent } from './code/code-resizer.component';
 import { CodeComponent } from './code/code.component';
 import { ConsoleComponent } from './console/console.component';
 import { ConsoleService } from './console/console.service';
@@ -31,6 +32,7 @@ import { FramePanelComponent } from './frame-panel/frame-panel.component';
 import { FrameComponent } from './frame/frame.component';
 import { LocalControlsComponent } from './frame/local-controls.component';
 import { RemoteControlsComponent } from './frame/remote-controls.component';
+import { HistoryComponent } from './history/history.component';
 import { HostComponent } from './host/host.component';
 import { HttpErrorService } from './http-error.service';
 import { ChannelSelectDialog } from './launch-dialog/channel-select-dialog.component';
@@ -39,6 +41,7 @@ import { LinkDialogComponent } from './link-dialog/link-dialog.component';
 import { LoginWalkthroughComponent } from './login-walkthrough/login-walkthrough.component';
 import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
+import { HistoryEffects } from './redux/historyEffects';
 import { metaReducers, ProjectService, reducers } from './redux/project';
 import { RenameBundleDialogComponent } from './rename-bundle-dialog/rename-bundle-dialog.component';
 import { SafePipe } from './safe.pipe';
@@ -70,6 +73,7 @@ require('../../../static/editor/style.scss');
     MatSnackBarModule,
     MatTooltipModule,
     StoreModule.forRoot(<any>reducers, { metaReducers }),
+    EffectsModule.forRoot([HistoryEffects]),
   ],
   declarations: [
     ChannelSelectDialog,
@@ -80,6 +84,7 @@ require('../../../static/editor/style.scss');
     ExpandedMessageComponent,
     FrameComponent,
     FramePanelComponent,
+    HistoryComponent,
     HostComponent,
     LaunchDialogComponent,
     LinkDialogComponent,

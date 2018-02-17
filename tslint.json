@@ -21,6 +21,7 @@
     "match-default-export-name": false,
     "prefer-for-of": false,
     "no-non-null-assertion": false,
+    "no-void-expression": false,
 
     // Prettier-incompatible or prettier-handled rules
     "align": false,

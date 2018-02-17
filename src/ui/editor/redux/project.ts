@@ -22,12 +22,23 @@ export interface IProject {
   console: Console.IConsoleState;
 }
 
+export enum MetaActions {
+  ReplaceState = 'META_REPLACE_STATE',
+}
+
 /**
  * ProjectService provides notation on the IProject state.
  */
 @Injectable()
 export class ProjectService {
   constructor(private store: Store<IProject>) {}
+
+  /**
+   * Applies a direct partial update to the state.
+   */
+  public replaceState(data: Partial<IProject>, omitSave: boolean = false) {
+    this.store.dispatch({ type: MetaActions.ReplaceState, data, omitSave });
+  }
 
   // Frame actions ------------------------------------------------------------
 
@@ -145,39 +156,49 @@ export class ProjectService {
 /**
  * Initial state of the project.
  */
-const initialState: IProject = (() => {
-  let parsed: Partial<IProject> = {};
-  try {
-    const data = localStorage.getItem('last-control-state');
-    parsed = data && JSON.parse(data);
-  } catch (e) {
-    // ignored
-  }
-
-  return {
-    frame: Frame.initialState,
-    code: Code.initialState,
-    connect: Connect.initialState,
-    sync: Sync.initialState,
-    console: Console.initialState,
-    ...parsed,
-  };
-})();
+const initialState: IProject = {
+  frame: Frame.initialState,
+  code: Code.initialState,
+  connect: Connect.initialState,
+  sync: Sync.initialState,
+  console: Console.initialState,
+};
 
 /**
  * localStorageReduxer is a metareducer that saves changes to localstorage.
  */
-export function localStorageReducer(
+export function setInitialState(
   reducer: ActionReducer<IProject, any>,
 ): ActionReducer<IProject, any> {
-  return (project = initialState, action) => {
-    const next = reducer(project, action);
-    const plucked: Partial<IProject> = {};
-    storedKeys.forEach(key => {
-      plucked[key] = next[key];
-    });
+  return (project, action) => reducer(project || initialState, action);
+}
 
-    localStorage.setItem('last-control-state', JSON.stringify(plucked));
+/**
+ * localStorageReduxer is a metareducer that saves changes to localstorage.
+ */
+export function replaceStateReducer(
+  reducer: ActionReducer<IProject, any>,
+): ActionReducer<IProject, any> {
+  return (project, action) => {
+    const next = reducer(project, action);
+    if (action.type === MetaActions.ReplaceState) {
+      return {
+        ...next,
+        ...action.data,
+        frame: {
+          ...next.frame,
+          ...action.data.frame,
+          width: next.frame.width,
+          height: next.frame.height,
+        },
+        code: {
+          ...next.code,
+          ...action.data.code,
+          state: next.code.state,
+        },
+      };
+    }
+
     return next;
   };
 }
@@ -196,4 +217,16 @@ export const reducers: { [key in keyof IProject]: Function } = {
 /**
  * ngrx metareducers
  */
-export const metaReducers = [localStorageReducer];
+export const metaReducers = [setInitialState, replaceStateReducer];
+
+/**
+ * Returns the partial part of the project which should be saved.
+ */
+export function getStoredData(project: IProject): Partial<IProject> {
+  const plucked: Partial<IProject> = {};
+  storedKeys.forEach(key => {
+    plucked[key] = { ...project[key] };
+  });
+
+  return plucked;
+}
