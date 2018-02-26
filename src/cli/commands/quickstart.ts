@@ -10,7 +10,7 @@ import { UnexpectedHttpError } from '../../server/errors';
 import { awaitChildProcess, readFile, writeFile } from '../../server/util';
 import writer from '../writer';
 
-const launchpadUrl = 'https://mixercc.azureedge.net/launchpad/interactive-launchpad_0.2.0.tar.gz';
+const launchpadUrl = 'https://mixercc.azureedge.net/launchpad/interactive-launchpad_1.0.tar.gz';
 
 export interface IQuickStartOptions {
   dir: string;
