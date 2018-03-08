@@ -157,9 +157,9 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
     }
 
     this.snackRef.open(
-      `The interactive connection was closed with code ${close.code}${close.message
-        ? `: ${close.message}`
-        : ''}`,
+      `The interactive connection was closed with code ${close.code}${
+        close.message ? `: ${close.message}` : ''
+      }`,
       undefined,
       { duration: 8000 },
     );
