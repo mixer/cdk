@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { MatDialogRef, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -76,7 +76,7 @@ export class LaunchDialogComponent {
   private loadedData: IInteractiveJoin;
 
   constructor(
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly dialogRef: MatDialogRef<IInteractiveJoin>,
     private readonly snackRef: MatSnackBar,
     private readonly store: Store<IProject>,
@@ -110,12 +110,11 @@ export class LaunchDialogComponent {
       .select(s => s.connect.channelOverride)
       .take(1)
       .switchMap(channelID =>
-        this.http.get(apiUrl('connect-participant'), { params: { channelID } }),
+        this.http.get<IInteractiveJoin>(apiUrl('connect-participant'), { params: { channelID: String(channelID) } }),
       )
       .combineLatest(this.store.map(s => s.sync.interactiveVersion))
       .subscribe(
-        ([res, version]) => {
-          const data: IInteractiveJoin = res.json();
+        ([data, version]) => {
           this.loadedData = data;
 
           // If the game client is not connected, wait for it to do so.
@@ -137,7 +136,7 @@ export class LaunchDialogComponent {
 
           this.acceptConnect();
         },
-        (err: Response) => {
+        (err: HttpErrorResponse) => {
           switch (err.status) {
             case 409:
               this.waitForConnect();

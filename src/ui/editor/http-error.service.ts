@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
 
 import 'rxjs/add/operator/toPromise';
@@ -46,12 +46,12 @@ export class HttpErrorService {
    */
   public catch<T, E>(
     errName: string,
-    handler: (err: IResponseError<E>, res: Response) => T | Promise<T>,
-  ): (res: Response) => Promise<T> {
+    handler: (err: IResponseError<E>, res: HttpErrorResponse) => T | Promise<T>,
+  ): (res: HttpErrorResponse) => Promise<T> {
     return res => {
       let json: IResponseError<E>;
       try {
-        json = res.json();
+        json = JSON.parse(res.message);
       } catch (err) {
         throw res;
       }
@@ -67,12 +67,12 @@ export class HttpErrorService {
    * Handles Joi errors from the server.
    */
   public joi<T>(
-    handler: (err: IJoiError, res: Response) => T | Promise<T>,
-  ): (res: Response) => Promise<T> {
+    handler: (err: IJoiError, res: HttpErrorResponse) => T | Promise<T>,
+  ): (res: HttpErrorResponse) => Promise<T> {
     return res => {
       let json: IJoiError;
       try {
-        json = res.json();
+        json = JSON.parse(res.message);
       } catch (err) {
         throw res;
       }
@@ -87,7 +87,7 @@ export class HttpErrorService {
   /**
    * Toasts about a response error, and resolves void.
    */
-  public toast = (res: Response): void => {
+  public toast = (res: HttpErrorResponse): void => {
     this.snackRef
       .open('An unknown error occurred', 'Report', { duration: 5000 })
       .onAction()

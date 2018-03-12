@@ -1,13 +1,13 @@
-import { Response } from '@angular/http';
 import { stringify } from 'querystring';
 import { unindent } from './ds';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export function reportIssue(title: string, body: string) {
   const url = `https://github.com/mixer/miix-cli/issues/new?${stringify({ title, body })}`;
   window.open(url, '_blank');
 }
 
-export function reportHttpError(title: string, res: Response) {
+export function reportHttpError(title: string, res: HttpErrorResponse) {
   reportIssue(
     title,
     unindent(`
@@ -19,7 +19,7 @@ export function reportHttpError(title: string, res: Response) {
 
       \`\`\`
       ${res.status} from ${res.url}:
-      ${res.text()}
+      ${res.message}
       \`\`\`
     `),
   );

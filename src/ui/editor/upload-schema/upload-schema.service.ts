@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as JSON5 from 'json5';
@@ -23,7 +23,7 @@ export class UploadSchemaService {
     private readonly project: ProjectService,
     private readonly store: Store<IProject>,
     private readonly dialog: MatDialog,
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly httpErr: HttpErrorService,
     private readonly snackRef: MatSnackBar,
   ) {}

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { MatDialogRef, MatSnackBar } from '@angular/material';
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -31,7 +31,7 @@ export class RenameBundleDialogComponent implements OnInit {
   public name = new BehaviorSubject('');
 
   constructor(
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly dialogRef: MatDialogRef<boolean>,
     private readonly snackRef: MatSnackBar,
     private readonly httpErr: HttpErrorService,
@@ -67,10 +67,9 @@ export class RenameBundleDialogComponent implements OnInit {
 
   public ngOnInit() {
     this.http
-      .get(apiUrl('metadata'))
+      .get<IPackageConfig>(apiUrl('metadata'))
       .toPromise()
-      .then(res => {
-        const config: IPackageConfig = res.json();
+      .then(config => {
         this.name.next(config.name);
         this.isLoading.next(false);
       })

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { Actions, Effect } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { isEqual, pick } from 'lodash';
@@ -30,10 +30,10 @@ export class HistoryEffects {
   public loadInitialState = this.actions
     .delay(1)
     .take(1)
-    .switchMap(() => this.http.get(apiUrl('saves/latest')))
-    .map(res => ({ type: MetaActions.ReplaceState, data: res.json().contents }))
+    .switchMap(() => this.http.get<{ contents: any }>(apiUrl('saves/latest')))
+    .map(res => ({ type: MetaActions.ReplaceState, data: res.contents }))
     .catch(() => Observable.of(null))
     .filter(Boolean);
 
-  constructor(private http: Http, private store: Store<IProject>, private actions: Actions) {}
+  constructor(private http: HttpClient, private store: Store<IProject>, private actions: Actions) {}
 }

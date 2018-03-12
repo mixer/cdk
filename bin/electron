@@ -6,25 +6,28 @@ const url = require('url');
 
 let window;
 
+const isDebug = process.argv.includes('--debug');
+
 function createWindow() {
   window = new BrowserWindow({
     width: 800,
     height: 600,
   });
 
-  window.loadURL(
-    url.format({
-      pathname: path.join(__dirname, '../static/index.html'),
-      protocol: 'file:',
-      slashes: true,
-    })
-  );
+  if (isDebug) {
+    window.loadURL(`http://localhost:9000`);
+    window.webContents.openDevTools();
+  } else {
+    window.loadURL(
+      url.format({
+        pathname: path.join(__dirname, '../dist/src/ui/editor/index.html'),
+        protocol: 'file:',
+        slashes: true,
+      })
+    );
+  }
 
   window.on('closed', () => (window = null));
-
-  if (process.argv.includes('--debug')) {
-    window.webContents.openDevTools();
-  }
 }
 
 app.on('ready', createWindow);
@@ -36,7 +39,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (win === null) {
+  if (window === null) {
     createWindow();
   }
 });

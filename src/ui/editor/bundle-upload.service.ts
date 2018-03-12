@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 
@@ -31,7 +31,7 @@ class HasEvalError extends Error {
 export class BundleUploadService {
   constructor(
     private readonly store: Store<IProject>,
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly snackRef: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly httpErr: HttpErrorService,
@@ -45,9 +45,9 @@ export class BundleUploadService {
     const snack = this.snackRef.open('Bundling and uploading controls...');
 
     return this.http
-      .get(apiUrl('ensure-no-eval'))
+      .get<{ hasEval: boolean }>(apiUrl('ensure-no-eval'))
       .switchMap(res => {
-        if (res.json().hasEval) {
+        if (res.hasEval) {
           throw new HasEvalError();
         }
 

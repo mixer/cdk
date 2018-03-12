@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
@@ -47,7 +47,7 @@ export class HistoryComponent {
    */
   public readonly saves: Observable<ISavedEntry[]> = this.http
     .get(apiUrl('saves'))
-    .map(res => <IApiSaveEntry[]>res.json())
+    .map(res => <IApiSaveEntry[]>res)
     .map(list =>
       list.reverse().map(entry => ({
         name: entry.name,
@@ -59,7 +59,7 @@ export class HistoryComponent {
   constructor(
     private readonly store: Store<IProject>,
     private readonly project: ProjectService,
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly snackRef: MatSnackBar,
   ) {}
 
@@ -76,7 +76,7 @@ export class HistoryComponent {
    * openSaveFile restores state from a previously saved version.
    */
   public openSaveFile(file: string) {
-    Observable.combineLatest(this.http.get(apiUrl(`saves/${file}`)), this.store.map(getStoredData))
+    Observable.combineLatest(this.http.get<any>(apiUrl(`saves/${file}`)), this.store.map(getStoredData))
       .take(1)
       .switchMap(([next, previous]) =>
         this.http
@@ -85,7 +85,7 @@ export class HistoryComponent {
           .mapTo(next),
       )
       .subscribe(
-        state => this.project.replaceState(state.json().contents, true),
+        state => this.project.replaceState(state.contents, true),
         err =>
           this.snackRef
             .open('An unknown error occurred', 'Report', { duration: 5000 })

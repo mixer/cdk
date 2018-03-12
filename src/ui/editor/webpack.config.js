@@ -1,3 +1,4 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 
@@ -9,9 +10,10 @@ paths.globalStyles = path.resolve(paths.static, 'style.scss');
 
 module.exports = {
   context: __dirname,
+  mode: 'development',
   entry: {
-    main: path.resolve(__dirname, 'editor.module.ts'),
     polyfills: path.resolve(__dirname, 'polyfills.ts'),
+    main: path.resolve(__dirname, 'editor.module.ts'),
   },
   output: {
     path: paths.dist,
@@ -21,10 +23,10 @@ module.exports = {
     extensions: ['.js', '.ts'],
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.ts$/,
-        loaders: [
+        use: [
           {
             loader: 'angular2-template-loader',
           },
@@ -40,16 +42,15 @@ module.exports = {
       {
         exclude: paths.globalStyles,
         test: /\.scss$/,
-        loaders: ['raw-loader', 'sass-loader'],
+        use: ['raw-loader', 'sass-loader'],
       },
       {
         include: paths.globalStyles,
         test: /\.scss$/,
-        loaders: [
+        use: [
           'style-loader',
           {
             loader: 'css-loader',
-            query: { alias: { './__miix_static': './assets' } },
           },
           'sass-loader',
         ],
@@ -61,7 +62,7 @@ module.exports = {
 
       {
         test: /\.html$/,
-        loaders: ['raw-loader'],
+        use: ['raw-loader'],
       },
     ],
   },
@@ -69,5 +70,11 @@ module.exports = {
     // Fix for critical dependency warning due to System.import in angular.
     // See https://github.com/angular/angular/issues/11580
     new webpack.ContextReplacementPlugin(/angular(\\|\/)core(\\|\/)@angular/, __dirname),
+    new HtmlWebpackPlugin({
+      title: 'miix',
+      hash: true,
+      chunksSortMode: a => a.names[0].includes('polyfill') ? -1 : 1,
+      template: path.join(__dirname, 'index.html'),
+    }),
   ],
 };

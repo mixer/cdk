@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { MatDialogRef, MatSnackBar } from '@angular/material';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -57,7 +57,7 @@ export class LinkDialogComponent {
   public expandedProject = new BehaviorSubject(0);
 
   constructor(
-    private readonly http: Http,
+    private readonly http: HttpClient,
     private readonly dialogRef: MatDialogRef<IInteractiveVersionWithGame>,
     private readonly snackRef: MatSnackBar,
   ) {}
@@ -112,9 +112,8 @@ export class LinkDialogComponent {
    * when it successfully does so.
    */
   private loadProjects() {
-    this.http.get(apiUrl('interactive-versions')).subscribe(
-      res => {
-        const games: IGameWithNestedVersions[] = res.json();
+    this.http.get<IGameWithNestedVersions[]>(apiUrl('interactive-versions')).subscribe(
+      games => {
         games.sort((a, b) => this.getLastUpdatedDate(b) - this.getLastUpdatedDate(a));
         this.projects.next(games);
         this.state.next(State.Selecting);

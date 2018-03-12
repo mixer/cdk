@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Output } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Observable } from 'rxjs/Observable';
 
@@ -43,14 +43,13 @@ export class LoginWalkthroughComponent implements OnInit, OnDestroy {
     this.sanitizer.bypassSecurityTrustUrl(`${mixerUrl()}/go?code=${code}`),
   );
 
-  constructor(private readonly http: Http, private readonly sanitizer: DomSanitizer) {}
+  constructor(private readonly http: HttpClient, private readonly sanitizer: DomSanitizer) {}
 
   public ngOnInit() {
     const sub = Observable.interval(1000)
       .startWith(null)
-      .switchMap(() => this.http.get(apiUrl('login')))
+      .switchMap(() => this.http.get<{ code?: string }>(apiUrl('login')))
       .takeUntilDestroyed(this)
-      .map(res => res.json())
       .subscribe(res => {
         if (res.code) {
           this.code.next(res.code);

@@ -79,7 +79,7 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
 
 @function asset($name) {
-  @return '__miix_static/#{$name}';
+  @return './#{$name}';
 }
 
 @mixin layout-row-center() {
