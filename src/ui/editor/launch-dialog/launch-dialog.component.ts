@@ -14,6 +14,7 @@ import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/takeUntil';
 
+import { HttpErrorService } from '../http-error.service';
 import { IInteractiveJoin } from '../redux/connect';
 import { apiUrl } from '../util/env';
 import { reportHttpError } from '../util/report-issue';
@@ -80,6 +81,7 @@ export class LaunchDialogComponent {
     private readonly dialogRef: MatDialogRef<IInteractiveJoin>,
     private readonly snackRef: MatSnackBar,
     private readonly store: Store<IProject>,
+    private readonly httpErr: HttpErrorService,
   ) {}
 
   public onLoggedIn() {
@@ -112,6 +114,7 @@ export class LaunchDialogComponent {
       .switchMap(channelID =>
         this.http.get(apiUrl('connect-participant'), { params: { channelID } }),
       )
+      .retryWhen(this.httpErr.retryOnLoginError)
       .combineLatest(this.store.map(s => s.sync.interactiveVersion))
       .subscribe(
         ([res, version]) => {

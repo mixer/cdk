@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material';
+import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/operator/toPromise';
 
+import { LoginDialogComponent } from './login-dialog/login-dialog.component';
 import { reportHttpError } from './util/report-issue';
 
 /**
@@ -39,7 +42,7 @@ export interface IJoiError {
  */
 @Injectable()
 export class HttpErrorService {
-  constructor(private readonly snackRef: MatSnackBar) {}
+  constructor(private readonly snackRef: MatSnackBar, private readonly dialogRef: MatDialog) {}
 
   /**
    * Handled a named error from the API.
@@ -83,6 +86,32 @@ export class HttpErrorService {
       return Promise.resolve(handler(json, res));
     };
   }
+
+  /**
+   * Catches 401
+   */
+  public loginError = (res: Response): Promise<void> => {
+    if (res.status !== 401) {
+      throw res;
+    }
+
+    this.dialogRef.open(LoginDialogComponent);
+    return Promise.resolve();
+  };
+
+  /**
+   * For use in retryWhen, catches an error and signals for retry.
+   */
+  public retryOnLoginError = (responses: Observable<Response>): Observable<void> => {
+    return responses.switchMap(res => {
+      if (res.status !== 401) {
+        throw res;
+      }
+
+      const dialog = this.dialogRef.open(LoginDialogComponent);
+      return dialog.afterClosed().filter(Boolean);
+    });
+  };
 
   /**
    * Toasts about a response error, and resolves void.

@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Http } from '@angular/http';
-import { MatDialogRef, MatSnackBar } from '@angular/material';
+import { MatDialogRef } from '@angular/material';
 import * as moment from 'moment';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
+import { HttpErrorService } from '../http-error.service';
 import { IInteractiveVersion, IInteractiveVersionWithGame } from '../redux/sync';
 import { apiUrl } from '../util/env';
 import { MemorizingSubject } from '../util/memorizingSubject';
-import { reportHttpError } from '../util/report-issue';
 
 export enum State {
   LoggingIn,
@@ -58,8 +58,8 @@ export class LinkDialogComponent {
 
   constructor(
     private readonly http: Http,
+    private readonly httpErr: HttpErrorService,
     private readonly dialogRef: MatDialogRef<IInteractiveVersionWithGame>,
-    private readonly snackRef: MatSnackBar,
   ) {}
 
   public onLoggedIn() {
@@ -104,7 +104,15 @@ export class LinkDialogComponent {
    * Chooses the version to link, and closes the dialog.
    */
   public select(interactiveVersion: IInteractiveVersion, game: IGameWithNestedVersions) {
-    this.dialogRef.close({ ...interactiveVersion, game });
+    this.http
+      .post(apiUrl(`interactive-versions/${interactiveVersion.id}/link`), {})
+      // Ignore any errors here, the link will fail if they haven't uploaded
+      // their bundle yet.
+      .subscribe(
+        () => undefined,
+        () => undefined,
+        () => this.dialogRef.close({ ...interactiveVersion, game }),
+      );
   }
 
   /**
@@ -112,22 +120,17 @@ export class LinkDialogComponent {
    * when it successfully does so.
    */
   private loadProjects() {
-    this.http.get(apiUrl('interactive-versions')).subscribe(
-      res => {
+    this.http
+      .get(apiUrl('interactive-versions'))
+      .take(1)
+      .retryWhen(this.httpErr.retryOnLoginError)
+      .toPromise()
+      .then(res => {
         const games: IGameWithNestedVersions[] = res.json();
         games.sort((a, b) => this.getLastUpdatedDate(b) - this.getLastUpdatedDate(a));
         this.projects.next(games);
         this.state.next(State.Selecting);
-      },
-      err => {
-        this.snackRef
-          .open('An unknown error occurred', 'Report', { duration: 5000 })
-          .onAction()
-          .subscribe(() => {
-            reportHttpError('Unknown error in version select dialog', err);
-          });
-        this.dialogRef.close();
-      },
-    );
+      })
+      .catch(this.httpErr.toast);
   }
 }

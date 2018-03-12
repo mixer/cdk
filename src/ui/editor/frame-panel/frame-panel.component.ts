@@ -14,6 +14,7 @@ import { LinkDialogComponent } from '../link-dialog/link-dialog.component';
 import { ConnectState } from '../redux/connect';
 import { IFrameState } from '../redux/frame';
 import { IProject, ProjectService } from '../redux/project';
+import { IInteractiveVersion } from '../redux/sync';
 import { UploadSchemaService } from '../upload-schema/upload-schema.service';
 
 /**
@@ -29,7 +30,9 @@ export class FramePanelComponent implements OnDestroy {
   public frame: Observable<IFrameState> = this.store.select('frame');
   public isMobile = this.frame.map(s => devices[s.chosenDevice].isMobile);
   public devices: ReadonlyArray<IDevice> = devices;
-  public isVersionLinked = this.store.map(s => !!s.sync.interactiveVersion);
+  public linkedVersion: Observable<IInteractiveVersion | null> = this.store.map(
+    s => s.sync.interactiveVersion,
+  );
   public controlsReady = this.store.map(s => s.frame.controlsReady);
 
   /**

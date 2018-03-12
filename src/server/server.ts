@@ -180,8 +180,8 @@ export function createApp(project: Project): express.Express {
     }),
   );
 
-  app.post(
-    '/update-interactive-version/:versionId',
+  app.patch(
+    '/interactive-versions/:versionId',
     route(
       requireAuth(async (req, res) => {
         const body = { ...req.body, controlVersion: '2.0' };
@@ -190,6 +190,20 @@ export function createApp(project: Project): express.Express {
           .json('put', `/interactive/versions/${req.params.versionId}`, body);
 
         res.status(updateRes.status).json(await updateRes.json());
+      }),
+    ),
+  );
+
+  app.post(
+    '/interactive-versions/:versionId/link',
+    route(
+      requireAuth(async req => {
+        const fetcher = new Fetcher().with(await project.profile.tokens());
+        const config = await project.packageConfig();
+
+        await fetcher.json('put', `/interactive/versions/${req.params.versionId}`, {
+          bundle: `${config.name}_${config.version}`,
+        });
       }),
     ),
   );

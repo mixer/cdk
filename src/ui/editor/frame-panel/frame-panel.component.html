@@ -72,8 +72,12 @@
 </div>
 
 <mat-menu #syncMenu="matMenu">
-  <button mat-menu-item *ngIf="!(isVersionLinked | async)" (click)="openLinkDialog()">Link to Interactive Version</button>
-  <button mat-menu-item *ngIf="isVersionLinked | async" (click)="unlink()">Unlink from Interactive Version</button>
-  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadBundle()">Upload Control Bundle</button>
-  <button mat-menu-item [disabled]="!(isVersionLinked | async)" (click)="uploadSchema()">Upload Schema</button>
+  <button mat-menu-item *ngIf="!(linkedVersion | async)" (click)="openLinkDialog()">
+    Link to Interactive Version
+  </button>
+  <button mat-menu-item *ngIf="linkedVersion | async" (click)="unlink()">
+    Unlink from v{{ (linkedVersion | async)?.version }} of {{ (linkedVersion | async)?.game.name }}
+  </button>
+  <button mat-menu-item [disabled]="!(linkedVersion | async)" (click)="uploadBundle()">Upload Control Bundle</button>
+  <button mat-menu-item [disabled]="!(linkedVersion | async)" (click)="uploadSchema()">Upload Schema</button>
 </mat-menu>
