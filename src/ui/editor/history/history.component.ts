@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
 import { Observable } from 'rxjs/Observable';
+import { HttpErrorService } from './../http-error.service';
 
 import { getStoredData, IProject, ProjectService } from '../redux/project';
 import { apiUrl } from '../util/env';
@@ -54,12 +55,14 @@ export class HistoryComponent {
         savedAt: moment(entry.savedAt),
         ago: moment(entry.savedAt).fromNow(),
       })),
-    );
+    )
+    .retryWhen(this.httpErr.retryOnLoginError);
 
   constructor(
     private readonly store: Store<IProject>,
     private readonly project: ProjectService,
     private readonly http: Http,
+    private readonly httpErr: HttpErrorService,
     private readonly snackRef: MatSnackBar,
   ) {}
 

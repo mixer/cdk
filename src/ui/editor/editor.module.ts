@@ -38,6 +38,7 @@ import { HttpErrorService } from './http-error.service';
 import { ChannelSelectDialog } from './launch-dialog/channel-select-dialog.component';
 import { LaunchDialogComponent } from './launch-dialog/launch-dialog.component';
 import { LinkDialogComponent } from './link-dialog/link-dialog.component';
+import { LoginDialogComponent } from './login-dialog/login-dialog.component';
 import { LoginWalkthroughComponent } from './login-walkthrough/login-walkthrough.component';
 import { CodeNavComponent } from './nav/code-nav.component';
 import { NavComponent } from './nav/nav.component';
@@ -89,6 +90,7 @@ require('../../../static/editor/style.scss');
     LaunchDialogComponent,
     LinkDialogComponent,
     LocalControlsComponent,
+    LoginDialogComponent,
     LoginWalkthroughComponent,
     NavComponent,
     RemoteControlsComponent,
@@ -98,10 +100,11 @@ require('../../../static/editor/style.scss');
   ],
   entryComponents: [
     ChannelSelectDialog,
-    LinkDialogComponent,
     LaunchDialogComponent,
-    UploadSchemaDialogComponent,
+    LinkDialogComponent,
+    LoginDialogComponent,
     RenameBundleDialogComponent,
+    UploadSchemaDialogComponent,
   ],
   providers: [
     BundleUploadService,

@@ -11,6 +11,7 @@ export interface IInteractiveVersion {
   installation: string;
   createdAt: string;
   updatedAt: string;
+  game: IInteractiveGame;
 }
 
 /**

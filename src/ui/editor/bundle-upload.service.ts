@@ -70,21 +70,8 @@ export class BundleUploadService {
       .catch(HasEvalError, () => {
         this.notifyNoEval();
       })
-      .catch(err => {
-        this.showGenericError(err);
-      });
-  }
-
-  /**
-   * Displays a generic unknown error in a toast.
-   */
-  private showGenericError(err: any): void {
-    const errSnack = this.snackRef.open('Error uploading bundle', 'View Error', {
-      duration: 10000,
-    });
-    errSnack.onAction().subscribe(() => {
-      window.open('about:blank')!.document.body.innerHTML += err.text ? err.text() : err.stack;
-    });
+      .catch(this.httpErr.loginError)
+      .catch(this.httpErr.toast);
   }
 
   /**

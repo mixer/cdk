@@ -36,6 +36,7 @@ export class UploadSchemaService {
     this.confirmCanUpload()
       .filter(Boolean)
       .switchMap(() => this.uploadCurrentControls())
+      .retryWhen(this.httpErr.retryOnLoginError)
       .take(1)
       .toPromise()
       .then(() => this.snackRef.open('Schema uploaded', undefined, { duration: 2000 }))
@@ -54,7 +55,8 @@ export class UploadSchemaService {
       )
       .catch(SyntaxError, err => {
         this.snackRef.open(`Your control schema contains errors: ${err.message}`);
-      });
+      })
+      .catch(this.httpErr.toast);
   }
 
   /**
@@ -65,7 +67,7 @@ export class UploadSchemaService {
     return this.store
       .take(1)
       .switchMap(s =>
-        this.http.post(apiUrl(`update-interactive-version/${s.sync.interactiveVersion!.id}`), {
+        this.http.patch(apiUrl(`interactive-versions/${s.sync.interactiveVersion!.id}`), {
           controls: {
             scenes: JSON5.parse(s.code.scenes.join('\n')),
           },
