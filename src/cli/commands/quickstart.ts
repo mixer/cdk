@@ -11,8 +11,8 @@ import { awaitChildProcess, readFile, writeFile } from '../../server/util';
 import writer from '../writer';
 
 const projectKinds: { [key: string]: string } = {
-  preact: 'interactive-launchpad_0.0.tar.gz',
-  html: 'html-starter_1.0.tar.gz',
+  preact: 'interactive-launchpad_1.0.tar.gz',
+  html: 'interactive-html-starter_1.0.tar.gz',
 };
 
 export interface IQuickStartOptions {
