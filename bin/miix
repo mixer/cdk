@@ -148,10 +148,14 @@ const yargs = require('yargs')
     execute
   )
   .command(
-    'quickstart <projectName>',
+    'quickstart <projectName> [kind]',
     'Creates a base project for building interactive controls',
     argv =>
       argv
+        .option('kind', {
+          description: 'The template to use for this quickstart, one of "html" or "preact"',
+          default: 'preact',
+        })
         .option('dir', {
           description:
             'The folder to extract into. Will be created if it does ' +
