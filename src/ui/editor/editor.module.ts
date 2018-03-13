@@ -31,9 +31,11 @@ import { ConsoleComponent } from './console/console.component';
 import { ConsoleService } from './console/console.service';
 import { ExpandedMessageComponent } from './console/expanded-message.component';
 import { FramePanelComponent } from './frame-panel/frame-panel.component';
+import { ControlStateSyncService } from './frame/control-state-sync.service';
 import { FrameComponent } from './frame/frame.component';
 import { LocalControlsComponent } from './frame/local-controls.component';
 import { RemoteControlsComponent } from './frame/remote-controls.component';
+import { BaseStateSyncService } from './frame/state-sync.service';
 import { HistoryComponent } from './history/history.component';
 import { HostComponent } from './host/host.component';
 import { HttpErrorService } from './http-error.service';
@@ -112,10 +114,12 @@ require('../../../static/editor/style.scss');
     UploadSchemaDialogComponent,
   ],
   providers: [
+    BaseStateSyncService,
     BundleUploadService,
     ConsoleService,
     HttpErrorService,
     ProjectService,
+    ControlStateSyncService,
     UploadSchemaService,
   ],
   bootstrap: [HostComponent],

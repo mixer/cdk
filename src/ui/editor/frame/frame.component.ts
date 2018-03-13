@@ -45,7 +45,6 @@ const backgrounds = [
   templateUrl: './frame.component.html',
   styleUrls: ['./frame.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ControlStateSyncService],
 })
 export class FrameComponent implements AfterContentInit, OnDestroy {
   /**

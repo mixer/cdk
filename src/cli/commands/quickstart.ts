@@ -11,7 +11,7 @@ import { awaitChildProcess, readFile, writeFile } from '../../server/util';
 import writer from '../writer';
 
 const projectKinds: { [key: string]: string } = {
-  preact: 'interactive-launchpad_1.0.tar.gz',
+  preact: 'interactive-launchpad_0.0.tar.gz',
   html: 'html-starter_1.0.tar.gz',
 };
 
@@ -80,10 +80,10 @@ export default async function(options: IQuickStartOptions): Promise<void> {
     : path.join(process.cwd(), options.projectName);
 
   let installed = false;
-  const spinner = ora('Starting...').start();
+  let spinner: any;
 
   if (!projectKinds[options.kind]) {
-    spinner.fail(
+    writer.write(
       `Unknown project kind "${options.kind}". The available kinds are: ${Object.keys(
         projectKinds,
       ).join(', ')}`,
@@ -98,7 +98,7 @@ export default async function(options: IQuickStartOptions): Promise<void> {
   const [details] = await Promise.all([
     getDetails(options.projectName).then(d => {
       if (!installed) {
-        spinner.text = 'Installing dependencies...';
+        spinner = ora('Installing dependencies...').start();
       }
 
       return d;
