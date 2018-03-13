@@ -1,6 +1,8 @@
 import { createHash } from 'crypto';
 import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
+import { list } from 'tar';
+import { BundleTooBigError } from './../errors';
 
 import { BundleNameTakenError, UploaderHttpError } from '../errors';
 import { Project } from '../project';
@@ -37,6 +39,16 @@ export class Uploader {
         if (res.status === 403) {
           throw new BundleNameTakenError(res, await res.text());
         }
+        if (res.status === 413) {
+          let files;
+          try {
+            files = await this.listTarballFiles(filename);
+          } catch (e) {
+            // ignored
+          }
+
+          throw new BundleTooBigError(res, await res.text(), files);
+        }
 
         throw new UploaderHttpError(res, await res.text());
       });
@@ -51,5 +63,22 @@ export class Uploader {
           resolve(hash.toString('hex').slice(0, 64));
         });
     });
+  }
+
+  private async listTarballFiles(filename: string) {
+    const entries: { filename: string; size: number }[] = [];
+
+    await list(
+      {
+        file: filename,
+        strict: true,
+        onentry(entry) {
+          entries.push({ filename: String(entry.path), size: entry.size });
+        },
+      },
+      [],
+    );
+
+    return entries;
   }
 }
