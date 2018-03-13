@@ -6,15 +6,14 @@ import 'rxjs/add/observable/fromEvent';
 import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
-import { ILogEntry, RPC } from '@mcph/miix-std/dist/internal';
-import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
-import { ConsoleService } from '../console/console.service';
+import { RPC } from '@mcph/miix-std/dist/internal';
 import { MemorizingSubject } from '../util/memorizingSubject';
 import { IProject } from './../redux/project';
 import { ControlStateSyncService } from './control-state-sync.service';
 import { ControlsSource } from './sources/controls';
 import { GroupSource } from './sources/group';
 import { ParticipantSource } from './sources/participant';
+import { BaseStateSyncService } from './state-sync.service';
 
 const enum State {
   Loading,
@@ -36,8 +35,8 @@ export class LocalStateSyncService implements OnDestroy {
 
   constructor(
     private readonly controlsState: ControlStateSyncService,
-    private readonly console: ConsoleService,
     private readonly store: Store<IProject>,
+    private readonly base: BaseStateSyncService,
   ) {
     this.sources.forEach(source => {
       source
@@ -58,18 +57,12 @@ export class LocalStateSyncService implements OnDestroy {
    */
   public bind(frame: HTMLIFrameElement): this {
     this.rpc = new RPC(frame.contentWindow, '1.0');
-    this.console.bindToRPC(this.rpc);
     this.rpc.expose('controlsReady', () => {
       this.sendInitialState();
     });
-    this.rpc.expose<IVideoPositionOptions>('moveVideo', data => {
-      this.controlsState.setVideoSize(data);
-    });
-    this.rpc.expose<ILogEntry>('log', data => {
-      this.console.addLog(data);
-    });
 
     const refresh = this.controlsState.getRefresh();
+    this.base.attachInternalMethods(this.rpc, this.closed);
 
     Observable.fromEvent(frame, 'loaded')
       .takeUntil(this.closed)
@@ -85,21 +78,6 @@ export class LocalStateSyncService implements OnDestroy {
         this.rpc.destroy();
         frame.src = frame.src;
         this.bind(frame);
-      });
-
-    this.controlsState
-      .getFittedVideoSize()
-      .takeUntil(this.closed)
-      .takeUntil(refresh)
-      .subscribe(rect => {
-        this.rpc.call(
-          'updateVideoPosition',
-          {
-            connectedPlayer: { ...rect, channelId: 1 },
-            costreamPlayers: [],
-          },
-          false,
-        );
       });
 
     return this;

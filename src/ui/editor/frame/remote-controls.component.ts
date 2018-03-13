@@ -11,8 +11,7 @@ import { MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 import * as json5 from 'json5';
 import { throttle } from 'lodash';
-import { IInteractiveJoin } from '../redux/connect';
-import { ControlStateSyncService } from './control-state-sync.service';
+import { Subject } from 'rxjs/Subject';
 
 import 'rxjs/add/operator/combineLatest';
 import 'rxjs/add/operator/distinctUntilChanged';
@@ -24,9 +23,11 @@ import 'rxjs/add/operator/take';
 import '../util/takeUntilDestroyed';
 
 import { ICloseData, Participant } from '@mcph/miix-std/dist/participant';
-import { ConsoleService } from '../console/console.service';
+import { IInteractiveJoin } from '../redux/connect';
 import { IProject, ProjectService } from '../redux/project';
 import { exists } from '../util/ds';
+import { ControlStateSyncService } from './control-state-sync.service';
+import { BaseStateSyncService } from './state-sync.service';
 
 /**
  * The RemoteControlsComponent hosts the frame containing remote Interactive
@@ -54,7 +55,7 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
     private readonly snackRef: MatSnackBar,
     private readonly project: ProjectService,
     private readonly controls: ControlStateSyncService,
-    private readonly console: ConsoleService,
+    private readonly base: BaseStateSyncService,
   ) {}
 
   public ngAfterContentInit() {
@@ -88,6 +89,8 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
    * startConnect is called when we get interactive join data from the state.
    */
   private startConnect(join: IInteractiveJoin) {
+    const changed = new Subject<void>();
+
     this.store
       .map(state => state.code.participant)
       .take(1)
@@ -105,46 +108,47 @@ export class RemoteControlsComponent implements AfterContentInit, OnDestroy {
       })
       .combineLatest(this.controls.getSettings())
       .takeUntilDestroyed(this)
-      .subscribe(([xAuthUser, settings]) => {
-        if (this.participant) {
-          this.participant.destroy();
-        }
+      .subscribe(
+        ([xAuthUser, settings]) => {
+          if (this.participant) {
+            changed.next();
+            this.participant.destroy();
+          }
 
-        const iframe = <HTMLIFrameElement>this.iframe.nativeElement;
-        this.participant = new Participant(iframe, settings)
-          .on('loaded', () => {
-            this.afterConnect();
-          })
-          .on('close', close => {
-            this.onClose(close);
-          })
-          .on(
-            'transmit',
-            throttle(() => {
-              this.onTransmit();
-            }, 50),
-          )
-          .on('moveVideo', size => {
-            this.controls.setVideoSize(size);
-          })
-          .on('unload', () => {
-            this.controls.requestRefresh();
-          })
-          .on('log', data => {
-            this.console.addLog(data);
-          })
-          .connect({
-            contentAddress: '/?',
-            socketAddress: join.address,
-            ugcAddress: join.ugcAddress,
-            xAuthUser,
-            key: join.key,
+          const iframe = <HTMLIFrameElement>this.iframe.nativeElement;
+          this.participant = new Participant(iframe, settings)
+            .on('loaded', () => {
+              this.afterConnect();
+            })
+            .on('close', close => {
+              this.onClose(close);
+            })
+            .on(
+              'transmit',
+              throttle(() => {
+                this.onTransmit();
+              }, 50),
+            )
+            .on('unload', () => {
+              this.controls.requestRefresh();
+            })
+            .connect({
+              contentAddress: '/?',
+              socketAddress: join.address,
+              ugcAddress: join.ugcAddress,
+              xAuthUser,
+              key: join.key,
+            });
+
+          this.participant.runOnRpc(rpc => {
+            this.base.attachInternalMethods(rpc, changed);
           });
-
-        this.participant.runOnRpc(rpc => {
-          this.console.bindToRPC(rpc);
-        });
-      });
+        },
+        err => {
+          throw err;
+        },
+        () => changed.next(),
+      );
   }
 
   /**
