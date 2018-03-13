@@ -233,6 +233,38 @@ export class BundleNameTakenError extends UploaderHttpError {
 }
 
 /**
+ * BundleTooBigError is thrown when the user tries to upload a bundle
+ * that's too big.
+ */
+export class BundleTooBigError extends UploaderHttpError implements IHttpableError {
+  constructor(
+    res: Response,
+    text: string,
+    private readonly files: void | { filename: string; size: number }[],
+  ) {
+    super(res, text);
+  }
+
+  public getHumanMessage() {
+    return `Your control bundle to too large!`;
+  }
+
+  /**
+   * @override
+   */
+  public metadata() {
+    return { files: this.files };
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 400;
+  }
+}
+
+/**
  * NotInteractiveError is thrown from the connect-participant call on
  * the dev server if the integration isn't interactive yet.
  */

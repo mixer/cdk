@@ -22,7 +22,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { BundleSizeWarningComponent } from './bundle-size-warning-dialog/bundle-size-warning-dialog.component';
 import { BundleUploadService } from './bundle-upload.service';
+import { BytesPipe } from './bytes.pipe';
 import { CodeResizerComponent } from './code/code-resizer.component';
 import { CodeComponent } from './code/code.component';
 import { ConsoleComponent } from './console/console.component';
@@ -77,6 +79,8 @@ require('../../../static/editor/style.scss');
     EffectsModule.forRoot([HistoryEffects]),
   ],
   declarations: [
+    BundleSizeWarningComponent,
+    BytesPipe,
     ChannelSelectDialog,
     CodeComponent,
     CodeNavComponent,
@@ -99,6 +103,7 @@ require('../../../static/editor/style.scss');
     UploadSchemaDialogComponent,
   ],
   entryComponents: [
+    BundleSizeWarningComponent,
     ChannelSelectDialog,
     LaunchDialogComponent,
     LinkDialogComponent,
@@ -108,10 +113,10 @@ require('../../../static/editor/style.scss');
   ],
   providers: [
     BundleUploadService,
+    ConsoleService,
+    HttpErrorService,
     ProjectService,
     UploadSchemaService,
-    HttpErrorService,
-    ConsoleService,
   ],
   bootstrap: [HostComponent],
 })

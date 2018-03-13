@@ -3,6 +3,10 @@ import { Http } from '@angular/http';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { Store } from '@ngrx/store';
 
+import {
+  BundleSizeWarningComponent,
+  IBundleSizeResponse,
+} from './bundle-size-warning-dialog/bundle-size-warning-dialog.component';
 import { HttpErrorService } from './http-error.service';
 import { IProject } from './redux/project';
 import { RenameBundleDialogComponent } from './rename-bundle-dialog/rename-bundle-dialog.component';
@@ -67,6 +71,13 @@ export class BundleUploadService {
         snack.dismiss();
       })
       .catch(this.httpErr.catch('BundleNameTakenError', () => this.renameBundle()))
+      .catch(
+        this.httpErr.catch<void, IBundleSizeResponse>('BundleTooBigError', err => {
+          this.dialog.open(BundleSizeWarningComponent, {
+            data: err.metadata,
+          });
+        }),
+      )
       .catch(HasEvalError, () => {
         this.notifyNoEval();
       })
