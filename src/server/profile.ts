@@ -166,7 +166,7 @@ export class Profile {
    */
   private async ensureProfile(): Promise<IHostProfile> {
     const hostProfile = this.profile && this.profile.hosts[this.host];
-    if (hostProfile) {
+    if (hostProfile && this.tokensObj && !this.tokensObj.expired()) {
       return hostProfile;
     }
 
