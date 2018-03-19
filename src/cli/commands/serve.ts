@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { getPackageExecutable } from '../../server/npm';
 import { createApp } from '../../server/server';
 import { never } from '../../server/util';
-import { IDevEnvironment } from '../../ui/typings';
+import { IDevEnvironment } from '../../app/typings';
 import { devEnvironmentVar } from '../../webpack-plugin';
 import { IGlobalOptions } from '../options';
 import { ensureWebpackDependencies } from '../prereqs';

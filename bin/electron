@@ -15,12 +15,12 @@ function createWindow() {
   });
 
   if (isDebug) {
-    window.loadURL(`http://localhost:9000`);
+    window.loadURL(`http://localhost:4200`);
     window.webContents.openDevTools();
   } else {
     window.loadURL(
       url.format({
-        pathname: path.join(__dirname, '../dist/src/ui/editor/index.html'),
+        pathname: path.join(__dirname, '../dist/src/app/index.html'),
         protocol: 'file:',
         slashes: true,
       })

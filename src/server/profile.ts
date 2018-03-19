@@ -94,11 +94,17 @@ export class Profile {
    * Returns whether the user currently has valid credentials.
    */
   public async hasAuthenticated(): Promise<boolean> {
-    if (!this.hostProfile) {
-      await this.tryLoadFile();
+    try {
+      await this.ensureProfile();
+    } catch (e) {
+      if (e instanceof NoAuthenticationError) {
+        return false;
+      }
+
+      throw e;
     }
 
-    return this.tokensObj !== undefined && !this.tokensObj.expired();
+    return true;
   }
 
   /**
@@ -160,7 +166,7 @@ export class Profile {
    */
   private async ensureProfile(): Promise<IHostProfile> {
     const hostProfile = this.profile && this.profile.hosts[this.host];
-    if (hostProfile) {
+    if (hostProfile && this.tokensObj && !this.tokensObj.expired()) {
       return hostProfile;
     }
 

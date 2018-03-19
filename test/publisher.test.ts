@@ -66,11 +66,10 @@ describe('Publisher', () => {
   it('unpublishes packages', async () => {
     requester.run.resolves({ status: 200 });
     await publisher.unpublish('interactive-launchpad', '0.1.0');
-    expect(requester.run).to.have.been.calledWith(
-      '/interactive/bundles/interactive-launchpad/versions/0.1.0',
-      {
-        method: 'DELETE',
-      },
-    );
+    expect(
+      requester.run,
+    ).to.have.been.calledWith('/interactive/bundles/interactive-launchpad/versions/0.1.0', {
+      method: 'DELETE',
+    });
   });
 });

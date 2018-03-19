@@ -56,7 +56,8 @@ export class UnexpectedHttpError extends Error implements IHumanError {
       inspect(json || this.text, false, null, true),
       '',
       chalk.dim(
-        this.stack!.split('\n')
+        this.stack!
+          .split('\n')
           .slice(1)
           .join('\n'),
       ),
@@ -221,6 +222,38 @@ export class UploaderHttpError extends PublishHttpError {
 export class BundleNameTakenError extends UploaderHttpError {
   public getHumanMessage() {
     return `That bundle name is already taken, shucks!`;
+  }
+
+  /**
+   * @override
+   */
+  public statusCode(): number {
+    return 400;
+  }
+}
+
+/**
+ * BundleTooBigError is thrown when the user tries to upload a bundle
+ * that's too big.
+ */
+export class BundleTooBigError extends UploaderHttpError implements IHttpableError {
+  constructor(
+    res: Response,
+    text: string,
+    private readonly files: void | { filename: string; size: number }[],
+  ) {
+    super(res, text);
+  }
+
+  public getHumanMessage() {
+    return `Your control bundle to too large!`;
+  }
+
+  /**
+   * @override
+   */
+  public metadata() {
+    return { files: this.files };
   }
 
   /**

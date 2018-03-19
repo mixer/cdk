@@ -29,12 +29,7 @@
       "chai-as-promised",
       "sinon-chai"
     ],
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "src/types/*"
-      ]
-    }
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",

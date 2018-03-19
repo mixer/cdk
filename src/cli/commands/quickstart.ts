@@ -10,10 +10,14 @@ import { UnexpectedHttpError } from '../../server/errors';
 import { awaitChildProcess, readFile, writeFile } from '../../server/util';
 import writer from '../writer';
 
-const launchpadUrl = 'https://mixercc.azureedge.net/launchpad/interactive-launchpad_1.0.tar.gz';
+const projectKinds: { [key: string]: string } = {
+  preact: 'interactive-launchpad_1.0.tar.gz',
+  html: 'interactive-html-starter_1.0.tar.gz',
+};
 
 export interface IQuickStartOptions {
   dir: string;
+  kind: string;
   projectName: string;
   npm: string;
 }
@@ -21,8 +25,8 @@ export interface IQuickStartOptions {
 /**
  * installRepo clones and installs the Interactive launchpad.
  */
-async function installRepo(dir: string, npmPath: string): Promise<void> {
-  const res = await nodeFetch(launchpadUrl);
+async function installRepo(dir: string, npmPath: string, kind: string): Promise<void> {
+  const res = await nodeFetch(`https://mixercc.azureedge.net/launchpad/${projectKinds[kind]}`);
   if (res.status !== 200) {
     throw new UnexpectedHttpError(res, await res.text());
   }
@@ -75,12 +79,21 @@ export default async function(options: IQuickStartOptions): Promise<void> {
     ? path.resolve(options.dir)
     : path.join(process.cwd(), options.projectName);
 
+  let installed = false;
+  let spinner: any;
+
+  if (!projectKinds[options.kind]) {
+    writer.write(
+      `Unknown project kind "${options.kind}". The available kinds are: ${Object.keys(
+        projectKinds,
+      ).join(', ')}`,
+    );
+    return;
+  }
+
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
   }
-
-  let installed = false;
-  let spinner: any;
 
   const [details] = await Promise.all([
     getDetails(options.projectName).then(d => {
@@ -90,7 +103,7 @@ export default async function(options: IQuickStartOptions): Promise<void> {
 
       return d;
     }),
-    installRepo(dir, options.npm).then(() => {
+    installRepo(dir, options.npm, options.kind).then(() => {
       installed = true;
     }),
   ]);

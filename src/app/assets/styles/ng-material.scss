@@ -1,0 +1,21 @@
+@import '~@angular/material/theming';
+@import './declarations';
+
+@include mat-core();
+
+@include angular-material-typography(mat-typography-config(
+  $font-family: '#{$font-family-sans-serif}'
+));
+
+$base-theme: mat-dark-theme(
+  mat-palette($mat-blue),
+  mat-palette($mat-purple)
+);
+@include angular-material-theme($base-theme);
+
+
+[mat-dialog-actions] {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
