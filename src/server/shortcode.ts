@@ -75,7 +75,17 @@ export class OAuthShortCode {
    */
   public readonly code = this.shortcode.code;
 
-  private expired = delay(this.shortcode.expires_in * 1000);
+  /**
+   * Return the number of seconds until the shortcode expires.
+   */
+  public readonly expiresIn = this.shortcode.expires_in;
+
+  /**
+   * Gets the time at which this shortcode expires.
+   */
+  public readonly expiresAt = new Date(this.expiresIn * 1000 + Date.now());
+
+  private expired = delay(this.expiresIn * 1000);
 
   constructor(
     private readonly clientId: string,
@@ -83,6 +93,13 @@ export class OAuthShortCode {
     private readonly shortcode: IShortcodeCreateResponse,
     private readonly fetcher: IRequester,
   ) {}
+
+  /**
+   * Returns whether this shortcode has expired.
+   */
+  public hasExpired(): boolean {
+    return Date.now() > this.expiresAt.getTime();
+  }
 
   public async waitForAccept(): Promise<OAuthTokens> {
     const res = await this.fetcher.json('get', `/oauth/shortcode/check/${this.shortcode.handle}`);

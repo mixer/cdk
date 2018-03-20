@@ -3,7 +3,6 @@ import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/s
 import { LayoutActions, LayoutActionTypes, LayoutScreen } from './layout.actions';
 import * as fromRoot from '../bedrock.reducers';
 
-
 export interface LayoutState {
   screen: LayoutScreen;
 }
@@ -31,7 +30,9 @@ export function layoutReducer(
 /**
  * Selector for the layout feature.
  */
-export const layoutState: MemoizedSelector<State, LayoutState> = createFeatureSelector<LayoutState>('layout');
+export const layoutState: MemoizedSelector<State, LayoutState> = createFeatureSelector<LayoutState>(
+  'layout',
+);
 
 /**
  * Selects the chosen layout screen.

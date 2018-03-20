@@ -13,7 +13,9 @@ import { UnaryFunction } from 'rxjs/interfaces';
  *   .pipe(untilUnmount(this))
  *   .subscribe(settings => this.updateSettings(settings));
  */
-export function untilDestroyed<T>(component: OnDestroy): UnaryFunction<Observable<T>, Observable<T>> {
+export function untilDestroyed<T>(
+  component: OnDestroy,
+): UnaryFunction<Observable<T>, Observable<T>> {
   const inner = component.ngOnDestroy;
   const notifier = new ReplaySubject<void>(1);
   component.ngOnDestroy = function() {

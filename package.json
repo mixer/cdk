@@ -21,8 +21,7 @@
     "start": "ts-node src/app/tools/setProfile.ts && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
     "start:electron": "tsc && wait-on http-get://localhost:4200/ && electron bin/electron --serve --debug",
-    "prepare": "npm run -s build",
-    "postinstall": "electron-rebuild"
+    "prepare": "npm run -s build"
   },
   "nyc": {
     "include": [
@@ -70,6 +69,7 @@
     "@angular/platform-browser": "^5.2.8",
     "@angular/platform-browser-dynamic": "^5.2.8",
     "@ngrx/effects": "^5.2.0",
+    "@ngrx/entity": "^5.2.0",
     "@ngrx/store": "^5.2.0",
     "@types/chai": "^4.0.3",
     "@types/chai-as-promised": "0.0.31",
@@ -80,7 +80,6 @@
     "@types/glob": "^5.0.30",
     "@types/highlight.js": "^9.12.2",
     "@types/joi": "^10.4.1",
-    "@types/js-yaml": "^3.9.0",
     "@types/json5": "0.0.29",
     "@types/lodash": "^4.14.74",
     "@types/marked": "^0.3.0",
@@ -102,9 +101,7 @@
     "codemirror": "^5.28.0",
     "core-js": "^2.5.0",
     "electron": "^1.7.9",
-    "electron-builder": "^20.5.1",
     "electron-reload": "^1.2.2",
-    "eventemitter3": "^2.0.3",
     "fast-json-patch": "^2.0.4",
     "highlight.js": "^9.12.0",
     "mocha": "^3.5.0",
@@ -115,6 +112,7 @@
     "npx": "^10.0.1",
     "nyc": "^11.2.1",
     "prettier": "^1.5.3",
+    "rimraf": "^2.6.2",
     "rxjs": "^5.5.6",
     "screenfull": "^3.3.1",
     "sinon": "^3.2.0",
@@ -135,7 +133,6 @@
     "form-data": "^2.3.1",
     "glob": "^7.1.2",
     "joi": "^10.6.0",
-    "js-yaml": "^3.9.1",
     "json5": "^0.5.1",
     "lodash": "^4.17.4",
     "marked": "^0.3.6",

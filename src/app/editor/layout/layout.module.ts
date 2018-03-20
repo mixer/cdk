@@ -7,12 +7,8 @@ import { layoutReducer } from './layout.reducer';
 import { TopNavComponent } from './topnav/topnav.component';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    MenuBarModule,
-    StoreModule.forFeature('layout', layoutReducer)
-  ],
+  imports: [CommonModule, MenuBarModule, StoreModule.forFeature('layout', layoutReducer)],
   exports: [TopNavComponent],
   declarations: [TopNavComponent],
 })
-export class LayoutModule { }
+export class LayoutModule {}

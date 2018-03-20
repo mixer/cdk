@@ -3,7 +3,6 @@ import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/s
 import { MenuBarActions, MenuBarActionTypes } from './menu-bar.actions';
 import * as fromRoot from '../../bedrock.reducers';
 
-
 export interface MenuBarState {
   openMenu: string | null;
 }
@@ -37,7 +36,9 @@ export function menuBarReducer(
 /**
  * Selector for the menuBar feature.
  */
-export const MenuBarState: MemoizedSelector<State, MenuBarState> = createFeatureSelector<MenuBarState>('menuBar');
+export const MenuBarState: MemoizedSelector<State, MenuBarState> = createFeatureSelector<
+  MenuBarState
+>('menuBar');
 
 /**
  * Selects the open menu.

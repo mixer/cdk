@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-
 /**
  * The host component holds the arrangement of macroscopic editor components.
  */
@@ -10,5 +9,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrls: ['./topnav.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TopNavComponent {
-}
+export class TopNavComponent {}

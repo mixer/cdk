@@ -29,14 +29,14 @@ describe('Publisher', () => {
   });
 
   it('refuses to publish private packages', async () => {
-    const project = new Project('', '');
+    const project = new Project('');
     sinon.stub(project, 'packageConfig').resolves({ ...mockConfig, private: true });
 
     await expect(publisher.publish(project)).to.eventually.be.rejectedWith(PublishPrivateError);
   });
 
   it('works otherwise', async () => {
-    const project = new Project('', projectPath);
+    const project = new Project(projectPath);
     sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 200 });
     await publisher.publish(project);
@@ -54,7 +54,7 @@ describe('Publisher', () => {
   });
 
   it('formats errors nicely', async () => {
-    const project = new Project('', projectPath);
+    const project = new Project(projectPath);
     sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 400, text: async () => 'You messed up!' });
     await expect(publisher.publish(project)).to.eventually.be.rejectedWith(
@@ -66,10 +66,11 @@ describe('Publisher', () => {
   it('unpublishes packages', async () => {
     requester.run.resolves({ status: 200 });
     await publisher.unpublish('interactive-launchpad', '0.1.0');
-    expect(
-      requester.run,
-    ).to.have.been.calledWith('/interactive/bundles/interactive-launchpad/versions/0.1.0', {
-      method: 'DELETE',
-    });
+    expect(requester.run).to.have.been.calledWith(
+      '/interactive/bundles/interactive-launchpad/versions/0.1.0',
+      {
+        method: 'DELETE',
+      },
+    );
   });
 });

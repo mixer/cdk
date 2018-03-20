@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, HostListener, Input, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  Input,
+  OnDestroy,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 import { fromEvent } from 'rxjs/observable/fromEvent';
@@ -49,11 +57,13 @@ export class MenuBarComponent implements OnDestroy {
     this.isOpen
       .pipe(
         filter(Boolean),
-        switchMap(() => fromEvent<MouseEvent>(window, 'mousedown').pipe(
-          filter(ev => !htmlElement.contains(<Node> ev.target)),
-          takeUntil(this.isOpen.pipe(filter(open => !open))),
-          untilDestroyed(this),
-        )),
+        switchMap(() =>
+          fromEvent<MouseEvent>(window, 'mousedown').pipe(
+            filter(ev => !htmlElement.contains(<Node>ev.target)),
+            takeUntil(this.isOpen.pipe(filter(open => !open))),
+            untilDestroyed(this),
+          ),
+        ),
       )
       .subscribe(() => this.close());
   }
@@ -79,9 +89,7 @@ export class MenuBarComponent implements OnDestroy {
   public toggle(event: Event) {
     event.preventDefault();
 
-    this.isOpen
-      .pipe(take(1))
-      .subscribe(isOpen => isOpen ? this.close() : this.open());
+    this.isOpen.pipe(take(1)).subscribe(isOpen => (isOpen ? this.close() : this.open()));
   }
 
   /**
@@ -123,7 +131,8 @@ export class MenuBarItemComponent {
    * Icon to display in the menu bar item.
    */
   @HostBinding('class.disabled')
-  @Input() public icon: boolean;
+  @Input()
+  public icon: boolean;
 
   constructor(private readonly parent: MenuBarComponent) {}
 

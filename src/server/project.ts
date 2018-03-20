@@ -15,8 +15,8 @@ export class Project {
    */
   public readonly profile: Profile;
 
-  constructor(profileFile: string, private readonly projectBaseDir: string) {
-    this.profile = new Profile(profileFile);
+  constructor(private readonly projectBaseDir: string) {
+    this.profile = new Profile();
   }
 
   /**

@@ -28,8 +28,7 @@
       "chai-subset",
       "chai-as-promised",
       "sinon-chai"
-    ],
-    "baseUrl": "."
+    ]
   },
   "exclude": [
     "node_modules",

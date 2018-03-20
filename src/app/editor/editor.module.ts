@@ -23,11 +23,7 @@ import { LayoutModule } from './layout/layout.module';
     StoreModule.forRoot(reducers),
     EffectsModule.forRoot([]),
   ],
-  declarations: [
-    BytesPipe,
-    SafePipe,
-    BedrockComponent,
-  ],
+  declarations: [BytesPipe, SafePipe, BedrockComponent],
   providers: [],
   bootstrap: [BedrockComponent],
 })

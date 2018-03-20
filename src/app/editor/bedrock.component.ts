@@ -30,10 +30,7 @@ const availableIcons = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BedrockComponent {
-  constructor(
-    icons: MatIconRegistry,
-    sanitizer: DomSanitizer,
-  ) {
+  constructor(icons: MatIconRegistry, sanitizer: DomSanitizer) {
     availableIcons.forEach(icon => {
       icons.addSvgIcon(
         icon,
