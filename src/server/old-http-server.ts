@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import * as express from 'express';
 import { merge } from 'lodash';
-import { Saves } from './saves/store';
 
 import { isHttpableError, NotInteractiveError } from './errors';
 import { DeclarationError } from './metadata/error';
@@ -222,40 +221,6 @@ export function createApp(project: Project): express.Express {
         });
       }),
     ),
-  );
-
-  app.post(
-    '/saves',
-    route(async req => {
-      const saves = new Saves(project);
-      await saves.append(req.body);
-      return saves.list();
-    }),
-  );
-
-  app.get(
-    '/saves',
-    route(async () => {
-      return new Saves(project).list();
-    }),
-  );
-
-  app.get(
-    '/saves/latest',
-    route(async _req => {
-      return {
-        contents: await new Saves(project).loadLatest(),
-      };
-    }),
-  );
-
-  app.get(
-    '/saves/:saveId',
-    route(async req => {
-      return {
-        contents: await new Saves(project).load(req.params.saveId),
-      };
-    }),
   );
 
   return app;

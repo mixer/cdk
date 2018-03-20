@@ -1,10 +1,11 @@
 import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/store';
 
-import { MenuBarActions, MenuBarActionTypes } from './menu-bar.actions';
+import { MenuBarActions, MenuBarActionTypes, OpenDirection } from './menu-bar.actions';
 import * as fromRoot from '../../bedrock.reducers';
 
 export interface MenuBarState {
   openMenu: string | null;
+  direction: OpenDirection;
 }
 
 export interface State extends fromRoot.State {
@@ -13,6 +14,7 @@ export interface State extends fromRoot.State {
 
 const initialState: MenuBarState = {
   openMenu: null,
+  direction: OpenDirection.Right,
 };
 
 export function menuBarReducer(
@@ -21,7 +23,7 @@ export function menuBarReducer(
 ): MenuBarState {
   switch (action.type) {
     case MenuBarActionTypes.OPEN_MENU:
-      return { ...state, openMenu: action.menuId };
+      return { ...state, openMenu: action.menuId, direction: action.direction };
     case MenuBarActionTypes.CLOSE_MENU:
       if (!action.menuId || state.openMenu === action.menuId) {
         return { ...state, openMenu: null };
@@ -36,11 +38,16 @@ export function menuBarReducer(
 /**
  * Selector for the menuBar feature.
  */
-export const MenuBarState: MemoizedSelector<State, MenuBarState> = createFeatureSelector<
+export const menuBarState: MemoizedSelector<State, MenuBarState> = createFeatureSelector<
   MenuBarState
 >('menuBar');
 
 /**
  * Selects the open menu.
  */
-export const selectOpenMenu = createSelector(MenuBarState, s => s.openMenu);
+export const selectOpenMenu = createSelector(menuBarState, s => s.openMenu);
+
+/**
+ * Selects the open menu's direction.
+ */
+export const selectDirection = createSelector(menuBarState, s => s.direction);

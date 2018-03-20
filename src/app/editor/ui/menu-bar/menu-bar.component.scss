@@ -1,11 +1,11 @@
 @import '../../../assets/styles/declarations';
 
 :host {
-  padding: ($dimension-gutter-sm / 2);
   padding-bottom: 0;
   display: inline-block;
   cursor: pointer;
   position: relative;
+  margin-right: 1px;
 
   &.active {
     background: $color-primary;
@@ -19,8 +19,8 @@
 
 span {
   display: inline-block;
-  padding: $dimension-gutter-sm / 2;
-  padding-top: 0;
+  padding: 0 $dimension-gutter-sm;
+  line-height: $dimension-toolbar-height - 3px;
   border-bottom: 3px solid rgba(#fff, 0.1);
   font-size: 0.9em;
 }

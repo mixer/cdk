@@ -1,0 +1,15 @@
+@import '../../../assets/styles/declarations';
+
+menu-bar-text {
+  display: flex;
+  align-items: center;
+  border-bottom: none;
+  height: $dimension-toolbar-height;
+}
+
+.profile-image {
+  height: $dimension-toolbar-height - $dimension-gutter-sm;
+  width: $dimension-toolbar-height - $dimension-gutter-sm;
+  border-radius: 2px;
+  margin-right: $dimension-gutter-sm;
+}

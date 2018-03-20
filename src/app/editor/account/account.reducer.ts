@@ -24,8 +24,10 @@ export function accountReducer(
 ): AccountState {
   switch (action.type) {
     case AccountActionTypes.LINK_SET_CODE:
-      return { ...state, linkCode: { code: action.code, expiresAt: action.expiresAt } };
-    case AccountActionTypes.LOGOUT:
+      return { ...state, linkCode: { code: action.code, expiresAt: new Date(action.expiresAt) } };
+    case AccountActionTypes.LINK_CANCEL:
+      return { ...state, linkCode: undefined };
+    case AccountActionTypes.FINISH_LOGOUT:
       return { ...state, user: undefined };
     case AccountActionTypes.SET_LOGGED_IN_ACCOUNT:
       return { ...state, user: action.account };

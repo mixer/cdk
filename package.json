@@ -18,9 +18,9 @@
     "build": "rimraf dist && npm-run-all --parallel --silent build:ts build:editor",
     "build:ts": "tsc",
     "build:editor": "ts-node src/app/tools/setProfile.ts && tsc && ng build",
-    "start": "ts-node src/app/tools/setProfile.ts && npm-run-all -p start:ng start:electron",
+    "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
-    "start:electron": "tsc && wait-on http-get://localhost:4200/ && electron bin/electron --serve --debug",
+    "start:electron": "wait-on http-get://localhost:4200/ && electron bin/electron --serve --debug",
     "prepare": "npm run -s build"
   },
   "nyc": {
@@ -75,6 +75,7 @@
     "@types/chai-as-promised": "0.0.31",
     "@types/chai-subset": "^1.3.0",
     "@types/codemirror": "0.0.44",
+    "@types/electron": "^1.6.10",
     "@types/express": "^4.0.36",
     "@types/form-data": "^2.2.0",
     "@types/glob": "^5.0.30",

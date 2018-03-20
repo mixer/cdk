@@ -1,7 +1,2 @@
-<span (mousedown)="toggle($event)">
-  {{ text }}
-</span>
-
-<div class="items">
-  <ng-content></ng-content>
-</div>
+<ng-content select="menu-bar-text"></ng-content>
+<ng-content select="menu-bar-items"></ng-content>

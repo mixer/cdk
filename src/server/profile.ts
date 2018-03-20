@@ -1,5 +1,5 @@
 import { NoAuthenticationError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
-import { IOAuthTokenData, OAuthClient, OAuthTokens, OAuthShortCode } from './shortcode';
+import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
 import { api, Fetcher, IRequester } from './util';
 import { IDataStore, FileDataStore } from './datastore';
 
@@ -113,13 +113,6 @@ export class Profile {
     delete this.profile.hosts[this.host];
     this.tokensObj = undefined;
     await this.save();
-  }
-
-  /**
-   * Tries to retrieve the code to link the user's account.
-   */
-  public async getLinkCode(): Promise<OAuthShortCode> {
-    return await this.oauthClient.getCode();
   }
 
   /**

@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, Output } from '@angular/core';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { ChangeDetectionStrategy, Component, OnDestroy, Output } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
 
-import { filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
 import * as fromAccount from '../account.reducer';
-import { RefreshLinkCode, CancelLinking } from '../account.actions';
 import { IUser } from '../../../../server/profile';
+import { AccountLinkingService } from '../account-linking.service';
+import { untilDestroyed } from '../../shared/untilDestroyed';
 
 /**
  * The Launch Dialog prompts the user to log in, and connect to Interactive
@@ -16,12 +16,12 @@ import { IUser } from '../../../../server/profile';
  * was dismissed beforehand.
  */
 @Component({
-  selector: 'editor-login-walkthrough',
+  selector: 'account-login-walkthrough',
   templateUrl: './login-walkthrough.component.html',
-  styleUrls: ['../dialog.scss'],
+  styleUrls: ['../../shared/dialog.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginWalkthroughComponent implements OnInit, OnDestroy {
+export class LoginWalkthroughComponent implements OnDestroy {
   /**
    * Emits once the user logs in.
    */
@@ -35,25 +35,20 @@ export class LoginWalkthroughComponent implements OnInit, OnDestroy {
    * on mixer.com/go in order to start login.
    */
   public code = this.store.select(fromAccount.linkCode)
-    .pipe(filter(code => !!code && code.expiresAt.getTime() < Date.now()));
 
   /**
    * codeUrl is the full Mixer URL the user should go to
    */
-  public codeUrl: Observable<SafeUrl> = this.code.map(code =>
-    this.sanitizer.bypassSecurityTrustUrl(`https://mixer.com/go?code=${code}`),
-  );
+  public codeUrl = this.code.pipe(filter(Boolean), map(code => `https://mixer.com/go?code=${code!.code}`));
 
   constructor(
     private readonly store: Store<fromRoot.State>,
-    private readonly sanitizer: DomSanitizer,
-  ) {}
-
-  public ngOnInit() {
-    this.store.dispatch(new RefreshLinkCode());
+    linking: AccountLinkingService,
+  ) {
+    linking.requestLinkCodes().pipe(untilDestroyed(this)).subscribe();
   }
 
-  public ngOnDestroy() {
-    this.store.dispatch(new CancelLinking());
+  ngOnDestroy(): void {
+    // noop
   }
 }

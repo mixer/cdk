@@ -2,7 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": true,
+    "declaration": false,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

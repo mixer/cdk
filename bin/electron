@@ -3,6 +3,7 @@
 const { BrowserWindow, app } = require('electron');
 const path = require('path');
 const url = require('url');
+const electronServer = require('../dist/src/server/electron-server');
 
 let window;
 
@@ -10,8 +11,8 @@ const isDebug = process.argv.includes('--debug');
 
 function createWindow() {
   window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
   });
 
   if (isDebug) {
@@ -28,6 +29,8 @@ function createWindow() {
   }
 
   window.on('closed', () => (window = null));
+
+  electronServer.bind(window);
 }
 
 app.on('ready', createWindow);

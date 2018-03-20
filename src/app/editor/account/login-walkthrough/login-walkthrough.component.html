@@ -1,16 +1,18 @@
-<mat-dialog-content *ngIf="(loggedIn | async) === null">
+<h1 mat-dialog-title>Log In</h1>
+
+<div mat-dialog-content *ngIf="(loggedIn | async) === null" style="min-height:200px">
   <div class="loader"></div>
   <div class="status">
     <ng-container *ngIf="(code | async) !== null">
-        Go to <a [href]="codeUrl | async" target="_blank" class="body-link">mixer.com/go</a> to log in!
+        Go to <a [openExternal]="codeUrl | async" class="body-link">mixer.com/go</a> to log in!
         <small>You only have to do this once.</small>
     </ng-container>
     <ng-container *ngIf="(code | async) === null">
         Getting a login code...
     </ng-container>
   </div>
-</mat-dialog-content>
+</div>
 
-<mat-dialog-content *ngIf="(loggedIn | async) === undefined">
+<div mat-dialog-content *ngIf="(loggedIn | async) === undefined">
   <ng-content></ng-content>
-</mat-dialog-content>
+</div>
