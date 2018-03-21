@@ -10,12 +10,12 @@ import {
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 import { fromEvent } from 'rxjs/observable/fromEvent';
-import { take, map, filter, takeUntil, switchMap } from 'rxjs/operators';
+import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 
 import { State } from '../../bedrock.reducers';
-import * as fromMenu from './menu-bar.reducer';
-import { OpenMenu, CloseMenu, OpenDirection } from './menu-bar.actions';
 import { untilDestroyed } from '../../shared/untilDestroyed';
+import { CloseMenu, OpenDirection, OpenMenu } from './menu-bar.actions';
+import * as fromMenu from './menu-bar.reducer';
 
 function applyActiveClass(parent: MenuBarComponent, el: ElementRef) {
   parent.isOpen.subscribe(isOpen => {
@@ -48,7 +48,7 @@ export class MenuBarComponent implements OnDestroy {
   /**
    * Direction the menu is opened in.
    */
-  public readonly openDirection: Observable<number> =this.state
+  public readonly openDirection: Observable<number> = this.state
     .select(fromMenu.selectDirection)
     .pipe(untilDestroyed(this));
 
@@ -108,9 +108,7 @@ export class MenuBarComponent implements OnDestroy {
    */
   public open() {
     const rect = this.el.getBoundingClientRect();
-    const direction = innerWidth - rect.right < 300
-      ?  OpenDirection.Left
-      : OpenDirection.Right;
+    const direction = innerWidth - rect.right < 300 ? OpenDirection.Left : OpenDirection.Right;
     this.state.dispatch(new OpenMenu(this.menuId, direction));
   }
 }
@@ -177,7 +175,7 @@ export class MenuBarTextComponent {
 
   @HostListener('mousedown', ['$event'])
   public onMouseDown(ev: MouseEvent) {
-    ev.preventDefault()
+    ev.preventDefault();
     this.parent.toggle();
   }
 }

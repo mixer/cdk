@@ -1,4 +1,4 @@
-import { Directive, Input, HostListener } from '@angular/core';
+import { Directive, HostListener, Input } from '@angular/core';
 
 import { Electron } from './electron';
 
@@ -12,8 +12,7 @@ export class OpenExternalDirective {
   /**
    * External URL to open.
    */
-  @Input()
-  public openExternal: string;
+  @Input() public openExternal: string;
 
   /**
    * Open the link on click.

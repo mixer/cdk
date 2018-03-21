@@ -1,7 +1,7 @@
-import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import * as fromRoot from '../bedrock.reducers';
 import { IUser } from '../../../server/profile';
+import * as fromRoot from '../bedrock.reducers';
 import { AccountActions, AccountActionTypes } from './account.actions';
 
 export interface AccountState {

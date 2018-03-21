@@ -1,0 +1,32 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  text-align: center;
+  font-size: 0.8em;
+  color: $color-text-muted;
+  margin: $dimension-gutter-md;
+  padding: $dimension-gutter-md;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &.selected {
+    border-color: $color-primary;
+    color: $color-text;
+  }
+
+  &:hover {
+    background: $color-light-gray;
+    color: $color-text;
+  }
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  margin: $dimension-gutter-md auto;
+
+  img {
+    width: 100%;
+    display: block;
+  }
+}

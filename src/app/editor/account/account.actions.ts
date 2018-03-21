@@ -14,7 +14,7 @@ export const enum AccountActionTypes {
 export const enum AccountMethods {
   LinkAccount = '[Account] Start Linking',
   GetLinkedAccount = '[Account] Get Linked',
-  Logout = '[Account] Log Out'
+  Logout = '[Account] Log Out',
 }
 
 export class StartLogout implements Action {
@@ -45,4 +45,10 @@ export class CancelLinking implements Action {
   public readonly type = AccountActionTypes.LINK_CANCEL;
 }
 
-export type AccountActions = StartLogout | FinishLogout | SetLoggedInAccount | RefreshLinkCode | SetLinkCode | CancelLinking;
+export type AccountActions =
+  | StartLogout
+  | FinishLogout
+  | SetLoggedInAccount
+  | RefreshLinkCode
+  | SetLinkCode
+  | CancelLinking;

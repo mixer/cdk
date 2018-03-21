@@ -23,6 +23,10 @@ a.body-link {
   }
 }
 
+.flex-fill {
+  flex: 1;
+}
+
 $scrollbars-size: 6px;
 $scrollbars-border-radius: 3em;
 $scrollbars-thumb-bg: white;

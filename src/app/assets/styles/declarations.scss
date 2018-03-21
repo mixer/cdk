@@ -14,8 +14,9 @@ $color-tainted-white: #e4eef2;
 
 $color-dark-gray: #191916;
 $color-medium-gray: #272822;
-$color-light-gray: #373831;
+$color-light-gray: #353534;
 $color-text: $color-tainted-white;
+$color-text-muted: rgba($color-tainted-white, 0.5);
 
 $color-editor-background: $color-medium-gray;
 $color-editor-active-line: $color-light-gray;

@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import * as fromRoot from '../bedrock.reducers';
 import { IUser } from '../../../server/profile';
-import { SetLoggedInAccount, CancelLinking, AccountMethods } from './account.actions';
+import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
+import { AccountMethods, CancelLinking, SetLoggedInAccount } from './account.actions';
 
 /**
  * The AccountLinkingService handles

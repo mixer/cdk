@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, Output } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs/Observable';
 
 import { filter, map } from 'rxjs/operators';
 
-import * as fromRoot from '../../bedrock.reducers';
-import * as fromAccount from '../account.reducer';
 import { IUser } from '../../../../server/profile';
-import { AccountLinkingService } from '../account-linking.service';
+import * as fromRoot from '../../bedrock.reducers';
 import { untilDestroyed } from '../../shared/untilDestroyed';
+import { AccountLinkingService } from '../account-linking.service';
+import * as fromAccount from '../account.reducer';
 
 /**
  * The Launch Dialog prompts the user to log in, and connect to Interactive
@@ -34,21 +34,24 @@ export class LoginWalkthroughComponent implements OnDestroy {
    * code is the shortcode to display to the user that they need to enter
    * on mixer.com/go in order to start login.
    */
-  public code = this.store.select(fromAccount.linkCode)
+  public code = this.store.select(fromAccount.linkCode);
 
   /**
    * codeUrl is the full Mixer URL the user should go to
    */
-  public codeUrl = this.code.pipe(filter(Boolean), map(code => `https://mixer.com/go?code=${code!.code}`));
+  public codeUrl = this.code.pipe(
+    filter(Boolean),
+    map(code => `https://mixer.com/go?code=${code!.code}`),
+  );
 
-  constructor(
-    private readonly store: Store<fromRoot.State>,
-    linking: AccountLinkingService,
-  ) {
-    linking.requestLinkCodes().pipe(untilDestroyed(this)).subscribe();
+  constructor(private readonly store: Store<fromRoot.State>, linking: AccountLinkingService) {
+    linking
+      .requestLinkCodes()
+      .pipe(untilDestroyed(this))
+      .subscribe();
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     // noop
   }
 }

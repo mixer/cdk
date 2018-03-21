@@ -1,7 +1,7 @@
+import { FileDataStore, IDataStore } from './datastore';
 import { NoAuthenticationError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
 import { api, Fetcher, IRequester } from './util';
-import { IDataStore, FileDataStore } from './datastore';
 
 interface IHostProfile {
   tokens: IOAuthTokenData;

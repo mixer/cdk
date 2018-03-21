@@ -1,0 +1,4 @@
+<ng-container [ngSwitch]="screen | async">
+  <new-project-welcome-screen *ngSwitchCase="Screens.Welcome"></new-project-welcome-screen>
+  <new-project-layout-selection *ngSwitchCase="Screens.Layout"></new-project-layout-selection>
+</ng-container>

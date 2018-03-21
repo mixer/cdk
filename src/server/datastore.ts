@@ -1,7 +1,7 @@
-import { readFile, exists, mkdir, writeFile, appendFile } from './util';
-import * as path from 'path';
-import * as os from 'os';
 import { merge } from 'lodash';
+import * as os from 'os';
+import * as path from 'path';
+import { appendFile, exists, mkdir, readFile, writeFile } from './util';
 
 /**
  * IDataStore is a system-aware store for project files and settings.

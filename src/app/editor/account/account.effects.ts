@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 
-import { filter, map, switchMap, mapTo } from 'rxjs/operators';
 import { defer } from 'rxjs/observable/defer';
+import { filter, map, mapTo, switchMap } from 'rxjs/operators';
 
-import { SetLoggedInAccount, AccountMethods, AccountActionTypes, FinishLogout } from './account.actions';
 import { ElectronService } from '../electron.service';
+import {
+  AccountActionTypes,
+  AccountMethods,
+  FinishLogout,
+  SetLoggedInAccount,
+} from './account.actions';
 
 /**
  * Effects module for account actions.
@@ -17,7 +22,9 @@ export class AccountEffects {
    * from the profile, if any.
    */
   @Effect()
-  public readonly getInitialAccount = defer(async () => this.electron.call(AccountMethods.GetLinkedAccount)).pipe(filter(Boolean), map(account => new SetLoggedInAccount(account)));
+  public readonly getInitialAccount = defer(async () =>
+    this.electron.call(AccountMethods.GetLinkedAccount),
+  ).pipe(filter(Boolean), map(account => new SetLoggedInAccount(account)));
 
   /**
    * Runs a logout action.
@@ -25,10 +32,7 @@ export class AccountEffects {
   @Effect()
   public readonly logout = this.actions
     .ofType(AccountActionTypes.START_LOGOUT)
-    .pipe(
-      switchMap(() => this.electron.call(AccountMethods.Logout)),
-      mapTo(new FinishLogout()),
-    );
+    .pipe(switchMap(() => this.electron.call(AccountMethods.Logout)), mapTo(new FinishLogout()));
 
   constructor(private readonly actions: Actions, private readonly electron: ElectronService) {}
 }

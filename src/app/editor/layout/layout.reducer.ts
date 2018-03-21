@@ -1,7 +1,7 @@
-import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { LayoutActions, LayoutActionTypes, LayoutScreen } from './layout.actions';
 import * as fromRoot from '../bedrock.reducers';
+import { LayoutActions, LayoutActionTypes, LayoutScreen } from './layout.actions';
 
 export interface LayoutState {
   screen: LayoutScreen;
@@ -31,7 +31,7 @@ export function layoutReducer(
  * Selector for the layout feature.
  */
 export const layoutState: MemoizedSelector<State, LayoutState> = createFeatureSelector<LayoutState>(
-  'layout',
+  'fullscreen',
 );
 
 /**

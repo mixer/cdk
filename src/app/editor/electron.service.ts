@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
+import { Action, Store } from '@ngrx/store';
 import { Event } from 'electron';
-import { Store, Action } from '@ngrx/store';
 
 import { State } from './bedrock.reducers';
 import { AppConfig } from './editor.config';
 import { Electron } from './shared/electron';
-
 
 /**
  * Simple wrapper around the Electron APIs.
@@ -38,7 +37,7 @@ export class ElectronService {
     const id = this.callCounter++;
 
     return new Promise<T>((resolve, reject) => {
-      const listener = (_event: Event, result: { id: number, error?: Error, result: T }) => {
+      const listener = (_event: Event, result: { id: number; error?: Error; result: T }) => {
         if (result.id !== id) {
           return;
         }
@@ -55,8 +54,9 @@ export class ElectronService {
         }
       };
 
+      const outgoing = { id, params: data };
       Electron.ipcRenderer.on(method, listener);
-      Electron.ipcRenderer.send(method, { id, params: data });
+      Electron.ipcRenderer.send(method, outgoing);
 
       if (!AppConfig.production) {
         console.debug('call:', method, data);

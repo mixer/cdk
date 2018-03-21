@@ -1,7 +1,7 @@
-import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { MenuBarActions, MenuBarActionTypes, OpenDirection } from './menu-bar.actions';
 import * as fromRoot from '../../bedrock.reducers';
+import { MenuBarActions, MenuBarActionTypes, OpenDirection } from './menu-bar.actions';
 
 export interface MenuBarState {
   openMenu: string | null;

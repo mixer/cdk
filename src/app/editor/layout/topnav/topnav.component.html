@@ -1,7 +1,7 @@
 <menu-bar menuId="layout#file">
   <menu-bar-text>File</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item text="New Project"></menu-bar-item>
+    <menu-bar-item (click)="createNewProject()" text="New Project"></menu-bar-item>
     <menu-bar-item text="Open Project"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
     <menu-bar-item text="Save Project"></menu-bar-item>
@@ -28,8 +28,9 @@
 <menu-bar menuId="layout#help">
   <menu-bar-text>Help</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item text="Documentation"></menu-bar-item>
-    <menu-bar-item text="Interactive Studio"></menu-bar-item>
+    <menu-bar-item openExternal="https://dev.mixer.com" text="Documentation"></menu-bar-item>
+    <menu-bar-item openExternal="https://mixer.com/lab" text="Interactive Studio"></menu-bar-item>
+    <menu-bar-item openExternal="https://github.com/mixer/miix-cli/issues/new" text="Report Issue"></menu-bar-item>
     <menu-bar-item text="About miix"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>

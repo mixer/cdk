@@ -1,0 +1,20 @@
+<h1 mat-dialog-title>Choose Layout</h1>
+<div mat-dialog-content>
+    <p>Choose your initial control layout. Don't worry, you can always customize this, or change it later.</p>
+
+    <radio-icon-list [value]="layout | async" (change)="setLayout($event)">
+      <radio-icon icon="/assets/new-project/layout-fullscreen.svg" value="fullscreen" title="Full Screen">
+        Your UI will cover the entire video.
+      </radio-icon>
+      <radio-icon icon="/assets/new-project/layout-below-video.svg" value="belowVideo" title="Below Video">
+        Your UI will appear below the video.
+      </radio-icon>
+      <radio-icon icon="/assets/new-project/layout-overlay.svg" value="overlay" title="Overlay">
+        Your UI will appear in an overlay to the right of the player.
+      </radio-icon>
+    </radio-icon-list>
+</div>
+<div mat-dialog-actions>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="next()">Select</button>
+</div>

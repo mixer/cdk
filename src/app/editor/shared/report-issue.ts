@@ -1,6 +1,6 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { stringify } from 'querystring';
 import { unindent } from './ds';
-import { HttpErrorResponse } from '@angular/common/http';
 
 export function reportIssue(title: string, body: string) {
   const url = `https://github.com/mixer/miix-cli/issues/new?${stringify({ title, body })}`;

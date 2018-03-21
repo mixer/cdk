@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import * as path from 'path';
 import { mkdirSync, unlinkSync } from 'fs';
+import * as path from 'path';
 
 import { FileDataStore } from '../src/server/datastore';
-import { readFile, exists } from '../src/server/util';
+import { exists, readFile } from '../src/server/util';
 
 const rimraf = require('rimraf');
 
