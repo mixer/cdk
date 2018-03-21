@@ -3,13 +3,13 @@
     <p>Choose your initial control layout. Don't worry, you can always customize this, or change it later.</p>
 
     <radio-icon-list [value]="layout | async" (change)="setLayout($event)">
-      <radio-icon icon="/assets/new-project/layout-fullscreen.svg" value="fullscreen" title="Full Screen">
+      <radio-icon icon="/assets/new-project/layout-fullscreen.svg" value="fullscreen" name="Full Screen">
         Your UI will cover the entire video.
       </radio-icon>
-      <radio-icon icon="/assets/new-project/layout-below-video.svg" value="belowVideo" title="Below Video">
+      <radio-icon icon="/assets/new-project/layout-below-video.svg" value="belowVideo" name="Below Video">
         Your UI will appear below the video.
       </radio-icon>
-      <radio-icon icon="/assets/new-project/layout-overlay.svg" value="overlay" title="Overlay">
+      <radio-icon icon="/assets/new-project/layout-overlay.svg" value="overlay" name="Overlay">
         Your UI will appear in an overlay to the right of the player.
       </radio-icon>
     </radio-icon-list>
