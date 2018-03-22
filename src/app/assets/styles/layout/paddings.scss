@@ -1,0 +1,40 @@
+@for $i from 0 through 8 {
+    .padding {
+        // Top
+        &-top-#{$i}x {
+            padding-top: 8px * $i;
+        }
+
+        // Left
+        &-left-#{$i}x {
+            padding-left: 8px * $i;
+        }
+
+        // Right
+        &-right-#{$i}x {
+            padding-right: 8px * $i;
+        }
+
+        // Bottom
+        &-bottom-#{$i}x {
+            padding-bottom: 8px * $i;
+        }
+
+        // Vertical
+        &-vertical-#{$i}x {
+            padding-top: 8px * $i;
+            padding-bottom: 8px * $i;
+        }
+
+        // Horizontal
+        &-horizontal-#{$i}x {
+            padding-left: 8px * $i;
+            padding-right: 8px * $i;
+        }
+
+        // All
+        &-all-#{$i}x {
+            padding: 8px * $i;
+        }
+    }
+}

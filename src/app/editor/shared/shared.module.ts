@@ -5,6 +5,9 @@ import { BytesPipe } from './bytes.pipe';
 import { OpenExternalDirective } from './open-external.directive';
 import { SafePipe } from './safe.pipe';
 
+/**
+ * Contains the bits and pieces too small for their own modules.
+ */
 @NgModule({
   imports: [CommonModule],
   declarations: [SafePipe, BytesPipe, OpenExternalDirective],

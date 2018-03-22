@@ -1,8 +1,10 @@
 @import '../../node_modules/normalize.css/normalize';
+@import '../../node_modules/xterm/dist/xterm';
 
 @import './assets/styles/declarations';
 @import './assets/styles/codemirror';
 @import './assets/styles/ng-material';
+@import './assets/styles/layout/index';
 
 body {
   background: url('./assets/images/background.png') #2e2e2e;
@@ -21,10 +23,6 @@ a.body-link {
   &:hover {
     border-bottom-color: transparent;
   }
-}
-
-.flex-fill {
-  flex: 1;
 }
 
 $scrollbars-size: 6px;

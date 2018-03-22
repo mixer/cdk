@@ -12,12 +12,14 @@ export interface IDataStore {
    * does not exist.
    */
   loadGlobal<T>(file: string): Promise<T | null>;
+  loadGlobal<T>(file: string, defaultValue: T): Promise<T>;
 
   /**
    * Attempts to load the file from the system, attempting to merge in
    * any local overrides if available.
    */
   loadProject<T>(file: string, projectPath: string): Promise<T | null>;
+  loadProject<T>(file: string, projectPath: string, defaultValue: T): Promise<T>;
 
   /**
    * Saves the file in the user's global profile path.
@@ -38,22 +40,30 @@ export class FileDataStore implements IDataStore {
 
   constructor(private readonly homedir = os.homedir()) {}
 
-  public async loadGlobal<T>(file: string): Promise<T | null> {
+  public async loadGlobal<T>(file: string): Promise<T | null>;
+  public async loadGlobal<T>(file: string, defaultValue: T): Promise<T>;
+  public async loadGlobal<T>(file: string, defaultValue?: T): Promise<T | null> {
     const contents = await this.readFileIfExists(this.filePath(this.homedir, file));
     if (contents === null) {
-      return null;
+      return defaultValue !== undefined ? defaultValue : null;
     }
 
     return JSON.parse(contents);
   }
 
-  public async loadProject<T>(file: string, projectPath: string): Promise<T | null> {
+  public async loadProject<T>(file: string, projectPath: string): Promise<T | null>;
+  public async loadProject<T>(file: string, projectPath: string, defaultValue: T): Promise<T>;
+  public async loadProject<T>(
+    file: string,
+    projectPath: string,
+    defaultValue?: T,
+  ): Promise<T | null> {
     const globalContents = await this.loadGlobal(file);
     const localContents = await this.readFileIfExists(this.filePath(projectPath, file));
 
     return globalContents || localContents
       ? merge(globalContents, JSON.parse(localContents!))
-      : null;
+      : defaultValue !== undefined ? defaultValue : null;
   }
 
   public async saveGlobal<T>(file: string, value: T): Promise<void> {

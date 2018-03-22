@@ -44,7 +44,7 @@ export class LoginWalkthroughComponent implements OnDestroy {
     map(code => `https://mixer.com/go?code=${code!.code}`),
   );
 
-  constructor(private readonly store: Store<fromRoot.State>, linking: AccountLinkingService) {
+  constructor(private readonly store: Store<fromRoot.IState>, linking: AccountLinkingService) {
     linking
       .requestLinkCodes()
       .pipe(untilDestroyed(this))

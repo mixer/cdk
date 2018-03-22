@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { Event } from 'electron';
 
-import { State } from './bedrock.reducers';
+import { IState } from './bedrock.reducers';
 import { AppConfig } from './editor.config';
 import { Electron } from './shared/electron';
 
@@ -13,7 +13,7 @@ import { Electron } from './shared/electron';
 export class ElectronService {
   private callCounter = 0;
 
-  constructor(store: Store<State>) {
+  constructor(store: Store<IState>) {
     Electron.ipcRenderer.on('dispatch', (_event: Event, arg: Action) => {
       store.dispatch(arg);
     });
@@ -26,6 +26,7 @@ export class ElectronService {
     Electron.ipcRenderer.send(channel, data);
 
     if (!AppConfig.production) {
+      // tslint:disable-next-line
       console.debug('emit:', channel, data);
     }
   }
@@ -36,6 +37,7 @@ export class ElectronService {
   public call<T>(method: string, data?: any): Promise<T> {
     const id = this.callCounter++;
 
+    // tslint:disable-next-line
     return new Promise<T>((resolve, reject) => {
       const listener = (_event: Event, result: { id: number; error?: Error; result: T }) => {
         if (result.id !== id) {
@@ -44,6 +46,7 @@ export class ElectronService {
 
         Electron.ipcRenderer.removeListener(method, listener);
         if (!AppConfig.production) {
+          // tslint:disable-next-line
           console.debug('repl:', method, result);
         }
 
@@ -59,6 +62,7 @@ export class ElectronService {
       Electron.ipcRenderer.send(method, outgoing);
 
       if (!AppConfig.production) {
+        // tslint:disable-next-line
         console.debug('call:', method, data);
       }
     });

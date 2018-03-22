@@ -1,0 +1,48 @@
+<h1 mat-dialog-title>Project Details</h1>
+<div mat-dialog-content>
+    <p>Tell us a little bit about the project you're creating!</p>
+
+    <form (ngSubmit)="submit()" [formGroup]="form">
+      <div class="layout-row layout-margin">
+        <mat-form-field>
+          <input matInput #message maxlength="60" placeholder="Project Name*" formControlName="projectName">
+          <mat-hint align="start">Should be globally unique.</mat-hint>
+          <mat-error *ngIf="form.get('projectName').touched && form.get('projectName').hasError('projectName')">
+            Your project name can only contain alphanumeric characters with dashes.
+          </mat-error>
+          <mat-error *ngIf="form.get('projectName').touched && form.get('projectName').hasError('projectNameTaken')">
+            Shucks! That project name has already been taken.
+          </mat-error>
+          <mat-error *ngIf="form.get('projectName').touched && form.get('projectName').hasError('required')">
+            The project name is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput #message maxlength="60" placeholder="Author*" formControlName="author">
+          <mat-error *ngIf="form.get('author').touched && form.get('author').hasError('required')">
+            The project author is required.
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="layout-row layout-margin">
+        <mat-form-field class="flex-fill">
+          <input matInput #message placeholder="Project Description" formControlName="description">
+        </mat-form-field>
+      </div>
+      <div class="layout-row layout-margin">
+        <mat-form-field>
+          <input matInput #message placeholder="Keywords" formControlName="keywords">
+          <mat-hint align="start">Separated by commas.</mat-hint>
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput #message placeholder="License" formControlName="license">
+        </mat-form-field>
+      </div>
+    </form>
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="back()">Back</button>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="submit()" [disabled]="!form.valid && !form.pristine">Confirm</button>
+</div>

@@ -9,6 +9,9 @@ import { MenuBarModule } from '../ui/menu-bar/menu-bar.module';
 import { layoutReducer } from './layout.reducer';
 import { TopNavComponent } from './topnav/topnav.component';
 
+/**
+ * Module for foundational, common layout components.
+ */
 @NgModule({
   imports: [
     AccountModule,

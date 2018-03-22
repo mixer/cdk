@@ -8,7 +8,7 @@ export interface MenuBarState {
   direction: OpenDirection;
 }
 
-export interface State extends fromRoot.State {
+export interface State extends fromRoot.IState {
   menuBar: MenuBarState;
 }
 

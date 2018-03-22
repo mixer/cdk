@@ -1,11 +1,21 @@
 import { Action } from '@ngrx/store';
-import { BrowserWindow, dialog, Event, ipcMain } from 'electron';
+import { BrowserWindow, Event, ipcMain } from 'electron';
 
 import * as forAccount from '../app/editor/account/account.actions';
 import { CommonMethods } from '../app/editor/bedrock.actions';
+import * as forNewProject from '../app/editor/new-project/new-project.actions';
 
+import { spawn } from 'child_process';
 import { NoAuthenticationError } from './errors';
+import { FileSelector } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
+import { Quickstarter } from './quickstart';
+import { Fetcher } from './util';
+
+const commandExists: (
+  path: string,
+  callback: (err: Error | null, exists: boolean) => void,
+) => void = require('command-exists');
 
 /**
  * bind attaches listeners for Electron's IPC.
@@ -19,10 +29,17 @@ export function bind(window: BrowserWindow) {
     ipcMain.addListener(name, (ev: Event, { id, params }: { id: number; params: any }) => {
       fn(params)
         .then(result => ev.sender.send(name, { id, result }))
-        .catch(error => ev.sender.send(name, { id, error }));
+        .catch(error =>
+          ev.sender.send(name, { id, error: 'toJSON' in error ? error.toJSON() : error.stack }),
+        );
     });
   }
 
+  /**
+   * Starts an account linking. Returns the user once linked, or null if
+   * they do not link by the time the current code expires. Updates the
+   * linked code when it's received.
+   */
   method(forAccount.AccountMethods.LinkAccount, async () => {
     const profile = new Profile();
 
@@ -42,6 +59,9 @@ export function bind(window: BrowserWindow) {
     }
   });
 
+  /**
+   * Returns the currently linked account, if any.
+   */
   method(forAccount.AccountMethods.GetLinkedAccount, async () => {
     try {
       return await new Profile().user();
@@ -54,13 +74,64 @@ export function bind(window: BrowserWindow) {
     }
   });
 
+  /**
+   * Logs the user out of their account.
+   */
   method(forAccount.AccountMethods.Logout, async () => new Profile().logout());
 
-  method(CommonMethods.ChooseDirectory, () => {
-    return new Promise(resolve =>
-      dialog.showOpenDialog(window, { properties: ['openDirectory'] }, ([chosen]) =>
-        resolve(chosen),
+  /**
+   * Called when we want to create a new project, triggers the quickstart.
+   * Emits AppendCreateUpdate actions back down when data is displayed on
+   * the console.
+   */
+  method(forNewProject.NewProjectMethods.StartCreate, async details => {
+    const quickstart = new Quickstarter(details);
+    quickstart.on('data', data => action(new forNewProject.AppendCreateUpdate(data)));
+    await quickstart.start();
+  });
+
+  /**
+   * Opens a prompt to choose a directory, and returns the chosen one.
+   */
+  method(CommonMethods.ChooseDirectory, async (options: { context: string }) => {
+    return new FileSelector().chooseFolder(window, options.context);
+  });
+
+  /**
+   * Checks if a bundle name is taken; returns true if so.
+   */
+  method(CommonMethods.CheckBundleNameTaken, async ({ name }: { name: string }) => {
+    const res = await new Fetcher().json('get', `/interactive/bundles/${name}`);
+    return res.status === 200 || res.status === 403;
+  });
+
+  /**
+   * Opens a prompt to choose a directory, and returns the chosen one.
+   */
+  method(CommonMethods.LaunchProgram, async (options: { name: string; arguments: string[] }) => {
+    spawn(options.name, options.arguments, {
+      detached: true,
+      stdio: 'ignore',
+    });
+  });
+
+  /**
+   * Opens a prompt to choose a directory, and returns the chosen one.
+   */
+  method(CommonMethods.CheckIfExePresent, async (options: { exes: string[] }) => {
+    const results: { [bin: string]: boolean } = {};
+    await Promise.all(
+      options.exes.map(
+        exe =>
+          new Promise(resolve =>
+            commandExists(exe, (_err, ok) => {
+              results[exe] = ok;
+              resolve();
+            }),
+          ),
       ),
     );
+
+    return results;
   });
 }

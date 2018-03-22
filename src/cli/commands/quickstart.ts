@@ -1,44 +1,14 @@
-import chalk from 'chalk';
-import { spawn } from 'child_process';
-import * as fs from 'fs';
-import nodeFetch from 'node-fetch';
-import * as ora from 'ora';
+import { userInfo } from 'os';
 import * as path from 'path';
-import * as tar from 'tar';
 
-import { UnexpectedHttpError } from '../../server/errors';
-import { awaitChildProcess, readFile, writeFile } from '../../server/util';
+import { Quickstarter } from '../../server/quickstart';
 import writer from '../writer';
-
-const projectKinds: { [key: string]: string } = {
-  preact: 'interactive-launchpad_1.0.tar.gz',
-  html: 'interactive-html-starter_1.0.tar.gz',
-};
 
 export interface IQuickStartOptions {
   dir: string;
   kind: string;
   projectName: string;
   npm: string;
-}
-
-/**
- * installRepo clones and installs the Interactive launchpad.
- */
-async function installRepo(dir: string, npmPath: string, kind: string): Promise<void> {
-  const res = await nodeFetch(`https://mixercc.azureedge.net/launchpad/${projectKinds[kind]}`);
-  if (res.status !== 200) {
-    throw new UnexpectedHttpError(res, await res.text());
-  }
-
-  await new Promise((resolve, reject) => {
-    res.body
-      .pipe(tar.extract({ cwd: dir }))
-      .on('error', reject)
-      .on('end', resolve);
-  });
-
-  await awaitChildProcess(spawn(npmPath, ['install'], { cwd: dir }));
 }
 
 /**
@@ -58,62 +28,24 @@ async function getDetails(bundleName: string) {
   const license = await writer.ask('License:', 'MIT');
 
   return {
-    name,
+    projectName: name,
     description: description ? description : undefined,
-    version: '0.1.0',
-    author: undefined,
-    keywords: keywords ? keywords.split(',').map(kw => kw.toLowerCase().trim()) : [],
+    author: userInfo().username,
+    keywords,
     license,
   };
 }
 
-async function applyDetails(dir: string, details: any): Promise<void> {
-  const packageJsonPath = path.join(dir, 'package.json');
-  const source = await readFile(packageJsonPath);
-  const updated = JSON.stringify({ ...JSON.parse(source), ...details }, null, 2);
-  await writeFile(packageJsonPath, updated);
-}
-
 export default async function(options: IQuickStartOptions): Promise<void> {
-  const dir = options.dir
-    ? path.resolve(options.dir)
-    : path.join(process.cwd(), options.projectName);
+  const dir = options.dir ? path.resolve(options.dir) : process.cwd();
 
-  let installed = false;
-  let spinner: any;
+  const details = await getDetails(options.projectName);
+  const quickstarter = new Quickstarter({
+    ...details,
+    template: options.kind,
+    dir,
+  });
 
-  if (!projectKinds[options.kind]) {
-    writer.write(
-      `Unknown project kind "${options.kind}". The available kinds are: ${Object.keys(
-        projectKinds,
-      ).join(', ')}`,
-    );
-    return;
-  }
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-  }
-
-  const [details] = await Promise.all([
-    getDetails(options.projectName).then(d => {
-      if (!installed) {
-        spinner = ora('Installing dependencies...').start();
-      }
-
-      return d;
-    }),
-    installRepo(dir, options.npm, options.kind).then(() => {
-      installed = true;
-    }),
-  ]);
-
-  await applyDetails(dir, details);
-
-  const message = `Project created in ${chalk.green(path.relative(process.cwd(), dir))}`;
-  if (spinner) {
-    spinner.succeed(message);
-  } else {
-    writer.write(message);
-  }
+  quickstarter.on('data', data => process.stdout.write(data));
+  await quickstarter.start();
 }

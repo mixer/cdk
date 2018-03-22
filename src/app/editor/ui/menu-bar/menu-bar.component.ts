@@ -12,7 +12,7 @@ import { Observable } from 'rxjs/Observable';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 
-import { State } from '../../bedrock.reducers';
+import { IState } from '../../bedrock.reducers';
 import { untilDestroyed } from '../../shared/untilDestroyed';
 import { CloseMenu, OpenDirection, OpenMenu } from './menu-bar.actions';
 import * as fromMenu from './menu-bar.reducer';
@@ -57,7 +57,7 @@ export class MenuBarComponent implements OnDestroy {
    */
   private readonly el: HTMLElement;
 
-  constructor(private readonly state: Store<State>, el: ElementRef) {
+  constructor(private readonly state: Store<IState>, el: ElementRef) {
     const htmlElement: HTMLElement = el.nativeElement;
     this.el = htmlElement;
     this.isOpen

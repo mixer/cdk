@@ -13,6 +13,9 @@ import { accountReducer } from './account.reducer';
 import { LoginDialogComponent } from './login-dialog/login-dialog.component';
 import { LoginWalkthroughComponent } from './login-walkthrough/login-walkthrough.component';
 
+/**
+ * Module for account-related adminstration.
+ */
 @NgModule({
   imports: [
     CommonModule,

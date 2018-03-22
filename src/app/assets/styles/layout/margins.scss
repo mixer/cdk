@@ -1,0 +1,45 @@
+@for $i from 0 through 8 {
+    .margin {
+        // Top
+        &-top-#{$i}x {
+            margin-top: 8px * $i;
+        }
+
+        // Left
+        &-left-#{$i}x {
+            margin-left: 8px * $i;
+        }
+
+        // Right
+        &-right-#{$i}x {
+            margin-right: 8px * $i;
+        }
+
+        // Bottom
+        &-bottom-#{$i}x {
+            margin-bottom: 8px * $i;
+        }
+
+        // Vertical
+        &-vertical-#{$i}x {
+            margin-top: 8px * $i;
+            margin-bottom: 8px * $i;
+        }
+
+        // Horizontal
+        &-horizontal-#{$i}x {
+            margin-left: 8px * $i;
+            margin-right: 8px * $i;
+        }
+
+        // All
+        &-all-#{$i}x {
+            margin: 8px * $i;
+        }
+    }
+}
+
+.margin-auto {
+    margin-left: auto;
+    margin-right: auto;
+}

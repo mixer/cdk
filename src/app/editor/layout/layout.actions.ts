@@ -9,6 +9,9 @@ export const enum LayoutActionTypes {
   OPEN_SCREEN = '[Bedrock] Open Screen',
 }
 
+/**
+ * Triggers a different primary layout screen to be shown.
+ */
 export class OpenScreen implements Action {
   public readonly type = LayoutActionTypes.OPEN_SCREEN;
 

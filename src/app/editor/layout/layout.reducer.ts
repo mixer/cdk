@@ -3,22 +3,22 @@ import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/s
 import * as fromRoot from '../bedrock.reducers';
 import { LayoutActions, LayoutActionTypes, LayoutScreen } from './layout.actions';
 
-export interface LayoutState {
+export interface ILayoutState {
   screen: LayoutScreen;
 }
 
-export interface State extends fromRoot.State {
-  layout: LayoutState;
+export interface IState extends fromRoot.IState {
+  layout: ILayoutState;
 }
 
-const initialState: LayoutState = {
+const initialState: ILayoutState = {
   screen: LayoutScreen.Welcome,
 };
 
 export function layoutReducer(
-  state: LayoutState = initialState,
+  state: ILayoutState = initialState,
   action: LayoutActions,
-): LayoutState {
+): ILayoutState {
   switch (action.type) {
     case LayoutActionTypes.OPEN_SCREEN:
       return { ...state, screen: action.screen };
@@ -30,9 +30,9 @@ export function layoutReducer(
 /**
  * Selector for the layout feature.
  */
-export const layoutState: MemoizedSelector<State, LayoutState> = createFeatureSelector<LayoutState>(
-  'fullscreen',
-);
+export const layoutState: MemoizedSelector<IState, ILayoutState> = createFeatureSelector<
+  ILayoutState
+>('fullscreen');
 
 /**
  * Selects the chosen layout screen.

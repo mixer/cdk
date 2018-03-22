@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
 
-import { CommonMethods } from '../bedrock.actions';
+import { CommonMethods, UnhandledError } from '../bedrock.actions';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import * as forNewProject from './new-project.actions';
@@ -15,7 +15,7 @@ export class NewProjectService {
   private dialog: MatDialogRef<any>;
 
   constructor(
-    private readonly store: Store<fromRoot.State>,
+    private readonly store: Store<fromRoot.IState>,
     private readonly electron: ElectronService,
   ) {}
 
@@ -39,13 +39,16 @@ export class NewProjectService {
    * Chooses the directory
    */
   public chooseDirectory() {
-    this.electron.call<string>(CommonMethods.ChooseDirectory).then(dir => {
-      if (!dir) {
-        return;
-      }
+    this.electron
+      .call<string>(CommonMethods.ChooseDirectory, { context: 'newProject' })
+      .then(dir => {
+        if (!dir) {
+          return;
+        }
 
-      this.store.dispatch(new forNewProject.SetTargetDirectory(dir));
-      this.store.dispatch(new forNewProject.ChangeScreen(forNewProject.NewProjectScreen.Layout));
-    });
+        this.store.dispatch(new forNewProject.SetTargetDirectory(dir));
+        this.store.dispatch(new forNewProject.ChangeScreen(forNewProject.NewProjectScreen.Layout));
+      })
+      .catch(err => this.store.dispatch(new UnhandledError(err)));
   }
 }

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { IUser } from '../../../server/profile';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
-import { AccountMethods, CancelLinking, SetLoggedInAccount } from './account.actions';
+import { AccountMethods, SetLoggedInAccount } from './account.actions';
 
 /**
  * The AccountLinkingService handles
@@ -13,7 +13,7 @@ import { AccountMethods, CancelLinking, SetLoggedInAccount } from './account.act
 @Injectable()
 export class AccountLinkingService {
   constructor(
-    private readonly store: Store<fromRoot.State>,
+    private readonly store: Store<fromRoot.IState>,
     private readonly electron: ElectronService,
   ) {}
 
@@ -36,11 +36,7 @@ export class AccountLinkingService {
         });
       };
 
-      getLink();
-
-      return () => {
-        this.store.dispatch(new CancelLinking());
-      };
+      getLink().catch(err => subscriber.error(err));
     });
   }
 }

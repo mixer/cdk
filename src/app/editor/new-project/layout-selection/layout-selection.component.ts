@@ -19,7 +19,7 @@ export class LayoutSelectionComponent {
    */
   public readonly layout = this.store.select(fromNewProject.layout);
 
-  constructor(private readonly store: Store<fromRoot.State>) {}
+  constructor(private readonly store: Store<fromRoot.IState>) {}
 
   public setLayout(layout: string) {
     this.store.dispatch(new SetLayout(layout));
@@ -27,5 +27,9 @@ export class LayoutSelectionComponent {
 
   public next() {
     this.store.dispatch(new ChangeScreen(NewProjectScreen.PackageDetails));
+  }
+
+  public back() {
+    this.store.dispatch(new ChangeScreen(NewProjectScreen.Welcome));
   }
 }
