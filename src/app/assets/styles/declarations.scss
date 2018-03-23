@@ -36,6 +36,10 @@ $dimension-loader-border: 3px;
 $dimension-resizer-width: 10px;
 $dimension-toolbar-height: 30px;
 
+$z-index-active: 100 !default;
+$z-index-content-overlay: 50;
+$z-index-base: 0;
+
 $swift-ease-out-duration: 300ms !default;
 $swift-ease-out-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1) !default;
 $swift-ease-in-duration: 300ms !default;

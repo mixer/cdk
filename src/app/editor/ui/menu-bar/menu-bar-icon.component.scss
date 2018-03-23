@@ -1,0 +1,12 @@
+:host {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  text-align: right;
+
+  &::ng-deep mat-icon {
+    width: 1em;
+    height: 1em;
+  }
+}
+

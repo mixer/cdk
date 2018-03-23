@@ -326,3 +326,22 @@ export class SaveNotFoundError extends Error implements IHttpableError, IHumanEr
     return 404;
   }
 }
+
+/**
+ * Thrown when invalid package.json is encountered.
+ */
+export class BadPackageJsonError extends Error implements IHumanError {
+  constructor(originalMessage: string) {
+    super(
+      'A package.json could not be found in that directory, or was invalid.' +
+        `Loading it failed with: ${originalMessage}`,
+    );
+  }
+
+  /**
+   * @override
+   */
+  public getHumanMessage(): string {
+    return this.message;
+  }
+}

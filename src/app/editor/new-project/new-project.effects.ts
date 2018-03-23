@@ -1,16 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
 
 import { of } from 'rxjs/observable/of';
-import { catchError, mapTo, switchMap } from 'rxjs/operators';
+import { catchError, filter, map, mapTo, switchMap, take } from 'rxjs/operators';
 
+import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
+import { TryOpenProject } from '../project/project.actions';
 import {
   FinishCreating,
   NewProjectActionTypes,
   NewProjectMethods,
   StartCreating,
 } from './new-project.actions';
+import { targetDirectory } from './new-project.reducer';
 
 /**
  * Effects module for account actions.
@@ -22,14 +26,28 @@ export class NewProjectEffects {
    */
   @Effect()
   public readonly startCreation = this.actions
-    .ofType(NewProjectActionTypes.CREATE_START)
+    .ofType<StartCreating>(NewProjectActionTypes.CREATE_START)
     .pipe(
-      switchMap(action =>
-        this.electron.call(NewProjectMethods.StartCreate, (<StartCreating>action).options),
-      ),
+      switchMap(action => this.electron.call(NewProjectMethods.StartCreate, action.options)),
       mapTo(new FinishCreating()),
       catchError(err => of(new FinishCreating(err.stack))),
     );
 
-  constructor(private readonly actions: Actions, private readonly electron: ElectronService) {}
+  /**
+   * Fired when when a project is successfully created.
+   */
+  @Effect()
+  public readonly finishCreation = this.actions
+    .ofType<FinishCreating>(NewProjectActionTypes.CREATE_COMPLETE)
+    .pipe(
+      filter(action => !action.error),
+      switchMap(() => this.store.select(targetDirectory).pipe(take(1))),
+      map(dir => new TryOpenProject(dir)),
+    );
+
+  constructor(
+    private readonly actions: Actions,
+    private readonly electron: ElectronService,
+    private readonly store: Store<fromRoot.IState>,
+  ) {}
 }

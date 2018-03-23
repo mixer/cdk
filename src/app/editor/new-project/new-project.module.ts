@@ -6,6 +6,7 @@ import { MatButtonModule, MatDialogModule, MatInputModule } from '@angular/mater
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { ProjectModule } from '../project/project.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { RadioIconsModule } from '../ui/radio-icons/radio-icons.module';
 import { AttributeSelectionComponent } from './attribute-selection/attribute-selection.component';
@@ -19,6 +20,9 @@ import { NewProjectService } from './new-project.service';
 import { TemplateSelectionComponent } from './template-selection/template-selection.component';
 import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.component';
 
+/**
+ * Module containing wizardry for creating a new project.
+ */
 @NgModule({
   imports: [
     CommonModule,
@@ -30,6 +34,7 @@ import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.componen
     MatInputModule,
     RadioIconsModule,
     ReactiveFormsModule,
+    ProjectModule,
     StoreModule.forFeature('newProject', newProjectReducer),
   ],
   entryComponents: [NewProjectDialogComponent],

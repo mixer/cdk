@@ -19,6 +19,7 @@ const availableIcons = [
   'tab-scenes',
   'undo',
   'upload',
+  'check-mark',
 ];
 
 /**
@@ -26,7 +27,7 @@ const availableIcons = [
  */
 @Component({
   selector: 'editor-host',
-  template: '<layout-topnav></layout-topnav>',
+  templateUrl: './bedrock.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BedrockComponent {

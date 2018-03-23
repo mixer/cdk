@@ -49,7 +49,7 @@ export class DirectoryOpener {
   public open(directory: string, program: ILauncher) {
     return this.electron.call(CommonMethods.LaunchProgram, {
       name: program.bin,
-      arguments: [directory],
+      args: [directory],
     });
   }
 }

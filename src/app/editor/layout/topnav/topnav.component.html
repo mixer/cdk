@@ -2,27 +2,51 @@
   <menu-bar-text>File</menu-bar-text>
   <menu-bar-items>
     <menu-bar-item (click)="createNewProject()" text="New Project"></menu-bar-item>
-    <menu-bar-item text="Open Project"></menu-bar-item>
+    <menu-bar-item (click)="openProject()" text="Open Project"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
     <menu-bar-item text="Save Project"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
-<menu-bar menuId="layout#run">
+<menu-bar menuId="layout#run" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>Run</menu-bar-text>
   <menu-bar-items>
     <menu-bar-item text="On my Computer"></menu-bar-item>
     <menu-bar-item text="On my Channel Page"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
-<menu-bar menuId="layout#view">
+<menu-bar menuId="layout#view" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>View</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item text="Console"></menu-bar-item>
-    <menu-bar-item text="Control Schema"></menu-bar-item>
-    <menu-bar-item text="Device Emulation"></menu-bar-item>
-    <menu-bar-item text="Participants"></menu-bar-item>
-    <menu-bar-item text="Groups"></menu-bar-item>
-    <menu-bar-item text="History"></menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.Console)" text="Console">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Console) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.ControlSchema)" text="Control Schema">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.ControlSchema) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.Controls)" text="Control Schema">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Controls) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.Devices)" text="Device Emulation">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Devices) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.Participant)" text="Participant">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Participant) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.Groups)" text="Groups">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Groups) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#help">

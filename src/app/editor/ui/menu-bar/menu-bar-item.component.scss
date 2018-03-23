@@ -1,7 +1,8 @@
 @import '../../../assets/styles/declarations';
 
 :host {
-  display: block;
+  display: flex;
+  align-items: center;
   padding: $dimension-gutter-sm $dimension-gutter-md;
   font-size: 0.9em;
   cursor: pointer;
@@ -10,4 +11,8 @@
   &:hover {
     background: $color-light-gray;
   }
+}
+
+.label {
+  flex-grow: 1;
 }

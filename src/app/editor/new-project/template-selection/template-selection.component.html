@@ -3,10 +3,10 @@
     <p>Choose the project template to start your project..</p>
 
     <radio-icon-list [value]="template | async" (change)="setTemplate($event)">
-      <radio-icon icon="/assets/new-project/layout-fullscreen.svg" value="preact" name="Preact and JSX">
+      <radio-icon icon="/assets/new-project/template-preact.svg" value="preact" name="Preact and JSX">
         Use our full framework set up with React and JSX.
       </radio-icon>
-      <radio-icon icon="/assets/new-project/layout-below-video.svg" value="html" name="Plain HTML">
+      <radio-icon icon="/assets/new-project/template-html.svg" value="html" name="Plain HTML">
         Start with a simple HTML page and roll your own.
       </radio-icon>
     </radio-icon-list>

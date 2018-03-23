@@ -7,7 +7,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
 import { BedrockComponent } from './bedrock.component';
-import { reducers } from './bedrock.reducers';
+import { metaReducers, reducers } from './bedrock.reducers';
 import { ElectronService } from './electron.service';
 import { LayoutModule } from './layout/layout.module';
 
@@ -22,7 +22,7 @@ import { LayoutModule } from './layout/layout.module';
     EffectsModule.forRoot([]),
     LayoutModule,
     MatIconModule,
-    StoreModule.forRoot(reducers),
+    StoreModule.forRoot(reducers, { metaReducers }),
   ],
   declarations: [BedrockComponent],
   providers: [ElectronService],

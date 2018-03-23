@@ -1,9 +1,11 @@
 @import '../../node_modules/normalize.css/normalize';
 @import '../../node_modules/xterm/dist/xterm';
+@import '../../node_modules/golden-layout/src/css/goldenlayout-base';
 
 @import './assets/styles/declarations';
 @import './assets/styles/codemirror';
 @import './assets/styles/ng-material';
+@import './assets/styles/golden';
 @import './assets/styles/layout/index';
 
 body {

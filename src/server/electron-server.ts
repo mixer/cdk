@@ -3,12 +3,16 @@ import { BrowserWindow, Event, ipcMain } from 'electron';
 
 import * as forAccount from '../app/editor/account/account.actions';
 import { CommonMethods } from '../app/editor/bedrock.actions';
+import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
+import * as forProject from '../app/editor/project/project.actions';
 
 import { spawn } from 'child_process';
+import { FileDataStore } from './datastore';
 import { NoAuthenticationError } from './errors';
 import { FileSelector } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
+import { Project } from './project';
 import { Quickstarter } from './quickstart';
 import { Fetcher } from './util';
 
@@ -20,9 +24,10 @@ const commandExists: (
 /**
  * bind attaches listeners for Electron's IPC.
  */
+// tslint:disable-next-line
 export function bind(window: BrowserWindow) {
-  function action(action: Action) {
-    window.webContents.send('dispatch', action);
+  function action(a: Action) {
+    window.webContents.send('dispatch', a);
   }
 
   function method(name: string, fn: (data: any) => Promise<any>) {
@@ -108,8 +113,8 @@ export function bind(window: BrowserWindow) {
   /**
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
-  method(CommonMethods.LaunchProgram, async (options: { name: string; arguments: string[] }) => {
-    spawn(options.name, options.arguments, {
+  method(CommonMethods.LaunchProgram, async (options: { name: string; args: string[] }) => {
+    spawn(options.name, options.args, {
       detached: true,
       stdio: 'ignore',
     });
@@ -122,7 +127,7 @@ export function bind(window: BrowserWindow) {
     const results: { [bin: string]: boolean } = {};
     await Promise.all(
       options.exes.map(
-        exe =>
+        async exe =>
           new Promise(resolve =>
             commandExists(exe, (_err, ok) => {
               results[exe] = ok;
@@ -133,5 +138,38 @@ export function bind(window: BrowserWindow) {
     );
 
     return results;
+  });
+
+  /**
+   * Saves the current panel layouts.
+   */
+  method(
+    forLayout.LayoutMethod.SavePanels,
+    async (options: { panels: object[]; project: string }) => {
+      await new FileDataStore().saveProject('layout', options.project, options.panels);
+    },
+  );
+
+  /**
+   * Loads the panel layouts for the selected project.
+   */
+  method(forLayout.LayoutMethod.LoadPanels, async (options: { project: string }) => {
+    return new FileDataStore().loadProject('layout', options.project);
+  });
+
+  /**
+   * Loads metadata from the project in the given directory.
+   */
+  method(forProject.ProjectMethods.OpenDirectory, async (options: { directory: string }) => {
+    const store = new FileDataStore();
+    const project = new Project(options.directory);
+
+    await project.packageJson(); // validate the package is there, throws if not
+
+    return <forProject.IProject>{
+      directory: options.directory,
+      interactiveVersion: await store.loadProject('linkedVersion', options.directory, null),
+      confirmSchemaUpload: await store.loadProject('confirmSchemaUpload', options.directory, false),
+    };
   });
 }

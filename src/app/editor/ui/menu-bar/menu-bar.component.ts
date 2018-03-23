@@ -39,6 +39,13 @@ export class MenuBarComponent implements OnDestroy {
   @Input() public menuId: string;
 
   /**
+   * Whether this menu is currently disabled.
+   */
+  @Input()
+  @HostBinding('class.disabled')
+  public disabled: boolean = false;
+
+  /**
    * Whether the menu is currently open.
    */
   public readonly isOpen: Observable<boolean> = this.state
@@ -72,6 +79,8 @@ export class MenuBarComponent implements OnDestroy {
         ),
       )
       .subscribe(() => this.close());
+
+    applyActiveClass(this, el);
   }
 
   public ngOnDestroy() {
@@ -107,6 +116,10 @@ export class MenuBarComponent implements OnDestroy {
    * Opens the menu.
    */
   public open() {
+    if (this.disabled) {
+      return;
+    }
+
     const rect = this.el.getBoundingClientRect();
     const direction = innerWidth - rect.right < 300 ? OpenDirection.Left : OpenDirection.Right;
     this.state.dispatch(new OpenMenu(this.menuId, direction));
@@ -158,6 +171,17 @@ export class MenuBarItemComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MenuBarDividerComponent {}
+
+/**
+ * The MenuBarIcon displays an icon beside an entry in the menu.
+ */
+@Component({
+  selector: 'menu-bar-icon',
+  template: '<ng-content></ng-content>',
+  styleUrls: ['./menu-bar-icon.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MenuBarIconComponent {}
 
 /**
  * The MenuBarDivider divides sections in a menu-bar dropdown.

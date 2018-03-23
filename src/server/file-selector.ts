@@ -26,7 +26,7 @@ export class FileSelector {
           defaultPath: settings.previousFolders[context],
           properties: ['openDirectory'],
         },
-        chosen => resolve(chosen ? chosen[0] : undefined),
+        selection => resolve(selection ? selection[0] : undefined),
       ),
     );
 

@@ -1,6 +1,7 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import * as path from 'path';
 
+import { BadPackageJsonError } from './errors';
 import { createPackage } from './metadata/metadata';
 import { Profile } from './profile';
 import { readFile } from './util';
@@ -30,8 +31,12 @@ export class Project {
    * Loads and parses the package.json file from the project.
    */
   public async packageJson(): Promise<any> {
-    const contents = await readFile(this.baseDir('package.json'));
-    return JSON.parse(contents);
+    try {
+      const contents = await readFile(this.baseDir('package.json'));
+      return JSON.parse(contents);
+    } catch (e) {
+      throw new BadPackageJsonError(e.message);
+    }
   }
 
   /**
