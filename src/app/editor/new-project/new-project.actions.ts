@@ -27,6 +27,7 @@ export const enum NewProjectActionTypes {
   CREATE_START = '[NewProject] Start Project Creation',
   CREATE_UPDATE = '[NewProject] Update Creation Status',
   CREATE_COMPLETE = '[NewProject] Set Project Creation Completed',
+  CREATE_ERROR = '[NewProject] Set Project Creation Errored',
   CANCEL = '[NewProject] Cancel Project Creation',
 }
 
@@ -107,12 +108,18 @@ export class StartCreating implements Action {
 
 /**
  * Fired by the module effects when a previous creation command has finished.
- * Contains an optional error string.
  */
 export class FinishCreating implements Action {
   public readonly type = NewProjectActionTypes.CREATE_COMPLETE;
+}
 
-  constructor(public readonly error?: string) {}
+/**
+ * Fired by the module effects when a previous creation command fails.
+ */
+export class ErrorCreating implements Action {
+  public readonly type = NewProjectActionTypes.CREATE_ERROR;
+
+  constructor(public readonly error: string) {}
 }
 
 export type NewProjectActions =
@@ -124,4 +131,5 @@ export type NewProjectActions =
   | SetTemplate
   | AppendCreateUpdate
   | StartCreating
-  | FinishCreating;
+  | FinishCreating
+  | ErrorCreating;

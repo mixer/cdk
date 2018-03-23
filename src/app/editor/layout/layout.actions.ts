@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { ItemConfigType } from 'golden-layout';
+import * as GoldenLayout from 'golden-layout';
 
 export const enum LayoutScreen {
   Welcome,
@@ -21,6 +21,8 @@ export const enum LayoutActionTypes {
   PANELS_SAVE = '[Layout] Save Panel Positions',
   OPEN_PANEL = '[Layout] Open a Panel',
   CLOSE_PANEL = '[Layout] Close a Panel',
+  SET_GOLDEN_LAYOUT = '[Layout] Set the golden layout instance',
+  CLEAR_GOLDEN_LAYOUT = '[Layout] Unsets the golden layout component',
 }
 
 export const enum LayoutMethod {
@@ -44,7 +46,7 @@ export class SavePanels implements Action {
   public readonly type = LayoutActionTypes.PANELS_SAVE;
 
   constructor(
-    public readonly panels: ItemConfigType[],
+    public readonly panels: GoldenLayout.ItemConfigType[],
     public readonly propogateToServer: boolean = true,
   ) {}
 }
@@ -67,4 +69,26 @@ export class ClosePanel implements Action {
   constructor(public readonly panel: GoldenPanel) {}
 }
 
-export type LayoutActions = OpenScreen | SavePanels | OpenPanel | ClosePanel;
+/**
+ * Sets the current GoldenLayout instance.
+ */
+export class SetGoldenLayout implements Action {
+  public readonly type = LayoutActionTypes.SET_GOLDEN_LAYOUT;
+
+  constructor(public readonly layout: GoldenLayout) {}
+}
+
+/**
+ * Clears any currently opened golden layout.
+ */
+export class ClearGoldenLayout implements Action {
+  public readonly type = LayoutActionTypes.CLEAR_GOLDEN_LAYOUT;
+}
+
+export type LayoutActions =
+  | OpenScreen
+  | SavePanels
+  | OpenPanel
+  | ClosePanel
+  | SetGoldenLayout
+  | ClearGoldenLayout;

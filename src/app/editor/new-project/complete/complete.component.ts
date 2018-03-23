@@ -49,7 +49,7 @@ export class CompleteComponent {
       .pipe(
         take(1),
         combineLatest(this.openAction),
-        switchMap(([dir, action]) => this.opener.open(dir, action!)),
+        switchMap(([dir, action]) => this.opener.open(dir!, action!)),
       )
       .subscribe(() => this.close());
   }

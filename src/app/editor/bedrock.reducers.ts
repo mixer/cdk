@@ -16,6 +16,7 @@ export function logger(reducer: ActionReducer<IState>): ActionReducer<IState> {
     console.debug('ngrx:', action.type, {
       from: state,
       to: next,
+      action,
       delta: `${(performance.now() - start).toFixed(2)}ms`,
     });
     return next;

@@ -5,6 +5,7 @@ import * as path from 'path';
 import { FileDataStore } from '../src/server/datastore';
 import { exists, readFile } from '../src/server/util';
 
+// tslint:disable-next-line
 const rimraf = require('rimraf');
 
 describe('FileDataStore', () => {

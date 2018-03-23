@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { ItemConfigType } from 'golden-layout';
+import * as GoldenLayout from 'golden-layout';
 import * as fromRoot from '../bedrock.reducers';
 import {
   GoldenPanel,
@@ -12,7 +12,8 @@ import {
 
 export interface ILayoutState {
   screen: LayoutScreen;
-  panels: ItemConfigType[];
+  panels: GoldenLayout.ItemConfigType[];
+  goldenLayout: null | GoldenLayout;
 }
 
 export interface IState extends fromRoot.IState {
@@ -21,6 +22,7 @@ export interface IState extends fromRoot.IState {
 
 const initialState: ILayoutState = {
   screen: LayoutScreen.Welcome,
+  goldenLayout: null,
   panels: [
     {
       type: 'row',
@@ -51,6 +53,10 @@ export function layoutReducer(
       return { ...state, screen: action.screen };
     case LayoutActionTypes.PANELS_SAVE:
       return { ...state, panels: action.panels };
+    case LayoutActionTypes.SET_GOLDEN_LAYOUT:
+      return { ...state, goldenLayout: action.layout };
+    case LayoutActionTypes.CLEAR_GOLDEN_LAYOUT:
+      return { ...state, goldenLayout: null };
     default:
       return state;
   }
@@ -79,11 +85,16 @@ export const isOnEditor = createSelector(layoutState, s => s.screen === LayoutSc
 export const goldenPanels = createSelector(layoutState, s => s.panels);
 
 /**
+ * Selects the golden layout.
+ */
+export const goldenLayout = createSelector(layoutState, s => s.goldenLayout);
+
+/**
  * Selects whether the given panel is open in the current layout.
  */
 export const panelIsOpen = (panelName: GoldenPanel) =>
   createSelector(layoutState, s => {
-    const walk = (panels: ItemConfigType[]): boolean => {
+    const walk = (panels: GoldenLayout.ItemConfigType[]): boolean => {
       return panels.some(panel => {
         if (panel.type === 'component' && (<any>panel).componentName === panelName) {
           return true;

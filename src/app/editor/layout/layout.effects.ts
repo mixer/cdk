@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
-import { ItemConfigType } from 'golden-layout';
+import * as GoldenLayout from 'golden-layout';
+import { Observable } from 'rxjs/Observable';
 
+import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
-import { filter, switchMap, take } from 'rxjs/operators';
+import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 
 import { combineLatest } from 'rxjs/operators/combineLatest';
 import * as fromRoot from '../bedrock.reducers';
@@ -12,12 +14,40 @@ import { ElectronService } from '../electron.service';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import * as fromProject from '../project/project.reducer';
 import {
+  ClosePanel,
   LayoutActionTypes,
   LayoutMethod,
   LayoutScreen,
+  OpenPanel,
   OpenScreen,
+  panelTitles,
   SavePanels,
+  SetGoldenLayout,
 } from './layout.actions';
+
+/**
+ * Finds the content panel matching the predicate.
+ */
+export function findPanel(
+  items: GoldenLayout.ContentItem[],
+  predicate: (item: GoldenLayout.ContentItem) => boolean,
+): GoldenLayout.ContentItem | null {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (predicate(item)) {
+      return item;
+    }
+
+    if (item.contentItems) {
+      const found = findPanel(item.contentItems, predicate);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
+}
 
 /**
  * Effects module for account actions.
@@ -33,7 +63,7 @@ export class LayoutEffects {
     .ofType<SetOpenProject>(ProjectActionTypes.SET_OPEN_PROJECT)
     .pipe(
       switchMap(action =>
-        this.electron.call<ItemConfigType[] | null>(LayoutMethod.LoadPanels, {
+        this.electron.call<GoldenLayout.ItemConfigType[] | null>(LayoutMethod.LoadPanels, {
           project: action.project.directory,
         }),
       ),
@@ -61,9 +91,73 @@ export class LayoutEffects {
       ),
     );
 
+  /**
+   * Emits an action to save the layout's panels when they change.
+   */
+  @Effect()
+  public readonly saveGoldenPanelsOnChange = this.withLayout(layout =>
+    fromEvent(layout, 'stateChanged').pipe(map(() => new SavePanels(layout.toConfig().content))),
+  );
+
+  /**
+   * Runs a close panel action on the layout.
+   */
+  @Effect({ dispatch: false })
+  public readonly closeGoldenPanel = this.withLayout(layout =>
+    this.actions.ofType<ClosePanel>(LayoutActionTypes.CLOSE_PANEL).pipe(
+      tap(action => {
+        const panel = findPanel(
+          [layout.root],
+          p => p.isComponent && (<any>p).componentName === action.panel,
+        );
+        if (panel) {
+          panel.remove();
+        }
+      }),
+    ),
+  );
+
+  /**
+   * Runs an open panel action against the layout.
+   */
+  @Effect({ dispatch: false })
+  public readonly openGoldenPanel = this.withLayout(layout =>
+    this.actions.ofType<OpenPanel>(LayoutActionTypes.OPEN_PANEL).pipe(
+      tap(({ panel }) => {
+        const parent = layout.root.contentItems[0] || layout.root;
+
+        parent.addChild({
+          type: 'component',
+          componentName: panel,
+          title: panelTitles[panel],
+        });
+      }),
+    ),
+  );
+
+  /**
+   * Resizes the layout when the window is resized.
+   */
+  @Effect({ dispatch: false })
+  public readonly resizeGolden = this.withLayout(layout =>
+    fromEvent(window, 'resize').pipe(tap(() => layout.updateSize())),
+  );
+
   constructor(
     private readonly actions: Actions,
     private readonly electron: ElectronService,
     private readonly store: Store<fromRoot.IState>,
   ) {}
+
+  private withLayout<T>(fn: (layout: GoldenLayout) => Observable<T>): Observable<T> {
+    return this.actions
+      .ofType<SetGoldenLayout>(LayoutActionTypes.SET_GOLDEN_LAYOUT)
+      .pipe(
+        switchMap(action =>
+          fn(action.layout).pipe(
+            takeUntil(this.actions.ofType<SetGoldenLayout>(LayoutActionTypes.CLEAR_GOLDEN_LAYOUT)),
+          ),
+        ),
+      );
+  }
 }
