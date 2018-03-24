@@ -1,6 +1,7 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import * as path from 'path';
 
+import { FileDataStore, IDataStore } from './datastore';
 import { BadPackageJsonError } from './errors';
 import { createPackage } from './metadata/metadata';
 import { Profile } from './profile';
@@ -16,8 +17,27 @@ export class Project {
    */
   public readonly profile: Profile;
 
-  constructor(private readonly projectBaseDir: string) {
+  constructor(
+    private readonly projectBaseDir: string,
+    private readonly datastore: IDataStore = new FileDataStore(),
+  ) {
     this.profile = new Profile();
+  }
+
+  /**
+   * Loads a local project setting.
+   */
+  public async loadSetting<T>(file: string): Promise<T | null>;
+  public async loadSetting<T>(file: string, defaultValue: T): Promise<T>;
+  public async loadSetting<T>(file: string, defaultValue?: T): Promise<T | null> {
+    return <T | null>await this.datastore.loadProject(file, this.baseDir(), defaultValue);
+  }
+
+  /**
+   * Saves a project setting.
+   */
+  public async saveSetting<T>(file: string, value: T): Promise<void> {
+    return this.datastore.saveProject(file, this.baseDir(), value);
   }
 
   /**

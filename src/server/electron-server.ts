@@ -1,20 +1,24 @@
 import { Action } from '@ngrx/store';
 import { BrowserWindow, Event, ipcMain } from 'electron';
+import * as path from 'path';
 
 import * as forAccount from '../app/editor/account/account.actions';
 import { CommonMethods } from '../app/editor/bedrock.actions';
+import * as forControls from '../app/editor/controls/controls.actions';
 import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
 import * as forProject from '../app/editor/project/project.actions';
 
 import { spawn } from 'child_process';
+import { IRemoteError } from '../app/editor/electron.service';
 import { FileDataStore } from './datastore';
-import { NoAuthenticationError } from './errors';
-import { FileSelector } from './file-selector';
+import { hasMetadata, NoAuthenticationError } from './errors';
+import { OpenBuilder } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { Quickstarter } from './quickstart';
 import { Fetcher } from './util';
+import { WebpackDevServer } from './wds';
 
 const commandExists: (
   path: string,
@@ -34,8 +38,16 @@ export function bind(window: BrowserWindow) {
     ipcMain.addListener(name, (ev: Event, { id, params }: { id: number; params: any }) => {
       fn(params)
         .then(result => ev.sender.send(name, { id, result }))
-        .catch(error =>
-          ev.sender.send(name, { id, error: 'toJSON' in error ? error.toJSON() : error.stack }),
+        .catch((error: Error) =>
+          ev.sender.send(name, {
+            id,
+            error: <IRemoteError>{
+              message: error.message,
+              stack: error.stack,
+              originalName: error.constructor.name,
+              metadata: hasMetadata(error) ? error.metadata() : undefined,
+            },
+          }),
         );
     });
   }
@@ -99,7 +111,7 @@ export function bind(window: BrowserWindow) {
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
   method(CommonMethods.ChooseDirectory, async (options: { context: string }) => {
-    return new FileSelector().chooseFolder(window, options.context);
+    return new OpenBuilder(window).directory().openInContext(options.context);
   });
 
   /**
@@ -171,5 +183,36 @@ export function bind(window: BrowserWindow) {
       interactiveVersion: await store.loadProject('linkedVersion', options.directory, null),
       confirmSchemaUpload: await store.loadProject('confirmSchemaUpload', options.directory, false),
     };
+  });
+
+  /**
+   * Boots a webpack server, which asynchronously sends updates down to the
+   * renderer. It'll run until it crashes or StopWebpack is called.
+   */
+  method(forControls.ControlsMethods.StartWebpack, async (options: { directory: string }) => {
+    const server = new WebpackDevServer(new Project(options.directory));
+    server.data.subscribe(data => action(new forControls.UpdateWebpackConsole(data)));
+    server.state.subscribe(state => action(new forControls.UpdateWebpackState(state)));
+
+    return server.start();
+  });
+
+  /**
+   * Loads metadata from the project in the given directory.
+   */
+  method(forControls.ControlsMethods.SetWebpackConfig, async (options: { directory: string }) => {
+    const file = await new OpenBuilder(window)
+      .file()
+      .allowJs()
+      .allowAll()
+      .openFromFolder(options.directory);
+
+    if (!file) {
+      return null;
+    }
+
+    const relative = path.relative(options.directory, file);
+    await new WebpackDevServer(new Project(options.directory)).setConfigFilename(relative);
+    return relative;
   });
 }

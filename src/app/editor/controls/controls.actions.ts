@@ -5,12 +5,29 @@ export enum WebpackState {
   Stopped,
   // Currently booting up.
   Starting,
-  // Booted up and built successfully.
-  Running,
-  // Had an error on the last build.
+  // Currently compiling code.
+  Compiling,
+  // Built successfully.
+  Compiled,
+  // Had an error on the last compilation
   HadError,
-  // Could not boot up.
+  // In the process of stopping.
+  Stopping,
+  // Could not boot up, or crashed.
   Failed,
+}
+
+/**
+ * Returns whether the webpack state represents one which is currently
+ * running.
+ */
+export function isRunning(state: WebpackState) {
+  return state !== WebpackState.Stopped && state !== WebpackState.Failed;
+}
+
+export interface IWebpackInstance {
+  id: number;
+  address: string;
 }
 
 export const enum ControlsActionTypes {
@@ -19,12 +36,13 @@ export const enum ControlsActionTypes {
   UPDATE_WEBPACK_CONSOLE = '[Controls] Update webpack console',
   RESTART_WEBPACK = '[Controls] Restart webpack',
   STOP_WEBPACK = '[Controls] Stop webpack',
+  SET_WEBPACK_INSTANCE = '[Controls] Set webpack instance',
 }
 
 export const enum ControlsMethods {
   StartWebpack = '[Project] Start webpack',
   StopWebpack = '[Project] Stop webpack',
-  RestartWebpack = '[Project] Restart webpack',
+  SetWebpackConfig = '[Project] Set webpack config',
 }
 
 /**
@@ -69,9 +87,19 @@ export class StopWebpack implements Action {
   public readonly type = ControlsActionTypes.STOP_WEBPACK;
 }
 
+/**
+ * Sets the currently running webpack server.
+ */
+export class SetWebpackInstance implements Action {
+  public readonly type = ControlsActionTypes.SET_WEBPACK_INSTANCE;
+
+  constructor(public readonly instance: IWebpackInstance) {}
+}
+
 export type ControlActions =
   | StartWebpack
   | UpdateWebpackState
   | UpdateWebpackConsole
   | RestartWebpack
-  | StopWebpack;
+  | StopWebpack
+  | SetWebpackInstance;

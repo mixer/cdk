@@ -11,8 +11,8 @@ import * as GoldenLayout from 'golden-layout';
 import { filter, take } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { ControlsPanelComponent } from '../../controls/controls-panel/controls-panel.component';
 import { ControlSchemaComponent } from '../control-schema/control-schema.component';
-import { ControlsComponent } from '../controls/controls.component';
 import { ClearGoldenLayout, GoldenPanel, SetGoldenLayout } from '../layout.actions';
 import { goldenLayout, goldenPanels } from '../layout.reducer';
 
@@ -57,7 +57,7 @@ export class GoldenService {
         const golden = new GoldenLayout({ content, ...this.defaultSettings }, container);
 
         this.registerComponent(golden, GoldenPanel.ControlSchema, ControlSchemaComponent);
-        this.registerComponent(golden, GoldenPanel.Controls, ControlsComponent);
+        this.registerComponent(golden, GoldenPanel.Controls, ControlsPanelComponent);
         golden.init();
 
         this.store.dispatch(new SetGoldenLayout(golden));

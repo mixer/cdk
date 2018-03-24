@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule, MatDialogModule, MatInputModule } from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
@@ -28,7 +27,6 @@ import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.componen
     CommonModule,
     ConsoleModule,
     EffectsModule.forFeature([NewProjectEffects]),
-    FlexLayoutModule,
     MatButtonModule,
     MatDialogModule,
     MatInputModule,

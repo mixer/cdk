@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 
-import { of } from 'rxjs/observable/of';
-import { catchError, filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators';
+import { filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
@@ -29,9 +28,12 @@ export class NewProjectEffects {
   public readonly startCreation = this.actions
     .ofType<StartCreating>(NewProjectActionTypes.CREATE_START)
     .pipe(
-      switchMap(action => this.electron.call(NewProjectMethods.StartCreate, action.options)),
-      mapTo(new FinishCreating()),
-      catchError(err => of(new ErrorCreating(err.stack))),
+      switchMap(action =>
+        this.electron
+          .call(NewProjectMethods.StartCreate, action.options)
+          .return(new FinishCreating())
+          .catch(err => new ErrorCreating(err.stack)),
+      ),
     );
 
   /**
