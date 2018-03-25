@@ -29,6 +29,7 @@ function createWindow() {
   }
 
   window.on('closed', () => (window = null));
+  window.setMenu(null);
 
   electronServer.bind(window);
 }

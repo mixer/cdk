@@ -1,6 +1,7 @@
 import { Action } from '@ngrx/store';
 import { BrowserWindow, Event, ipcMain } from 'electron';
 import * as path from 'path';
+import * as commandExists from 'command-exists';
 
 import * as forAccount from '../app/editor/account/account.actions';
 import { CommonMethods } from '../app/editor/bedrock.actions';
@@ -18,18 +19,15 @@ import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { Quickstarter } from './quickstart';
 import { Fetcher } from './util';
-import { WebpackDevServer } from './wds';
-
-const commandExists: (
-  path: string,
-  callback: (err: Error | null, exists: boolean) => void,
-) => void = require('command-exists');
+import { WebpackDevServer, WebpackServers } from './wds';
 
 /**
  * bind attaches listeners for Electron's IPC.
  */
 // tslint:disable-next-line
 export function bind(window: BrowserWindow) {
+  const webpackServers = new WebpackServers();
+
   function action(a: Action) {
     window.webContents.send('dispatch', a);
   }
@@ -123,12 +121,13 @@ export function bind(window: BrowserWindow) {
   });
 
   /**
-   * Opens a prompt to choose a directory, and returns the chosen one.
+   * Launches the given program with the provided arguments.
    */
   method(CommonMethods.LaunchProgram, async (options: { name: string; args: string[] }) => {
     spawn(options.name, options.args, {
       detached: true,
       stdio: 'ignore',
+      shell: true,
     });
   });
 
@@ -190,11 +189,18 @@ export function bind(window: BrowserWindow) {
    * renderer. It'll run until it crashes or StopWebpack is called.
    */
   method(forControls.ControlsMethods.StartWebpack, async (options: { directory: string }) => {
-    const server = new WebpackDevServer(new Project(options.directory));
+    const server = webpackServers.create(new Project(options.directory));
     server.data.subscribe(data => action(new forControls.UpdateWebpackConsole(data)));
     server.state.subscribe(state => action(new forControls.UpdateWebpackState(state)));
 
     return server.start();
+  });
+
+  /**
+   * Stops all running webpack servers.
+   */
+  method(forControls.ControlsMethods.StopWebpack, async () => {
+    webpackServers.stopAll();
   });
 
   /**

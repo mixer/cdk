@@ -11,6 +11,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 import { untilDestroyed } from '../../shared/untilDestroyed';
 import { baseTheme } from './themes';
+import { tap } from 'rxjs/operators';
 
 /**
  * The layout selection chooses which schema is initially seeded.
@@ -46,9 +47,11 @@ export class ConsoleDisplayComponent implements AfterContentInit, OnDestroy {
       lineHeight: 1.2,
     });
 
-    terminal.open(<HTMLElement>container.querySelector('.console'));
+    // Sync opening appears to toss xterm.js into a bad state, sometimes.
+    setTimeout(() => terminal.open(<HTMLElement>container.querySelector('.console')));
+
     this.data
-      .pipe(untilDestroyed(this))
+      .pipe(untilDestroyed(this), tap(console.log))
       .subscribe(data => terminal.write(data.replace(/\r?\n/g, '\r\n')));
     this.terminal = terminal;
   }

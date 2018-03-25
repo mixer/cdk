@@ -36,7 +36,7 @@ export function spawnPackageScript(
   const pathVar = process.env[getPathKey()];
   const parts = pathVar ? pathVar.split(path.delimiter) : [];
   parts.unshift(path.join(dir, 'node_modules', '.bin'));
-
+  console.log(options);
   return spawn(
     command,
     args,
@@ -45,6 +45,8 @@ export function spawnPackageScript(
         env: {
           [getPathKey()]: parts.join(path.delimiter),
         },
+        shell: true,
+        detached: false,
       },
       options,
     ),

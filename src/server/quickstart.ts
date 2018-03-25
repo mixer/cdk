@@ -41,8 +41,8 @@ export class Quickstarter extends EventEmitter {
   public async start() {
     const res = await this.getTarball();
     await this.extractProject(res);
-    await this.installDependences();
     await this.updateProjectJson();
+    await this.installDependences();
     this.emit('data', chalk.green('\nInstallation completed successfully.'));
   }
 
@@ -51,7 +51,12 @@ export class Quickstarter extends EventEmitter {
    */
   private async installDependences() {
     this.emitPrompt('npm install');
-    const proc = spawn('npm', ['install', '-d', '--color=always'], { cwd: this.targetPath() });
+    const proc = spawn('npm', ['install', '-d', '--color=always'], {
+      cwd: this.targetPath(),
+      env: process.env,
+      shell: true,
+    });
+
     proc.stdout.on('data', data => this.emit('data', data.toString()));
     proc.stderr.on('data', data => this.emit('data', data.toString()));
     await awaitChildProcess(proc);
@@ -75,9 +80,35 @@ export class Quickstarter extends EventEmitter {
     };
 
     const packageJsonPath = path.join(this.targetPath(), 'package.json');
-    const source = await readFile(packageJsonPath);
-    const updated = JSON.stringify({ ...JSON.parse(source), ...partial }, null, 2);
+    const source = JSON.parse(await readFile(packageJsonPath));
+    await this.updateWebpackPlugin(source);
+    const updated = JSON.stringify({ ...source, ...partial }, null, 2);
     await writeFile(packageJsonPath, updated);
+  }
+
+  /**
+   * Looks in the given package.json and updates from the miix-cli to the
+   * dedicated webpack plugin if we find it, then also replaces usage in
+   * the webpack.config.js if it exists. For backwards compat with older
+   * consumers upon initial release.
+   */
+  private async updateWebpackPlugin(pkg: any) {
+    const oldPackage = '@mcph/miix-cli';
+    const newPackage = '@mcph/miix-webpack-plugin';
+    if (!pkg.devDependencies || newPackage in pkg.devDependencies) {
+      return;
+    }
+
+    delete pkg.devDependencies[oldPackage];
+    pkg.devDependencies[newPackage] = '^0.1.0';
+
+    const webpackConfig = path.join(this.targetPath(), 'webpack.config.js');
+    if (!await exists(webpackConfig)) {
+      return;
+    }
+
+    const source = await readFile(webpackConfig);
+    await writeFile(webpackConfig, source.replace(oldPackage, newPackage));
   }
 
   /**

@@ -8,12 +8,12 @@ import {
 import { ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import { Observable } from 'rxjs/Observable';
-import { fromEvent } from 'rxjs/observable/fromEvent';
-import { map, merge, partition } from 'rxjs/operators';
+import { map, merge, partition, take, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
+import * as treekill from 'tree-kill';
 
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { IWebpackInstance, WebpackState } from '../app/editor/controls/controls.actions';
+import { IWebpackInstance, WebpackState, isRunning } from '../app/editor/controls/controls.actions';
 import { MissingWebpackConfig } from './errors';
 import { spawnPackageScript } from './npm-exec';
 import { Project } from './project';
@@ -34,6 +34,46 @@ portfinder.basePort = 13370;
  * webpack-dev-server doesn't give us much introspection abilities anyway,
  * we just have to keep track of an external process.
  */
+
+/**
+ * Simple colleciton of WebpackDevServer instances.
+ */
+export class WebpackServers {
+  private runningServers = new Map<number, WebpackDevServer>();
+
+  constructor() {
+    process.on('exit', () => this.stopAll());
+  }
+
+  /**
+   * Stops all running webpack dev servers.
+   */
+  public stopAll() {
+    for (const server of this.runningServers.values()) {
+      server.stop();
+    }
+  }
+
+  /**
+   * Returns a list of all running webpack dev servers.
+   */
+  public getAll(): WebpackDevServer[] {
+    return [...this.runningServers.values()];
+  }
+
+  /**
+   * Creates a new webpack dev server, adds it to the registry, and returns it.
+   */
+  public create(project: Project): WebpackDevServer {
+    const server = new WebpackDevServer(project);
+    this.runningServers.set(server.id, server);
+    server.state
+      .pipe(filter(state => !isRunning(state)), take(1))
+      .subscribe(() => this.runningServers.delete(server.id));
+
+    return server;
+  }
+}
 
 /**
  * WebpackDevServer handles spinning up a local webpack dev server in the
@@ -120,7 +160,9 @@ export class WebpackDevServer extends EventEmitter {
   public stop() {
     if (this.process) {
       this.state.next(WebpackState.Stopping);
-      this.process.kill();
+      // process.kill() is not sufficient on windows,
+      // see https://stackoverflow.com/a/32814686/1125956
+      treekill(this.process.pid);
       this.process = undefined;
     }
   }
@@ -134,10 +176,7 @@ export class WebpackDevServer extends EventEmitter {
     const [notifications, data] = partition(isNotification)(fromInputSlices(process.stderr, '\n'));
 
     data
-      .pipe(
-        map(line => `${line}\n`),
-        merge(fromEvent(process.stdout, 'data').pipe(map(d => d.toString()))),
-      )
+      .pipe(merge(fromInputSlices(process.stdout, '\n')), map(line => `${line}\n`))
       .subscribe(d => this.data.next(d));
 
     notifications

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { map, switchMap, tap } from 'rxjs/operators';
+import { defer } from 'rxjs/observable/defer';
+import { of } from 'rxjs/observable/of';
 
 import { ElectronService } from '../electron.service';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
@@ -12,6 +14,7 @@ import {
   SetWebpackInstance,
   StartWebpack,
   UpdateWebpackConsole,
+  StopWebpack,
 } from './controls.actions';
 
 /**
@@ -55,6 +58,12 @@ export class ControlEffects {
   public readonly addConsoleData = this.actions
     .ofType<UpdateWebpackConsole>(ControlsActionTypes.UPDATE_WEBPACK_CONSOLE)
     .pipe(tap(({ data }) => this.console.write(data)));
+
+  /**
+   * Fired when the service is created; cleans up any old webpack servers
+   * we may have had (e.g. if the UI is refreshed)
+   */
+  @Effect() public readonly closeOrphanedServers = defer(() => of(new StopWebpack()));
 
   constructor(
     private readonly actions: Actions,
