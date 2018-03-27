@@ -15,6 +15,7 @@ import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import * as fromProject from '../project/project.reducer';
 import {
   ClosePanel,
+  findGoldenPanel,
   LayoutActionTypes,
   LayoutMethod,
   LayoutScreen,
@@ -24,30 +25,6 @@ import {
   SavePanels,
   SetGoldenLayout,
 } from './layout.actions';
-
-/**
- * Finds the content panel matching the predicate.
- */
-export function findPanel(
-  items: GoldenLayout.ContentItem[],
-  predicate: (item: GoldenLayout.ContentItem) => boolean,
-): GoldenLayout.ContentItem | null {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (predicate(item)) {
-      return item;
-    }
-
-    if (item.contentItems) {
-      const found = findPanel(item.contentItems, predicate);
-      if (found) {
-        return found;
-      }
-    }
-  }
-
-  return null;
-}
 
 /**
  * Effects module for account actions.
@@ -106,10 +83,7 @@ export class LayoutEffects {
   public readonly closeGoldenPanel = this.withLayout(layout =>
     this.actions.ofType<ClosePanel>(LayoutActionTypes.CLOSE_PANEL).pipe(
       tap(action => {
-        const panel = findPanel(
-          [layout.root],
-          p => p.isComponent && (<any>p).componentName === action.panel,
-        );
+        const panel = findGoldenPanel([layout.root], action.panel);
         if (panel) {
           panel.remove();
         }
@@ -123,8 +97,18 @@ export class LayoutEffects {
   @Effect({ dispatch: false })
   public readonly openGoldenPanel = this.withLayout(layout =>
     this.actions.ofType<OpenPanel>(LayoutActionTypes.OPEN_PANEL).pipe(
-      tap(({ panel }) => {
-        const parent = layout.root.contentItems[0] || layout.root;
+      tap(({ panel, locator }) => {
+        if (findGoldenPanel([layout.root], panel)) {
+          return; // don't open the panel if it already exists
+        }
+
+        let parent: GoldenLayout.ContentItem | null = null;
+        if (locator) {
+          parent = locator(layout);
+        }
+        if (!parent) {
+          parent = layout.root.contentItems[0] || layout.root;
+        }
 
         parent.addChild({
           type: 'component',

@@ -3,9 +3,10 @@
 const { BrowserWindow, app } = require('electron');
 const path = require('path');
 const url = require('url');
-const electronServer = require('../dist/src/server/electron-server');
+const { ElectronServer } = require('../dist/src/server/electron-server');
 
 let window;
+let server;
 
 const isDebug = process.argv.includes('--debug');
 
@@ -31,13 +32,16 @@ function createWindow() {
   window.on('closed', () => (window = null));
   window.setMenu(null);
 
-  electronServer.bind(window);
+  server = new ElectronServer(window);
+  server.start();
 }
 
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  server.tasks.stopAll();
+
+  if (process.platform === 'darwin') {
     app.quit();
   }
 });

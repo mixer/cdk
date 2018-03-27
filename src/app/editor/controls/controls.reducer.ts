@@ -12,6 +12,7 @@ import {
 export interface IControlState {
   webpackState: WebpackState;
   consoleOutput: string;
+  didAutoOpenConsole: boolean;
   instance?: IWebpackInstance;
 }
 
@@ -19,8 +20,14 @@ export interface IState extends fromRoot.IState {
   layout: IControlState;
 }
 
+const initialState: IControlState = {
+  webpackState: WebpackState.Stopped,
+  consoleOutput: '',
+  didAutoOpenConsole: false,
+};
+
 export function controlReducer(
-  state: IControlState = { webpackState: WebpackState.Stopped, consoleOutput: '' },
+  state: IControlState = initialState,
   action: ControlActions,
 ): IControlState {
   switch (action.type) {
@@ -39,6 +46,10 @@ export function controlReducer(
         return { ...state, consoleOutput: state.consoleOutput + action.data };
       }
       return state;
+    case ControlsActionTypes.AUTO_CLOSE_CONSOLE:
+      return { ...state, didAutoOpenConsole: false };
+    case ControlsActionTypes.AUTO_OPEN_CONSOLE:
+      return { ...state, didAutoOpenConsole: true };
     default:
       return state;
   }
@@ -58,3 +69,13 @@ export const webpackState = createSelector(controlState, s => s.webpackState);
  * Selector for the webpack console output.
  */
 export const webpackConsole = createSelector(controlState, s => s.consoleOutput);
+
+/**
+ * Selector for the webpack server instancel.
+ */
+export const webpackInstance = createSelector(controlState, s => s.instance);
+
+/**
+ * Selector for wheher the webpack console was automatically opened.
+ */
+export const didAutoOpenWebpackConsole = createSelector(controlState, s => s.didAutoOpenConsole);

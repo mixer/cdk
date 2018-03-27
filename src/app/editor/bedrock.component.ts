@@ -3,13 +3,14 @@ import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
 
 const availableIcons = [
+  'check-mark',
   'clear',
   'close',
   'editor',
   'filter',
   'fullscreen',
-  'redo',
   'history',
+  'redo',
   'refresh',
   'rocket',
   'screen-rotation',
@@ -19,7 +20,7 @@ const availableIcons = [
   'tab-scenes',
   'undo',
   'upload',
-  'check-mark',
+  'warning',
 ];
 
 /**

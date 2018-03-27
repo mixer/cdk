@@ -1,7 +1,7 @@
 import { Action } from '@ngrx/store';
+import * as commandExists from 'command-exists';
 import { BrowserWindow, Event, ipcMain } from 'electron';
 import * as path from 'path';
-import * as commandExists from 'command-exists';
 
 import * as forAccount from '../app/editor/account/account.actions';
 import { CommonMethods } from '../app/editor/bedrock.actions';
@@ -18,50 +18,23 @@ import { OpenBuilder } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { Quickstarter } from './quickstart';
+import { TaskList } from './tasks/task';
 import { Fetcher } from './util';
-import { WebpackDevServer, WebpackServers } from './wds';
+import { WebpackDevServer } from './wds';
 
-/**
- * bind attaches listeners for Electron's IPC.
- */
-// tslint:disable-next-line
-export function bind(window: BrowserWindow) {
-  const webpackServers = new WebpackServers();
-
-  function action(a: Action) {
-    window.webContents.send('dispatch', a);
-  }
-
-  function method(name: string, fn: (data: any) => Promise<any>) {
-    ipcMain.addListener(name, (ev: Event, { id, params }: { id: number; params: any }) => {
-      fn(params)
-        .then(result => ev.sender.send(name, { id, result }))
-        .catch((error: Error) =>
-          ev.sender.send(name, {
-            id,
-            error: <IRemoteError>{
-              message: error.message,
-              stack: error.stack,
-              originalName: error.constructor.name,
-              metadata: hasMetadata(error) ? error.metadata() : undefined,
-            },
-          }),
-        );
-    });
-  }
-
+const methods: { [methodName: string]: (data: any, server: ElectronServer) => Promise<any> } = {
   /**
    * Starts an account linking. Returns the user once linked, or null if
    * they do not link by the time the current code expires. Updates the
    * linked code when it's received.
    */
-  method(forAccount.AccountMethods.LinkAccount, async () => {
+  [forAccount.AccountMethods.LinkAccount]: async (_data: void, server: ElectronServer) => {
     const profile = new Profile();
 
     let grantCount = 0;
     try {
       await profile.grant({
-        prompt: (code, expiresAt) => action(new forAccount.SetLinkCode(code, expiresAt)),
+        prompt: (code, expiresAt) => server.sendAction(new forAccount.SetLinkCode(code, expiresAt)),
         isCancelled: () => Boolean(grantCount++), // false initially, then true afterwards
       });
       return await profile.user();
@@ -72,12 +45,12 @@ export function bind(window: BrowserWindow) {
 
       return null;
     }
-  });
+  },
 
   /**
    * Returns the currently linked account, if any.
    */
-  method(forAccount.AccountMethods.GetLinkedAccount, async () => {
+  [forAccount.AccountMethods.GetLinkedAccount]: async () => {
     try {
       return await new Profile().user();
     } catch (e) {
@@ -87,54 +60,57 @@ export function bind(window: BrowserWindow) {
 
       throw e;
     }
-  });
+  },
 
   /**
    * Logs the user out of their account.
    */
-  method(forAccount.AccountMethods.Logout, async () => new Profile().logout());
+  [forAccount.AccountMethods.Logout]: async () => new Profile().logout(),
 
   /**
    * Called when we want to create a new project, triggers the quickstart.
    * Emits AppendCreateUpdate actions back down when data is displayed on
    * the console.
    */
-  method(forNewProject.NewProjectMethods.StartCreate, async details => {
+  [forNewProject.NewProjectMethods.StartCreate]: async (details, server: ElectronServer) => {
     const quickstart = new Quickstarter(details);
-    quickstart.on('data', data => action(new forNewProject.AppendCreateUpdate(data)));
+    server.tasks.add(quickstart);
+    quickstart.data.subscribe(data =>
+      server.sendAction(new forNewProject.AppendCreateUpdate(data)),
+    );
     await quickstart.start();
-  });
+  },
 
   /**
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
-  method(CommonMethods.ChooseDirectory, async (options: { context: string }) => {
-    return new OpenBuilder(window).directory().openInContext(options.context);
-  });
+  [CommonMethods.ChooseDirectory]: async (options: { context: string }, server: ElectronServer) => {
+    return new OpenBuilder(server.window).directory().openInContext(options.context);
+  },
 
   /**
    * Checks if a bundle name is taken; returns true if so.
    */
-  method(CommonMethods.CheckBundleNameTaken, async ({ name }: { name: string }) => {
+  [CommonMethods.CheckBundleNameTaken]: async ({ name }: { name: string }) => {
     const res = await new Fetcher().json('get', `/interactive/bundles/${name}`);
     return res.status === 200 || res.status === 403;
-  });
+  },
 
   /**
    * Launches the given program with the provided arguments.
    */
-  method(CommonMethods.LaunchProgram, async (options: { name: string; args: string[] }) => {
+  [CommonMethods.LaunchProgram]: async (options: { name: string; args: string[] }) => {
     spawn(options.name, options.args, {
       detached: true,
       stdio: 'ignore',
       shell: true,
     });
-  });
+  },
 
   /**
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
-  method(CommonMethods.CheckIfExePresent, async (options: { exes: string[] }) => {
+  [CommonMethods.CheckIfExePresent]: async (options: { exes: string[] }) => {
     const results: { [bin: string]: boolean } = {};
     await Promise.all(
       options.exes.map(
@@ -149,29 +125,26 @@ export function bind(window: BrowserWindow) {
     );
 
     return results;
-  });
+  },
 
   /**
    * Saves the current panel layouts.
    */
-  method(
-    forLayout.LayoutMethod.SavePanels,
-    async (options: { panels: object[]; project: string }) => {
-      await new FileDataStore().saveProject('layout', options.project, options.panels);
-    },
-  );
+  [forLayout.LayoutMethod.SavePanels]: async (options: { panels: object[]; project: string }) => {
+    await new FileDataStore().saveProject('layout', options.project, options.panels);
+  },
 
   /**
    * Loads the panel layouts for the selected project.
    */
-  method(forLayout.LayoutMethod.LoadPanels, async (options: { project: string }) => {
+  [forLayout.LayoutMethod.LoadPanels]: async (options: { project: string }) => {
     return new FileDataStore().loadProject('layout', options.project);
-  });
+  },
 
   /**
    * Loads metadata from the project in the given directory.
    */
-  method(forProject.ProjectMethods.OpenDirectory, async (options: { directory: string }) => {
+  [forProject.ProjectMethods.OpenDirectory]: async (options: { directory: string }) => {
     const store = new FileDataStore();
     const project = new Project(options.directory);
 
@@ -182,32 +155,43 @@ export function bind(window: BrowserWindow) {
       interactiveVersion: await store.loadProject('linkedVersion', options.directory, null),
       confirmSchemaUpload: await store.loadProject('confirmSchemaUpload', options.directory, false),
     };
-  });
+  },
 
   /**
    * Boots a webpack server, which asynchronously sends updates down to the
    * renderer. It'll run until it crashes or StopWebpack is called.
    */
-  method(forControls.ControlsMethods.StartWebpack, async (options: { directory: string }) => {
-    const server = webpackServers.create(new Project(options.directory));
-    server.data.subscribe(data => action(new forControls.UpdateWebpackConsole(data)));
-    server.state.subscribe(state => action(new forControls.UpdateWebpackState(state)));
+  [forControls.ControlsMethods.StartWebpack]: async (
+    options: {
+      directory: string;
+    },
+    server: ElectronServer,
+  ) => {
+    const wds = new WebpackDevServer(new Project(options.directory));
+    server.tasks.add(wds);
+    wds.data.subscribe(data => server.sendAction(new forControls.UpdateWebpackConsole(data)));
+    wds.state.subscribe(state => server.sendAction(new forControls.UpdateWebpackState(state)));
 
-    return server.start();
-  });
+    return wds.start();
+  },
 
   /**
    * Stops all running webpack servers.
    */
-  method(forControls.ControlsMethods.StopWebpack, async () => {
-    webpackServers.stopAll();
-  });
+  [forControls.ControlsMethods.StopWebpack]: async (_data: void, server: ElectronServer) => {
+    await server.tasks.stopAll(t => t instanceof WebpackDevServer);
+  },
 
   /**
    * Loads metadata from the project in the given directory.
    */
-  method(forControls.ControlsMethods.SetWebpackConfig, async (options: { directory: string }) => {
-    const file = await new OpenBuilder(window)
+  [forControls.ControlsMethods.SetWebpackConfig]: async (
+    options: {
+      directory: string;
+    },
+    server: ElectronServer,
+  ) => {
+    const file = await new OpenBuilder(server.window)
       .file()
       .allowJs()
       .allowAll()
@@ -220,5 +204,58 @@ export function bind(window: BrowserWindow) {
     const relative = path.relative(options.directory, file);
     await new WebpackDevServer(new Project(options.directory)).setConfigFilename(relative);
     return relative;
-  });
+  },
+};
+
+/**
+ * Host for the electron server, which exposes IPC methods that the renderer
+ * process will call. Relatively stateless, contains most of the nitty gritty
+ * i/o and process management that the renderer needs to call.
+ */
+export class ElectronServer {
+  /**
+   * Top-level list of running tasks on the server.
+   */
+  public readonly tasks = new TaskList();
+
+  /**
+   * A list of callable RPC methods.
+   */
+  public readonly methods = methods;
+
+  constructor(public readonly window: BrowserWindow) {}
+
+  /**
+   * Emits a Redux action to the rednerer.
+   */
+  public sendAction(action: Action) {
+    this.window.webContents.send('dispatch', action);
+  }
+
+  /**
+   * Boots the electron server.
+   */
+  public start() {
+    this.attachMethods();
+  }
+
+  private attachMethods() {
+    Object.keys(this.methods).forEach(name =>
+      ipcMain.addListener(name, (ev: Event, { id, params }: { id: number; params: any }) => {
+        methods[name](params, this)
+          .then(result => ev.sender.send(name, { id, result }))
+          .catch((error: Error) =>
+            ev.sender.send(name, {
+              id,
+              error: <IRemoteError>{
+                message: error.message,
+                stack: error.stack,
+                originalName: error.constructor.name,
+                metadata: hasMetadata(error) ? error.metadata() : undefined,
+              },
+            }),
+          );
+      }),
+    );
+  }
 }

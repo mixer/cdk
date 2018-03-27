@@ -9,11 +9,13 @@ export const enum LayoutScreen {
 export enum GoldenPanel {
   ControlSchema = 'ControlSchema',
   Controls = 'Controls',
+  WebpackConsole = 'WebpackConsole',
 }
 
 export const panelTitles: { [k in GoldenPanel]: string } = {
   [GoldenPanel.ControlSchema]: 'Control Schema',
   [GoldenPanel.Controls]: 'Controls',
+  [GoldenPanel.WebpackConsole]: 'Webpack Console',
 };
 
 export const enum LayoutActionTypes {
@@ -28,6 +30,37 @@ export const enum LayoutActionTypes {
 export const enum LayoutMethod {
   SavePanels = '[Layout] Save panels',
   LoadPanels = '[Layout] Load panels',
+}
+
+/**
+ * Finds the content panel matching the predicate.
+ */
+export function findPanel(
+  items: GoldenLayout.ContentItem[],
+  predicate: (item: GoldenLayout.ContentItem) => boolean,
+): GoldenLayout.ContentItem | null {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (predicate(item)) {
+      return item;
+    }
+
+    if (item.contentItems) {
+      const found = findPanel(item.contentItems, predicate);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Attempts to find the ContentItem matching the given golden panel name.
+ */
+export function findGoldenPanel(items: GoldenLayout.ContentItem[], panel: GoldenPanel) {
+  return findPanel(items, p => p.isComponent && (<any>p).componentName === panel);
 }
 
 /**
@@ -52,12 +85,17 @@ export class SavePanels implements Action {
 }
 
 /**
- * Triggers a panel to be opened in the layout..
+ * Triggers a panel to be opened in the layout. Optionally created with a
+ * locator, which should return the parent component the new panel should
+ * be opened within.
  */
 export class OpenPanel implements Action {
   public readonly type = LayoutActionTypes.OPEN_PANEL;
 
-  constructor(public readonly panel: GoldenPanel) {}
+  constructor(
+    public readonly panel: GoldenPanel,
+    public readonly locator?: (fn: GoldenLayout) => GoldenLayout.ContentItem | null,
+  ) {}
 }
 
 /**

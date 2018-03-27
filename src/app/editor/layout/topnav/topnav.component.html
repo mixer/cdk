@@ -47,6 +47,11 @@
         <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Groups) | async"></mat-icon>
       </menu-bar-icon>
     </menu-bar-item>
+    <menu-bar-item (click)="togglePanel(Panel.WebpackConsole)" text="Webpack Console">
+      <menu-bar-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.WebpackConsole) | async"></mat-icon>
+      </menu-bar-icon>
+    </menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#help">

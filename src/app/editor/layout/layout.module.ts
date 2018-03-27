@@ -9,6 +9,7 @@ import { AccountModule } from '../account/account.module';
 import { ControlsModule } from '../controls/controls.module';
 import { NewProjectModule } from '../new-project/new-project.module';
 import { ProjectModule } from '../project/project.module';
+import { SchemaModule } from '../schema/schema.module';
 import { SharedModule } from '../shared/shared.module';
 import { MenuBarModule } from '../ui/menu-bar/menu-bar.module';
 import { ControlSchemaComponent } from './control-schema/control-schema.component';
@@ -33,6 +34,7 @@ import { WorkspaceComponent } from './workspace/workspace.component';
     MatIconModule,
     ProjectModule,
     ControlsModule,
+    SchemaModule,
     EffectsModule.forFeature([LayoutEffects]),
     StoreModule.forFeature('layout', layoutReducer),
   ],

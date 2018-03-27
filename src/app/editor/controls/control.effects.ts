@@ -1,21 +1,32 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { Action, Store } from '@ngrx/store';
 import { defer } from 'rxjs/observable/defer';
 import { of } from 'rxjs/observable/of';
+import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 
+import { mapTo } from 'rxjs/operators/mapTo';
+import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
+import { ClosePanel, findGoldenPanel, GoldenPanel, OpenPanel } from '../layout/layout.actions';
+import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import { ControlsConsoleService } from './controls-console.service';
 import {
+  AutoCloseConsole,
+  AutoOpenConsole,
   ControlsActionTypes,
   ControlsMethods,
+  isRunning,
   IWebpackInstance,
   SetWebpackInstance,
   StartWebpack,
-  UpdateWebpackConsole,
   StopWebpack,
+  UpdateWebpackConsole,
+  UpdateWebpackState,
+  WebpackState,
 } from './controls.actions';
+import { didAutoOpenWebpackConsole } from './controls.reducer';
 
 /**
  * Effects module for account actions.
@@ -60,6 +71,57 @@ export class ControlEffects {
     .pipe(tap(({ data }) => this.console.write(data)));
 
   /**
+   * Pops open the webpack console while the project is building or when
+   * an error occurs, and closes it once that state has been resolved.
+   */
+  @Effect()
+  public readonly shouldOpenWebpackConsole = this.actions
+    .ofType<UpdateWebpackState>(ControlsActionTypes.UPDATE_WEBPACK_STATE)
+    .pipe(
+      switchMap(
+        ({ state }) =>
+          isRunning(state) && state !== WebpackState.Compiled
+            ? this.store
+                .select(fromLayout.goldenLayout)
+                .pipe(
+                  take(1),
+                  filter(
+                    layout =>
+                      !!layout && !findGoldenPanel([layout.root], GoldenPanel.WebpackConsole),
+                  ),
+                  mapTo(<Action>new AutoOpenConsole()),
+                )
+            : this.store
+                .select(didAutoOpenWebpackConsole)
+                .pipe(filter(Boolean), mapTo(<Action>new AutoCloseConsole())),
+      ),
+    );
+
+  /**
+   * Triggers a layout effect when we want to auto-open the dev console.
+   */
+  @Effect()
+  public readonly autoOpenWebpackConsole = this.actions
+    .ofType(ControlsActionTypes.AUTO_OPEN_CONSOLE)
+    .pipe(
+      mapTo(
+        new OpenPanel(GoldenPanel.WebpackConsole, l => {
+          const panel = findGoldenPanel([l.root], GoldenPanel.Controls);
+          return panel ? panel.parent : null; // parent to add to the containing stack
+        }),
+      ),
+    );
+
+  /**
+   * Fired when we have run a successful compilation and should auto-close
+   * the console, if we auto-opened.
+   */
+  @Effect()
+  public readonly autoCloseWebpackConsole = this.actions
+    .ofType(ControlsActionTypes.AUTO_CLOSE_CONSOLE)
+    .pipe(mapTo(new ClosePanel(GoldenPanel.WebpackConsole)));
+
+  /**
    * Fired when the service is created; cleans up any old webpack servers
    * we may have had (e.g. if the UI is refreshed)
    */
@@ -69,5 +131,6 @@ export class ControlEffects {
     private readonly actions: Actions,
     private readonly electron: ElectronService,
     private readonly console: ControlsConsoleService,
+    private readonly store: Store<fromRoot.IState>,
   ) {}
 }

@@ -1,0 +1,42 @@
+<ng-container [ngSwitch]="state | async">
+  <div class="state" *ngSwitchCase="State.Starting">
+    <mat-spinner [diameter]="32"></mat-spinner>
+    <div class="message">
+        Starting the Webpack dev server...
+    </div>
+  </div>
+  <div class="state" *ngSwitchCase="State.Compiling">
+    <mat-spinner [diameter]="32"></mat-spinner>
+    <div class="message">
+        Compiling your code...
+    </div>
+  </div>
+  <div class="state" *ngSwitchCase="State.Stopping">
+    <mat-spinner [diameter]="32"></mat-spinner>
+    <div class="message">
+        Stopping...
+    </div>
+  </div>
+  <div class="state" *ngSwitchCase="State.HadError">
+    <mat-icon svgIcon="warning"></mat-icon>
+    <div class="message">
+        We ran into a problem compiling your code!
+        <small>We'll watch your files for changes and automatically retry once you fix the error.</small>
+    </div>
+  </div>
+  <div class="state" *ngSwitchCase="State.Failed">
+    <mat-icon svgIcon="warning"></mat-icon>
+    <div class="message">
+        We ran into a problem trying to start the Webpack dev server.
+        <small>This might be our fault! Please <a (click)="openIssue()" class="body-link">open an issue</a> if you think it is.</small>
+    </div>
+  </div>
+  <div class="state" *ngSwitchCase="State.Compiled">
+    <mat-icon svgIcon="check-mark"></mat-icon>
+    <div class="message">
+        You're up to date!
+        <small>We'll watch your files for changes to automatically recompile.</small>
+    </div>
+  </div>
+</ng-container>
+<console-display [data]="consoleData"></console-display>

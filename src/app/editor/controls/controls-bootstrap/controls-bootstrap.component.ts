@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 
+import { interval } from 'rxjs/observable/interval';
 import * as fromRoot from '../../bedrock.reducers';
 import { ControlsConsoleService } from '../controls-console.service';
 import { WebpackState } from '../controls.actions';
@@ -29,10 +30,12 @@ export class ControlsBootstrapComponent {
   /**
    * Observable of webpack console data.
    */
-  public readonly consoleData = this.console.contents();
+  public readonly consoleData = this.controlsConsole.contents();
+
+  public foo = interval(1000);
 
   constructor(
     private readonly store: Store<fromRoot.IState>,
-    private readonly console: ControlsConsoleService,
+    private readonly controlsConsole: ControlsConsoleService,
   ) {}
 }

@@ -46,6 +46,6 @@ export default async function(options: IQuickStartOptions): Promise<void> {
     dir,
   });
 
-  quickstarter.on('data', data => process.stdout.write(data));
+  quickstarter.data.subscribe(data => process.stdout.write(data));
   await quickstarter.start();
 }

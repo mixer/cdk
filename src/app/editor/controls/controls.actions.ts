@@ -37,6 +37,8 @@ export const enum ControlsActionTypes {
   RESTART_WEBPACK = '[Controls] Restart webpack',
   STOP_WEBPACK = '[Controls] Stop webpack',
   SET_WEBPACK_INSTANCE = '[Controls] Set webpack instance',
+  AUTO_OPEN_CONSOLE = '[Controls] Auto open webpack console',
+  AUTO_CLOSE_CONSOLE = '[Controls] Auto close webpack console',
 }
 
 export const enum ControlsMethods {
@@ -96,10 +98,28 @@ export class SetWebpackInstance implements Action {
   constructor(public readonly instance: IWebpackInstance) {}
 }
 
+/**
+ * Dispatched when we want to automatically open the dev console, as a result
+ * of compilation errors for example.
+ */
+export class AutoOpenConsole implements Action {
+  public readonly type = ControlsActionTypes.AUTO_OPEN_CONSOLE;
+}
+
+/**
+ * Dispatched when we want to automatically close the dev console, as a result
+ * of a successful compilation for example.
+ */
+export class AutoCloseConsole implements Action {
+  public readonly type = ControlsActionTypes.AUTO_CLOSE_CONSOLE;
+}
+
 export type ControlActions =
   | StartWebpack
   | UpdateWebpackState
   | UpdateWebpackConsole
   | RestartWebpack
   | StopWebpack
-  | SetWebpackInstance;
+  | SetWebpackInstance
+  | AutoCloseConsole
+  | AutoOpenConsole;
