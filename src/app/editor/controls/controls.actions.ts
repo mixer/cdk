@@ -39,6 +39,7 @@ export const enum ControlsActionTypes {
   SET_WEBPACK_INSTANCE = '[Controls] Set webpack instance',
   AUTO_OPEN_CONSOLE = '[Controls] Auto open webpack console',
   AUTO_CLOSE_CONSOLE = '[Controls] Auto close webpack console',
+  REFRESH_CONTROLS = '[Controls] Refresh the displayed controls',
 }
 
 export const enum ControlsMethods {
@@ -112,6 +113,13 @@ export class AutoOpenConsole implements Action {
  */
 export class AutoCloseConsole implements Action {
   public readonly type = ControlsActionTypes.AUTO_CLOSE_CONSOLE;
+}
+
+/**
+ * Dispatched when we want to refresh the controls within the frame.
+ */
+export class RefreshControls implements Action {
+  public readonly type = ControlsActionTypes.REFRESH_CONTROLS;
 }
 
 export type ControlActions =

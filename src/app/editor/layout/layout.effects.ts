@@ -6,7 +6,7 @@ import { Observable } from 'rxjs/Observable';
 
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 
 import { combineLatest } from 'rxjs/operators/combineLatest';
 import * as fromRoot from '../bedrock.reducers';
@@ -73,7 +73,10 @@ export class LayoutEffects {
    */
   @Effect()
   public readonly saveGoldenPanelsOnChange = this.withLayout(layout =>
-    fromEvent(layout, 'stateChanged').pipe(map(() => new SavePanels(layout.toConfig().content))),
+    fromEvent(layout, 'stateChanged').pipe(
+      debounceTime(50),
+      map(() => new SavePanels(layout.toConfig().content)),
+    ),
   );
 
   /**

@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
-import { IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
+import { ILogEntry, IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
+import { Store } from '@ngrx/store';
+import { isEqual, once } from 'lodash';
 import { Observable } from 'rxjs/Observable';
+import { distinctUntilChanged, merge, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs/Subject';
 
-import { once } from 'lodash';
-import { merge, takeUntil } from 'rxjs/operators';
-import { ControlStateSyncService } from './control-state-sync.service';
+import * as fromRoot from '../../bedrock.reducers';
+import { MoveVideo } from '../../emulation/emulation.actions';
+import { selectedFittedVideo } from '../../emulation/emulation.reducer';
 
 /**
  * Foundation class that the state sync services compose for local and remote
@@ -13,16 +17,21 @@ import { ControlStateSyncService } from './control-state-sync.service';
  */
 @Injectable()
 export class BaseStateSyncService {
+  /**
+   * Subject hit when we want to refresh the displayed controls.
+   */
+  public readonly refresh = new Subject<void>();
+
   constructor(
     private readonly snackBar: MatSnackBar,
-    private readonly controlsState: ControlStateSyncService,
+    private readonly store: Store<fromRoot.IState>,
   ) {}
 
   public attachInternalMethods(rpc: RPC, closer: Observable<void>) {
-    closer = closer.pipe(merge(this.controlsState.getRefresh()));
+    closer = closer.pipe(merge(this.refresh));
 
     rpc.expose<IVideoPositionOptions>('moveVideo', data => {
-      this.controlsState.setVideoSize(data);
+      this.store.dispatch(new MoveVideo(data));
     });
 
     rpc.expose(
@@ -41,9 +50,9 @@ export class BaseStateSyncService {
       }),
     );
 
-    this.controlsState
-      .getFittedVideoSize()
-      .pipe(takeUntil(closer))
+    this.store
+      .select(selectedFittedVideo)
+      .pipe(takeUntil(closer), distinctUntilChanged<ClientRect>(isEqual))
       .subscribe(rect => {
         rpc.call(
           'updateVideoPosition',

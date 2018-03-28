@@ -3,12 +3,18 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { defer } from 'rxjs/observable/defer';
 import { of } from 'rxjs/observable/of';
-import { filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { filter, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
 import { mapTo } from 'rxjs/operators/mapTo';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
-import { ClosePanel, findGoldenPanel, GoldenPanel, OpenPanel } from '../layout/layout.actions';
+import {
+  ClosePanel,
+  findGoldenPanel,
+  focusGolden,
+  GoldenPanel,
+  OpenPanel,
+} from '../layout/layout.actions';
 import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import { ControlsConsoleService } from './controls-console.service';
@@ -27,6 +33,7 @@ import {
   WebpackState,
 } from './controls.actions';
 import { didAutoOpenWebpackConsole } from './controls.reducer';
+import { BaseStateSyncService } from './sync/base-state-sync.service';
 
 /**
  * Effects module for account actions.
@@ -78,23 +85,27 @@ export class ControlEffects {
   public readonly shouldOpenWebpackConsole = this.actions
     .ofType<UpdateWebpackState>(ControlsActionTypes.UPDATE_WEBPACK_STATE)
     .pipe(
-      switchMap(
-        ({ state }) =>
-          isRunning(state) && state !== WebpackState.Compiled
-            ? this.store
-                .select(fromLayout.goldenLayout)
-                .pipe(
-                  take(1),
-                  filter(
-                    layout =>
-                      !!layout && !findGoldenPanel([layout.root], GoldenPanel.WebpackConsole),
-                  ),
-                  mapTo(<Action>new AutoOpenConsole()),
-                )
-            : this.store
-                .select(didAutoOpenWebpackConsole)
-                .pipe(filter(Boolean), mapTo(<Action>new AutoCloseConsole())),
-      ),
+      withLatestFrom(this.store.select(fromLayout.goldenLayout)),
+      switchMap(([{ state }, layout]) => {
+        if (isRunning(state) && state !== WebpackState.Compiled) {
+          if (!layout || !focusGolden(layout.root, GoldenPanel.WebpackConsole)) {
+            return of(new AutoOpenConsole());
+          }
+
+          return of();
+        }
+
+        return this.store.select(didAutoOpenWebpackConsole).pipe(
+          take(1),
+          tap(() => {
+            if (layout) {
+              focusGolden(layout.root, GoldenPanel.Controls);
+            }
+          }),
+          filter(Boolean),
+          mapTo(<Action>new AutoCloseConsole()),
+        );
+      }),
     );
 
   /**
@@ -127,10 +138,19 @@ export class ControlEffects {
    */
   @Effect() public readonly closeOrphanedServers = defer(() => of(new StopWebpack()));
 
+  /**
+   * Triggers a refresh of the controls when the relevant action is dispatched.
+   */
+  @Effect({ dispatch: false })
+  public readonly refresh = this.actions
+    .ofType(ControlsActionTypes.REFRESH_CONTROLS)
+    .pipe(tap(() => this.baseSync.refresh.next()));
+
   constructor(
     private readonly actions: Actions,
     private readonly electron: ElectronService,
     private readonly console: ControlsConsoleService,
     private readonly store: Store<fromRoot.IState>,
+    private readonly baseSync: BaseStateSyncService,
   ) {}
 }

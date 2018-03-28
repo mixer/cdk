@@ -17,41 +17,21 @@
 <menu-bar menuId="layout#view" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>View</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item (click)="togglePanel(Panel.Console)" text="Console">
+    <menu-bar-item *ngFor="let key of goldenPanels | keys" (click)="togglePanel(key)" [text]="goldenPanels[key]">
       <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Console) | async"></mat-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(key) | async"></mat-icon>
       </menu-bar-icon>
     </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.ControlSchema)" text="Control Schema">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.ControlSchema) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Controls)" text="Control Schema">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Controls) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Devices)" text="Device Emulation">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Devices) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Participant)" text="Participant">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Participant) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Groups)" text="Groups">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Groups) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.WebpackConsole)" text="Webpack Console">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.WebpackConsole) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
+  </menu-bar-items>
+</menu-bar>
+<menu-bar menuId="layout#schema">
+  <menu-bar-text>Control Schema</menu-bar-text>
+  <menu-bar-items>
+    <menu-bar-item text="Create Local Snapshot"></menu-bar-item>
+    <menu-bar-item text="Open Snapshot"></menu-bar-item>
+    <menu-bar-divider></menu-bar-divider>
+    <menu-bar-item text="Copy from Linked Version"></menu-bar-item>
+    <menu-bar-item text="Upload to Linked Version"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#help">

@@ -10,12 +10,14 @@ export enum GoldenPanel {
   ControlSchema = 'ControlSchema',
   Controls = 'Controls',
   WebpackConsole = 'WebpackConsole',
+  DeviceEmulation = 'DeviceEmulation',
 }
 
 export const panelTitles: { [k in GoldenPanel]: string } = {
   [GoldenPanel.ControlSchema]: 'Control Schema',
   [GoldenPanel.Controls]: 'Controls',
   [GoldenPanel.WebpackConsole]: 'Webpack Console',
+  [GoldenPanel.DeviceEmulation]: 'Device Emulation',
 };
 
 export const enum LayoutActionTypes {
@@ -30,6 +32,34 @@ export const enum LayoutActionTypes {
 export const enum LayoutMethod {
   SavePanels = '[Layout] Save panels',
   LoadPanels = '[Layout] Load panels',
+}
+
+/**
+ * Tries to bring the content item into focus. Returns true if it's successful.
+ */
+export function focus(panel: GoldenLayout.ContentItem): boolean {
+  if (
+    panel.parent &&
+    panel.parent.getActiveContentItem &&
+    panel.parent.getActiveContentItem() !== panel
+  ) {
+    panel.parent.setActiveContentItem(panel);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Tries to bring the content item into focus. Returns true if it's successful.
+ */
+export function focusGolden(root: GoldenLayout.ContentItem, panel: GoldenPanel): boolean {
+  const contentItem = findGoldenPanel([root], panel);
+  if (!contentItem) {
+    return false;
+  }
+
+  return focus(contentItem);
 }
 
 /**

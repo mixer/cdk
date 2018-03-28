@@ -13,6 +13,7 @@ const availableIcons = [
   'redo',
   'refresh',
   'rocket',
+  'save',
   'screen-rotation',
   'tab-console',
   'tab-group',

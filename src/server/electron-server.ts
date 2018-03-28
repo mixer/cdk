@@ -9,6 +9,7 @@ import * as forControls from '../app/editor/controls/controls.actions';
 import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
 import * as forProject from '../app/editor/project/project.actions';
+import * as forSchema from '../app/editor/schema/schema.actions';
 
 import { spawn } from 'child_process';
 import { IRemoteError } from '../app/editor/electron.service';
@@ -18,6 +19,7 @@ import { OpenBuilder } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { Quickstarter } from './quickstart';
+import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
 import { Fetcher } from './util';
 import { WebpackDevServer } from './wds';
@@ -205,6 +207,27 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     await new WebpackDevServer(new Project(options.directory)).setConfigFilename(relative);
     return relative;
   },
+
+  /**
+   * Saves changed snapshot.
+   */
+  [forSchema.SchemaMethod.SaveSnapshot]: async (options: {
+    name: string;
+    directory: string;
+    world: forSchema.IWorld;
+  }) => new SnapshotStore(options.directory).save(options.name, options.world),
+
+  /**
+   * Deletes a snapshot.
+   */
+  [forSchema.SchemaMethod.DeleteSnapshot]: async (options: { name: string; directory: string }) =>
+    new SnapshotStore(options.directory).destroy(options.name),
+
+  /**
+   * Lists all snapshots.
+   */
+  [forSchema.SchemaMethod.ListSnapshots]: async (options: { directory: string }) =>
+    new SnapshotStore(options.directory).list(),
 };
 
 /**

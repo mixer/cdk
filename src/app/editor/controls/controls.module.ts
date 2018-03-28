@@ -5,6 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { EmulationModule } from '../emulation/emulation.module';
 import { SharedModule } from '../shared/shared.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { ControlEffects } from './control.effects';
@@ -13,6 +14,7 @@ import { ControlsConsoleService } from './controls-console.service';
 import { ControlsPanelComponent } from './controls-panel/controls-panel.component';
 import { controlReducer } from './controls.reducer';
 import { LocalControlsComponent } from './local-controls/local-controls.component';
+import { BaseStateSyncService } from './sync/base-state-sync.service';
 import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-console-panel.component';
 
 /**
@@ -27,9 +29,10 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
     MatIconModule,
     MatProgressSpinnerModule,
     SharedModule,
+    EmulationModule,
     StoreModule.forFeature('controls', controlReducer),
   ],
-  providers: [ControlsConsoleService],
+  providers: [BaseStateSyncService, ControlsConsoleService],
   declarations: [
     ControlsBootstrapComponent,
     ControlsPanelComponent,

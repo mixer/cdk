@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 import { pairwise, startWith } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { CloseMask, OpenMask } from './content-mask.actions';
 import { isOpen } from './content-mask.reducer';
 
 /**
@@ -12,7 +13,7 @@ import { isOpen } from './content-mask.reducer';
 export class ContentMaskService {
   private el: HTMLElement;
 
-  constructor(store: Store<fromRoot.IState>) {
+  constructor(private readonly store: Store<fromRoot.IState>) {
     // We could use a component here and should if it gets more advanced, but this
     // is very basic, the dance we need for mounting and such is far more complex.
     this.el = document.createElement('div');
@@ -28,5 +29,13 @@ export class ContentMaskService {
           document.body.removeChild(this.el);
         }
       });
+  }
+
+  public open() {
+    this.store.dispatch(new OpenMask());
+  }
+
+  public close() {
+    this.store.dispatch(new CloseMask());
   }
 }

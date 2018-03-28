@@ -6,7 +6,7 @@ import { map, take } from 'rxjs/operators';
 import * as fromRoot from '../../bedrock.reducers';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
 import { StartOpenProject } from '../../project/project.actions';
-import { ClosePanel, GoldenPanel, OpenPanel } from '../layout.actions';
+import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
 
 /**
@@ -24,6 +24,11 @@ export class TopNavComponent {
    */
   // tslint:disable-next-line
   public readonly Panel = GoldenPanel;
+
+  /**
+   * Map of panel kinds to display text.
+   */
+  public readonly goldenPanels = panelTitles;
 
   /**
    * Selects whether the editor screen is open.

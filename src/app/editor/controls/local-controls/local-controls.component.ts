@@ -11,8 +11,7 @@ import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import * as fromRoot from '../../bedrock.reducers';
 import { WebpackState } from '../controls.actions';
 import * as fromControls from '../controls.reducer';
-
-// import { LocalStateSyncService } from './local-state-sync.service';
+import { LocalStateSyncService } from '../sync/local-state-sync.service';
 
 /**
  * The LocalControlsComponent hosts the frame containing
@@ -20,10 +19,10 @@ import * as fromControls from '../controls.reducer';
  */
 @Component({
   selector: 'local-controls',
-  template: '<iframe frameborder="0" [iframeSrc]="instance" #iframe></iframe>',
-  styleUrls: ['../controls.component.scss'],
+  templateUrl: './local-controls.component.html',
+  styleUrls: ['../controls.component.scss', './local-controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // providers: [LocalStateSyncService],
+  providers: [LocalStateSyncService],
 })
 export class LocalControlsComponent {
   /**
@@ -47,11 +46,12 @@ export class LocalControlsComponent {
     map(address => `${address}?${Date.now()}`),
   );
 
-  constructor(private readonly store: Store<fromRoot.IState>) {}
+  constructor(
+    private readonly store: Store<fromRoot.IState>,
+    private readonly sync: LocalStateSyncService,
+  ) {}
 
-  // constructor(public sync: LocalStateSyncService) {}
-
-  // public ngAfterContentInit() {
-  //   this.sync.bind(<HTMLIFrameElement>this.iframe.nativeElement);
-  // }
+  public ngAfterContentInit() {
+    this.sync.bind(<HTMLIFrameElement>this.iframe.nativeElement);
+  }
 }

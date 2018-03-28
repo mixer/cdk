@@ -5,10 +5,26 @@ export const enum SchemaActionTypes {
   UPDATE_WORLD_SCHEMA = '[Schema] Update World Schema',
   UPDATE_PARTICIPANT = '[Schema] Update Participant',
   UPDATE_GROUPS = '[Schema] Update Groups',
+  SAVE_SNAPSHOT = '[Schema] Save snapshot',
+  LOAD_SNAPSHOT = '[Schema] Load snapshot',
+  SNAPSHOT_CREATED = '[Schema] Snapshot created',
+  DELETE_SNAPSHOT = '[Schema] Delete snapshot',
+}
+
+export const enum SchemaMethod {
+  SaveSnapshot = '[Schema] Save snapshots',
+  DeleteSnapshot = '[Schema] Delete snapshot',
+  ListSnapshots = '[Schema] List Snapshots',
 }
 
 export interface IWorld {
   scenes: IScene[];
+}
+
+export interface ISnapshot {
+  world: IWorld;
+  name: string;
+  savedAt: number;
 }
 
 export const initialParticipant = {
@@ -30,46 +46,53 @@ export const initialGroups = [
   },
 ];
 
-export const initialControls = [
-  {
-    sceneID: 'default',
-    controls: [
-      {
-        controlID: 'my_first_button',
-        kind: 'button',
-        text: 'My First Button',
-        cost: 100,
-        progress: 0.5,
-        disabled: true,
-        position: [
-          {
-            width: 10,
-            height: 8,
-            size: 'large',
-            x: 0,
-            y: 0,
-          },
-        ],
-      },
-      {
-        controlID: 'my_awesome_joystick',
-        kind: 'joystick',
-        disabled: true,
-        angle: 0.7,
-        intensity: 0.5,
-        position: [
-          {
-            width: 7,
-            height: 7,
-            size: 'large',
-            x: 11,
-            y: 0,
-          },
-        ],
-      },
-    ],
-  },
-];
+export const initialWorld: IWorld = <any>{
+  scenes: [
+    {
+      sceneID: 'default',
+      controls: [
+        {
+          controlID: 'my_first_button',
+          kind: 'button',
+          text: 'My First Button',
+          cost: 100,
+          progress: 0.5,
+          disabled: true,
+          position: [
+            {
+              width: 10,
+              height: 8,
+              size: 'large',
+              x: 0,
+              y: 0,
+            },
+          ],
+        },
+        {
+          controlID: 'my_awesome_joystick',
+          kind: 'joystick',
+          disabled: true,
+          angle: 0.7,
+          intensity: 0.5,
+          position: [
+            {
+              width: 7,
+              height: 7,
+              size: 'large',
+              x: 11,
+              y: 0,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Default name of the "work in progress" snapshot.
+ */
+export const workingSnapshoptName = '$working';
 
 /**
  * Updates the current world schema.
@@ -98,4 +121,47 @@ export class UpdateGroups implements Action {
   constructor(public readonly groups: IGroup[]) {}
 }
 
-export type SchemaActions = UpdateParticipants | UpdateWorldSchema | UpdateGroups;
+/**
+ * Saves or overwrites a world snapshot.
+ */
+export class SaveSnapshot implements Action {
+  public readonly type = SchemaActionTypes.SAVE_SNAPSHOT;
+
+  constructor(public readonly name: string, public readonly world: IWorld) {}
+}
+
+/**
+ * Deletes a world snapshot.
+ */
+export class DeleteSnapshot implements Action {
+  public readonly type = SchemaActionTypes.DELETE_SNAPSHOT;
+
+  constructor(public readonly name: string) {}
+}
+
+/**
+ * Requests to load a snapshot from the server.
+ */
+export class LoadSnapshot implements Action {
+  public readonly type = SchemaActionTypes.LOAD_SNAPSHOT;
+
+  constructor(public readonly snapshot: ISnapshot) {}
+}
+
+/**
+ * Fired when a snapshot has been persisted to the server.
+ */
+export class SnapshotCreated implements Action {
+  public readonly type = SchemaActionTypes.SNAPSHOT_CREATED;
+
+  constructor(public readonly snapshots: ISnapshot[]) {}
+}
+
+export type SchemaActions =
+  | UpdateParticipants
+  | UpdateWorldSchema
+  | UpdateGroups
+  | SaveSnapshot
+  | LoadSnapshot
+  | SnapshotCreated
+  | DeleteSnapshot;

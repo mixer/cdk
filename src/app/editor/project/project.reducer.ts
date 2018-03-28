@@ -1,4 +1,5 @@
-import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector, createSelector, Store } from '@ngrx/store';
+import { filter, withLatestFrom } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { IProject, ProjectActions, ProjectActionTypes } from './project.actions';
@@ -47,3 +48,10 @@ export const isOpen = createSelector(projectState, s => s.isOpen);
  * Selects the project directory.
  */
 export const directory = createSelector(projectState, s => (s.isOpen ? s.directory : null));
+
+/**
+ * Returns an unary operator to add the latest directory to the observable.
+ */
+export function withLatestDirectory<T>(store: Store<fromRoot.IState>) {
+  return withLatestFrom<T, string>(store.select(directory).pipe(filter<string>(d => !!d)));
+}

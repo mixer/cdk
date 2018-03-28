@@ -1,0 +1,18 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  padding: $dimension-gutter-lg;
+}
+
+.dimensions {
+  display: flex;
+  align-items: center;
+
+  mat-input-container {
+    max-width: 100px;
+  }
+
+  .times {
+    margin: 0 $dimension-gutter-md;
+  }
+}

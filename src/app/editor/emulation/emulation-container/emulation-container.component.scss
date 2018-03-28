@@ -1,4 +1,4 @@
-@import '../../assets/styles/declarations';
+@import '../../../assets/styles/declarations';
 
 @mixin phone($vertical) {
   position: absolute;
@@ -65,11 +65,6 @@
   right: 0;
   bottom: 0;
   padding-left: $dimension-resizer-width;
-
-  &.fullscreen {
-    width: 100% !important;
-    background: url(asset('background.png')) #2e2e2e;
-  }
 }
 
 .device {
@@ -176,13 +171,4 @@
       }
     }
   }
-}
-
-.mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
 }
