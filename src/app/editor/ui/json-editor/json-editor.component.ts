@@ -134,10 +134,10 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
     fromEvent<MouseEvent>(this.el, 'mousedown')
       .pipe(
         filter(ev => (<HTMLElement>ev.target).classList.contains('cm-number')),
-        tap(() => this.mask.open()),
         switchMap(ev =>
           captureDrag(ev).pipe(filter(o => Math.abs(ev.pageX - o.pageX) > 10), take(1), mapTo(ev)),
         ),
+        tap(() => this.mask.open()),
         switchMap(ev =>
           this.dragNumber(ev).pipe(tap(() => undefined, () => undefined, () => this.mask.close())),
         ),

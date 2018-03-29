@@ -8,6 +8,20 @@ import { Profile } from './profile';
 import { readFile } from './util';
 
 /**
+ * Interface that generally describes a project package.
+ */
+export interface IPackageJson {
+  name: string;
+  version: string;
+  description?: string;
+  keywords?: string[];
+  private?: boolean;
+  homepage?: string;
+  dependencies?: { [name: string]: string };
+  devDependencies?: { [name: string]: string };
+}
+
+/**
  * Project represents the location of the control project and provides
  * manipulation accessors.
  */
@@ -50,7 +64,7 @@ export class Project {
   /**
    * Loads and parses the package.json file from the project.
    */
-  public async packageJson(): Promise<any> {
+  public async packageJson(): Promise<IPackageJson> {
     try {
       const contents = await readFile(this.baseDir('package.json'));
       return JSON.parse(contents);

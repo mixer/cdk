@@ -18,6 +18,7 @@ import { hasMetadata, NoAuthenticationError } from './errors';
 import { OpenBuilder } from './file-selector';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
+import { ProjectLinker } from './project-linker';
 import { Quickstarter } from './quickstart';
 import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
@@ -150,13 +151,31 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     const store = new FileDataStore();
     const project = new Project(options.directory);
 
-    await project.packageJson(); // validate the package is there, throws if not
+    const json = await project.packageJson(); // validate the package is there, throws if not
 
     return <forProject.IProject>{
       directory: options.directory,
-      interactiveVersion: await store.loadProject('linkedVersion', options.directory, null),
+      interactiveGame: await new ProjectLinker(project).getLinked(),
       confirmSchemaUpload: await store.loadProject('confirmSchemaUpload', options.directory, false),
+      packageJson: json,
     };
+  },
+
+  /**
+   * Returns all the user's owned games.
+   */
+  [forProject.ProjectMethods.GetOwnedGames]: async (options: { directory: string }) => {
+    return new ProjectLinker(new Project(options.directory)).getOwnedGames();
+  },
+
+  /**
+   * Links the Interactive game to the set of controls.
+   */
+  [forProject.ProjectMethods.LinkGameToControls]: async (options: {
+    directory: string;
+    game: forProject.IInteractiveGame;
+  }) => {
+    return new ProjectLinker(new Project(options.directory)).linkGame(options.game);
   },
 
   /**
@@ -228,6 +247,27 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
    */
   [forSchema.SchemaMethod.ListSnapshots]: async (options: { directory: string }) =>
     new SnapshotStore(options.directory).list(),
+
+  /**
+   * Updates schema in an interactive game.
+   */
+  [forSchema.SchemaMethod.SetGameSchema]: async (options: {
+    directory: string;
+    world: forSchema.IWorld;
+    game: forProject.IInteractiveGame;
+  }) => {
+    return new ProjectLinker(new Project(options.directory)).setSchema(options.game, options.world);
+  },
+
+  /**
+   * Gets full details about an interactive project version.
+   */
+  [forSchema.SchemaMethod.GetGameVersionDetails]: async (options: {
+    directory: string;
+    game: forProject.IInteractiveGame;
+  }) => {
+    return new ProjectLinker(new Project(options.directory)).getFullVersion(options.game);
+  },
 };
 
 /**

@@ -2,13 +2,19 @@ import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { of } from 'rxjs/observable/of';
-import { debounceTime, map, switchMap } from 'rxjs/operators';
+import { debounceTime, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
+import { MatSnackBar } from '@angular/material';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
-import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
+import {
+  IFullInteractiveVersion,
+  ProjectActionTypes,
+  SetOpenProject,
+} from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
 import {
+  CopyWorldSchema,
   DeleteSnapshot,
   initialWorld,
   ISnapshot,
@@ -18,8 +24,10 @@ import {
   SchemaMethod,
   SnapshotCreated,
   UpdateWorldSchema,
+  UploadWorldSchema,
   workingSnapshoptName,
 } from './schema.actions';
+import { selectWorld } from './schema.reducer';
 
 /**
  * Effects module for account actions.
@@ -102,9 +110,53 @@ export class SchemaEffects {
       map(snapshot => new SnapshotCreated([snapshot])),
     );
 
+  /**
+   * Downloads the world schema from a remote version.
+   */
+  @Effect()
+  public readonly copyWorldSchema = this.actions
+    .ofType<CopyWorldSchema>(SchemaActionTypes.COPY_WORLD_FROM_GAME)
+    .pipe(
+      withLatestDirectory(this.store),
+      switchMap(([{ game }, directory]) =>
+        this.electron.call<IFullInteractiveVersion>(SchemaMethod.GetGameVersionDetails, {
+          game,
+          directory,
+        }),
+      ),
+      map(version => {
+        if (Array.isArray(version.controls)) {
+          return new UpdateWorldSchema({ scenes: version.controls });
+        }
+
+        return new UpdateWorldSchema(version.controls);
+      }),
+      tap(() => this.snacks.open('Control Schema Updated', undefined, { duration: 1000 })),
+    );
+
+  /**
+   * Uploads the world schema to the given version
+   */
+  @Effect({ dispatch: false })
+  public readonly uploadWorldSchema = this.actions
+    .ofType<UploadWorldSchema>(SchemaActionTypes.UPLOAD_WORLD_TO_GAME)
+    .pipe(
+      withLatestFrom(this.store.select(selectWorld)),
+      withLatestDirectory(this.store),
+      switchMap(([[{ game }, world], directory]) =>
+        this.electron.call<IFullInteractiveVersion>(SchemaMethod.SetGameSchema, {
+          game,
+          directory,
+          world,
+        }),
+      ),
+      tap(() => this.snacks.open('Control Schema Uploaded', undefined, { duration: 1000 })),
+    );
+
   constructor(
     private readonly actions: Actions,
     private readonly store: Store<fromRoot.IState>,
     private readonly electron: ElectronService,
+    private readonly snacks: MatSnackBar,
   ) {}
 }

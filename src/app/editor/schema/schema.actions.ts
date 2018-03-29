@@ -1,5 +1,6 @@
 import { IGroup, IParticipant, IScene } from '@mcph/miix-std/dist/internal';
 import { Action } from '@ngrx/store';
+import { IInteractiveGame } from '../project/project.actions';
 
 export const enum SchemaActionTypes {
   UPDATE_WORLD_SCHEMA = '[Schema] Update World Schema',
@@ -9,12 +10,16 @@ export const enum SchemaActionTypes {
   LOAD_SNAPSHOT = '[Schema] Load snapshot',
   SNAPSHOT_CREATED = '[Schema] Snapshot created',
   DELETE_SNAPSHOT = '[Schema] Delete snapshot',
+  COPY_WORLD_FROM_GAME = '[Schema] Copy world schema from game',
+  UPLOAD_WORLD_TO_GAME = '[Schema] Upload world schema to game',
 }
 
 export const enum SchemaMethod {
   SaveSnapshot = '[Schema] Save snapshots',
   DeleteSnapshot = '[Schema] Delete snapshot',
   ListSnapshots = '[Schema] List Snapshots',
+  GetGameVersionDetails = '[Schema] Get details about a game version',
+  SetGameSchema = '[Schema] Set control schema for a game',
 }
 
 export interface IWorld {
@@ -157,6 +162,24 @@ export class SnapshotCreated implements Action {
   constructor(public readonly snapshots: ISnapshot[]) {}
 }
 
+/**
+ * Fired when we want to copy a world schema from a linked game.
+ */
+export class CopyWorldSchema implements Action {
+  public readonly type = SchemaActionTypes.COPY_WORLD_FROM_GAME;
+
+  constructor(public readonly game: IInteractiveGame) {}
+}
+
+/**
+ * Fired when we want to upload the world schema to a game.
+ */
+export class UploadWorldSchema implements Action {
+  public readonly type = SchemaActionTypes.UPLOAD_WORLD_TO_GAME;
+
+  constructor(public readonly game: IInteractiveGame) {}
+}
+
 export type SchemaActions =
   | UpdateParticipants
   | UpdateWorldSchema
@@ -164,4 +187,6 @@ export type SchemaActions =
   | SaveSnapshot
   | LoadSnapshot
   | SnapshotCreated
-  | DeleteSnapshot;
+  | DeleteSnapshot
+  | CopyWorldSchema
+  | UploadWorldSchema;
