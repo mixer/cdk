@@ -23,7 +23,7 @@ import { Quickstarter } from './quickstart';
 import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
 import { Fetcher } from './util';
-import { WebpackDevServer } from './wds';
+import { WebpackDevServer } from './webpack-dev-server-task';
 
 const methods: { [methodName: string]: (data: any, server: ElectronServer) => Promise<any> } = {
   /**

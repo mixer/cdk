@@ -12,6 +12,7 @@ export const enum SchemaActionTypes {
   DELETE_SNAPSHOT = '[Schema] Delete snapshot',
   COPY_WORLD_FROM_GAME = '[Schema] Copy world schema from game',
   UPLOAD_WORLD_TO_GAME = '[Schema] Upload world schema to game',
+  UPLOAD_WORLD_COMPLETE = '[Schema] World upload complete',
 }
 
 export const enum SchemaMethod {
@@ -180,6 +181,13 @@ export class UploadWorldSchema implements Action {
   constructor(public readonly game: IInteractiveGame) {}
 }
 
+/**
+ * Fired when the world upload completes
+ */
+export class UploadWorldComplete implements Action {
+  public readonly type = SchemaActionTypes.UPLOAD_WORLD_COMPLETE;
+}
+
 export type SchemaActions =
   | UpdateParticipants
   | UpdateWorldSchema
@@ -189,4 +197,5 @@ export type SchemaActions =
   | SnapshotCreated
   | DeleteSnapshot
   | CopyWorldSchema
-  | UploadWorldSchema;
+  | UploadWorldSchema
+  | UploadWorldComplete;

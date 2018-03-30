@@ -1,23 +1,17 @@
 import {
   CompilationState,
   Notification,
-  notificationEnv,
-  notificationPrefix,
   NotificationType,
+  readNotification,
 } from '@mcph/miix-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { filter } from 'rxjs/operators';
 
-import { IWebpackInstance, WebpackState } from '../app/editor/controls/controls.actions';
+import { WebpackState } from '../app/editor/controls/controls.actions';
 import { MissingWebpackConfig } from './errors';
-import { spawnPackageScript } from './npm-exec';
 import { Project } from './project';
 import { ConsoleTask } from './tasks/console-task';
 import { exists } from './util';
-
-const portfinder = require('portfinder');
-portfinder.basePort = 13370;
 
 /**
  * Just making a note of some investigations here. *Ideally* I wanted to embed
@@ -33,24 +27,16 @@ portfinder.basePort = 13370;
  */
 
 /**
- * Regex for the awesome-typescript-loader error. It runs its error checking
- * asynchronously, so the compilation might "pass" but there can be errors.
- * Manually parse this case from the console output and treat it as
- * having had a compilation error.
+ * The WebpackTask is a Task that runs a webpack job. Wraps a method to
+ * boot the process an exposes the WebpackState.
  */
-const atlErrorRegex = /\[at-loader\] Checking finished with [0-9]+ errors/;
-
-/**
- * WebpackDevServer handles spinning up a local webpack dev server in the
- * target project directory.
- */
-export class WebpackDevServer extends ConsoleTask<IWebpackInstance> {
+export abstract class WebpackTask<T> extends ConsoleTask<T> {
   /**
    * State of this webpack instance.
    */
   public readonly state = new BehaviorSubject(WebpackState.Stopped);
 
-  constructor(private readonly project: Project) {
+  constructor(protected readonly project: Project) {
     super();
   }
 
@@ -62,27 +48,20 @@ export class WebpackDevServer extends ConsoleTask<IWebpackInstance> {
   }
 
   /**
+   * Boots the webpack server, called with the webpack config file.
+   */
+  protected abstract startWebpack(config: string): Promise<[T, ChildProcess]>;
+
+  /**
    * Boots the webpack dev server. Returns
    */
-  protected async spawnChildProcess(): Promise<[IWebpackInstance, ChildProcess]> {
+  protected async spawnChildProcess(): Promise<[T, ChildProcess]> {
     const config = await this.project.loadSetting('webpackConfigFile', 'webpack.config.js');
     if (!await exists(this.project.baseDir(config))) {
       throw new MissingWebpackConfig();
     }
 
-    const port: number = await portfinder.getPortPromise();
-    const process = spawnPackageScript(
-      this.project.baseDir(),
-      'webpack-dev-server',
-      [`--port=${port}`, '--color'],
-      {
-        cwd: this.project.baseDir(),
-        env: {
-          [notificationEnv]: '1',
-        },
-      },
-    );
-
+    const [out, process] = await this.startWebpack(config);
     this.state.next(WebpackState.Starting);
 
     process.on('exit', code => {
@@ -93,18 +72,7 @@ export class WebpackDevServer extends ConsoleTask<IWebpackInstance> {
       }
     });
 
-    this.data
-      .pipe(filter(line => atlErrorRegex.test(line)))
-      .subscribe(() => this.state.next(WebpackState.HadError));
-
-    return [
-      {
-        id: this.id,
-        // tslint:disable-next-line
-        address: `http://localhost:${port}`,
-      },
-      process,
-    ];
+    return [out, process];
   }
 
   /**
@@ -118,16 +86,16 @@ export class WebpackDevServer extends ConsoleTask<IWebpackInstance> {
    * Reads stdout/err from the process and dispatches it accordingly.
    */
   protected processLine(line: string): string | void {
-    if (!line.startsWith(notificationPrefix)) {
+    const notification = readNotification(line);
+    if (!notification) {
       return line;
     }
 
-    const parsed = JSON.parse(line.slice(notificationPrefix.length));
-    this.handleNotification(parsed);
+    this.handleNotification(notification);
     return undefined;
   }
 
-  private handleNotification(notification: Notification) {
+  protected handleNotification(notification: Notification) {
     if (notification.kind !== NotificationType.Status) {
       return;
     }

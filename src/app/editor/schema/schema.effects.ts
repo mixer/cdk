@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { of } from 'rxjs/observable/of';
-import { debounceTime, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { debounceTime, map, mapTo, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
 import { MatSnackBar } from '@angular/material';
 import * as fromRoot from '../bedrock.reducers';
@@ -24,6 +24,7 @@ import {
   SchemaMethod,
   SnapshotCreated,
   UpdateWorldSchema,
+  UploadWorldComplete,
   UploadWorldSchema,
   workingSnapshoptName,
 } from './schema.actions';
@@ -137,7 +138,7 @@ export class SchemaEffects {
   /**
    * Uploads the world schema to the given version
    */
-  @Effect({ dispatch: false })
+  @Effect()
   public readonly uploadWorldSchema = this.actions
     .ofType<UploadWorldSchema>(SchemaActionTypes.UPLOAD_WORLD_TO_GAME)
     .pipe(
@@ -151,6 +152,7 @@ export class SchemaEffects {
         }),
       ),
       tap(() => this.snacks.open('Control Schema Uploaded', undefined, { duration: 1000 })),
+      mapTo(new UploadWorldComplete()),
     );
 
   constructor(

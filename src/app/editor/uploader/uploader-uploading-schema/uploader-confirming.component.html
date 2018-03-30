@@ -1,0 +1,6 @@
+<h1 mat-dialog-title>Uploading Schema...</h1>
+<div mat-dialog-content>
+  <div class="layout-row layout-align-center-center margin-vertical-6x" *ngIf="!(games | async)">
+    <mat-spinner [diameter]="64"></mat-spinner>
+  </div>
+</div>
