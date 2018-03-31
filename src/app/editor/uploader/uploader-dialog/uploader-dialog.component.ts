@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 
 import * as fromRoot from '../../bedrock.reducers';
 import { UploaderScreen } from '../uploader.actions';
-import * as fromNewProject from '../uploader.reducer';
+import * as fromUploader from '../uploader.reducer';
 
 /**
  * The UploaderDialogComponent is the host component for the upload wizard.
@@ -17,7 +17,7 @@ export class UploaderDialogComponent {
   /**
    * Current screen we're on.
    */
-  public readonly screen = this.store.select(fromNewProject.selectScreen);
+  public readonly screen = this.store.select(fromUploader.selectScreen);
 
   /**
    * Template hoist.

@@ -72,6 +72,13 @@ export class Profile {
   ) {}
 
   /**
+   * Requester interface for making authenticated calls for this profile.
+   */
+  public async getRequester(): Promise<IRequester> {
+    return this.requester.with(await this.tokens());
+  }
+
+  /**
    * Returns valid OAuth tokens for the session. It will prompt the user to
    * grant access if the tokens don't exist or are expired.
    */

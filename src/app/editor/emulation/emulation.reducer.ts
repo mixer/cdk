@@ -85,6 +85,8 @@ export function emulationReducer(
       return { ...state, fittedVideo: action.rect };
     case EmulationActionTypes.MOVE_VIDEO:
       return { ...state, movedVideo: action.options };
+    case EmulationActionTypes.SET_LANGUAGE:
+      return { ...state, language: action.language };
     default:
       return state;
   }
@@ -101,6 +103,11 @@ export const emulationState: MemoizedSelector<IState, IEmulationState> = createF
  * Selects the chosen device.
  */
 export const selectDevice = createSelector(emulationState, s => s.device);
+
+/**
+ * Selects the chosen language.
+ */
+export const selectLanguage = createSelector(emulationState, s => s.language);
 
 /**
  * Selects the chosen orientation.

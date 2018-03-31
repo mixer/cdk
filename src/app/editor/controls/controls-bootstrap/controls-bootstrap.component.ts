@@ -30,7 +30,7 @@ export class ControlsBootstrapComponent {
   /**
    * Observable of webpack console data.
    */
-  public readonly consoleData = this.controlsConsole.contents();
+  public readonly consoleData = this.controlsConsole.observe();
 
   public foo = interval(1000);
 

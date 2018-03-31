@@ -10,9 +10,11 @@ import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
 import * as forProject from '../app/editor/project/project.actions';
 import * as forSchema from '../app/editor/schema/schema.actions';
+import * as forUploader from '../app/editor/uploader/uploader.actions';
 
 import { spawn } from 'child_process';
 import { IRemoteError } from '../app/editor/electron.service';
+import { Encrypter } from '../app/editor/shared/encrypter';
 import { FileDataStore } from './datastore';
 import { hasMetadata, NoAuthenticationError } from './errors';
 import { OpenBuilder } from './file-selector';
@@ -23,6 +25,7 @@ import { Quickstarter } from './quickstart';
 import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
 import { Fetcher } from './util';
+import { WebpackBundleTask } from './webpack-bundler-task';
 import { WebpackDevServer } from './webpack-dev-server-task';
 
 const methods: { [methodName: string]: (data: any, server: ElectronServer) => Promise<any> } = {
@@ -128,6 +131,13 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     );
 
     return results;
+  },
+
+  /**
+   * Encrypts a string of text.
+   */
+  [CommonMethods.EncryptString]: async (options: { data: string }) => {
+    return new Encrypter().encrypt(options.data);
   },
 
   /**
@@ -267,6 +277,21 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     game: forProject.IInteractiveGame;
   }) => {
     return new ProjectLinker(new Project(options.directory)).getFullVersion(options.game);
+  },
+
+  /**
+   * Bundles and uploads controls.
+   */
+  [forUploader.UploaderMethods.StartUpload]: async (
+    options: { directory: string },
+    server: ElectronServer,
+  ) => {
+    const wds = new WebpackBundleTask(new Project(options.directory));
+    server.tasks.add(wds);
+    wds.data.subscribe(data => server.sendAction(new forUploader.UpdateWebpackConsole(data)));
+    wds.state.subscribe(state => server.sendAction(new forUploader.UpdateWebpackState(state)));
+
+    return wds.start();
   },
 };
 

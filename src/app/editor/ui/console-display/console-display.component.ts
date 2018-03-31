@@ -1,7 +1,3 @@
-import { Actions } from '@ngrx/effects';
-import { debounceTime } from 'rxjs/operators';
-import { ITheme, Terminal } from 'xterm';
-
 import {
   AfterContentInit,
   ChangeDetectionStrategy,
@@ -9,8 +5,13 @@ import {
   ElementRef,
   Input,
   OnDestroy,
+  ViewChild,
 } from '@angular/core';
+import { Actions } from '@ngrx/effects';
 import { Observable } from 'rxjs/Observable';
+import { debounceTime } from 'rxjs/operators';
+import { ITheme, Terminal } from 'xterm';
+
 import { LayoutActionTypes } from '../../layout/layout.actions';
 import { untilDestroyed } from '../../shared/untilDestroyed';
 import { baseTheme } from './themes';
@@ -20,7 +21,7 @@ import { baseTheme } from './themes';
  */
 @Component({
   selector: 'console-display',
-  template: '',
+  template: '<div #target></div>',
   styleUrls: ['./console-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -36,9 +37,14 @@ export class ConsoleDisplayComponent implements AfterContentInit, OnDestroy {
   @Input() public theme: Partial<ITheme>;
 
   /**
+   * Element to mount the terminal in.
+   */
+  @ViewChild('target') public target: ElementRef;
+
+  /**
    * Terminal instance currently displayed.
    */
-  private terminal: Terminal;
+  public terminal: Terminal;
 
   constructor(private readonly el: ElementRef, private readonly actions: Actions) {}
 
@@ -64,17 +70,19 @@ export class ConsoleDisplayComponent implements AfterContentInit, OnDestroy {
       .subscribe(() => this.resizeConsole());
 
     this.terminal = terminal;
-    terminal.open(container);
-  }
-
-  public resizeConsole() {
-    const rect = this.el.nativeElement.getBoundingClientRect();
-    this.terminal.setOption('rows', this.calculateRows(rect));
-    this.terminal.setOption('cols', this.calculateColumns(rect));
+    terminal.open(this.target.nativeElement);
   }
 
   public ngOnDestroy() {
     this.terminal.destroy();
+  }
+
+  /**
+   * Trigged when the screen size changes.
+   */
+  private resizeConsole() {
+    const rect = this.el.nativeElement.getBoundingClientRect();
+    this.terminal.resize(this.calculateColumns(rect), this.calculateRows(rect));
   }
 
   /**

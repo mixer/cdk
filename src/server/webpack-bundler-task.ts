@@ -1,37 +1,39 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { bundleEnv } from '@mcph/miix-webpack-plugin/dist/src/bundle-emitter';
 import {
+  IBundleCreated,
   Notification,
   notificationEnv,
   NotificationType,
 } from '@mcph/miix-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
-import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { map } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 import { WebpackState } from '../app/editor/controls/controls.actions';
 import { spawnPackageScript } from './npm-exec';
+import { Uploader } from './publish/uploader';
 import { WebpackTask } from './webpack-task';
 
 export interface IBundleData {
-  tarballLocation: string;
+  tarball: string;
   metadata: IPackageConfig;
+  readme: string | null;
 }
 
 /**
  * WebpackBundleTask builds the project into a tarball. It returns an
  * observable that emits information about the tarball and its metadata.
  */
-export class WebpackBundleTask extends WebpackTask<Observable<IBundleData>> {
+export class WebpackBundleTask extends WebpackTask<Promise<IBundleData>> {
   private metadata = new ReplaySubject<IPackageConfig>(1);
-  private tarball = new ReplaySubject<string>(1);
+  private bundled = new ReplaySubject<IBundleCreated>(1);
 
   /**
    * @override
    */
-  protected async startWebpack(config: string): Promise<[Observable<IBundleData>, ChildProcess]> {
+  protected async startWebpack(config: string): Promise<[Promise<IBundleData>, ChildProcess]> {
     const process = spawnPackageScript(
       this.project.baseDir(),
       'webpack',
@@ -47,10 +49,18 @@ export class WebpackBundleTask extends WebpackTask<Observable<IBundleData>> {
       },
     );
 
+    const uploader = new Uploader(await this.project.profile.getRequester());
+
     return [
-      combineLatest(this.metadata, this.tarball).pipe(
-        map(([metadata, tarballLocation]) => ({ metadata, tarballLocation })),
-      ),
+      <Promise<IBundleData>>combineLatest(this.bundled, this.metadata)
+        .pipe(
+          switchMap(async ([bundled, metadata]) => {
+            await uploader.upload(bundled.location, metadata);
+            return { tarball: bundled.location, readme: bundled.readme, metadata };
+          }),
+          take(1),
+        )
+        .toPromise(),
       process,
     ];
   }
@@ -66,7 +76,7 @@ export class WebpackBundleTask extends WebpackTask<Observable<IBundleData>> {
         this.metadata.next(notification.metadata);
         break;
       case NotificationType.BundleCreated:
-        this.tarball.next(notification.location);
+        this.bundled.next(notification);
         break;
       case NotificationType.BundleFailed:
         this.state.next(WebpackState.Failed);

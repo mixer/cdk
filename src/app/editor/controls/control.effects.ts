@@ -3,7 +3,7 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { defer } from 'rxjs/observable/defer';
 import { of } from 'rxjs/observable/of';
-import { filter, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, map, startWith, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
 import { mapTo } from 'rxjs/operators/mapTo';
 import * as fromRoot from '../bedrock.reducers';
@@ -17,6 +17,7 @@ import {
 } from '../layout/layout.actions';
 import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
+import { withLatestDirectory } from '../project/project.reducer';
 import { ControlsConsoleService } from './controls-console.service';
 import {
   AutoCloseConsole,
@@ -32,7 +33,7 @@ import {
   UpdateWebpackState,
   WebpackState,
 } from './controls.actions';
-import { didAutoOpenWebpackConsole } from './controls.reducer';
+import { didAutoOpenWebpackConsole, webpackState } from './controls.reducer';
 import { BaseStateSyncService } from './sync/base-state-sync.service';
 
 /**
@@ -47,10 +48,31 @@ export class ControlEffects {
   public readonly bootServer = this.actions
     .ofType<StartWebpack>(ControlsActionTypes.START_WEBPACK)
     .pipe(
-      switchMap(action =>
-        this.electron.call<IWebpackInstance>(ControlsMethods.StartWebpack, action),
+      withLatestDirectory(this.store),
+      tap(() => this.console.clear.next()),
+      switchMap(([, directory]) =>
+        this.electron.call<IWebpackInstance>(ControlsMethods.StartWebpack, { directory }),
       ),
       map(instance => new SetWebpackInstance(instance)),
+    );
+
+  /**
+   * Stops a webpack server, waits until it has stopped, then restarts it.
+   */
+  @Effect()
+  public readonly restartWebpack = this.actions
+    .ofType(ControlsActionTypes.RESTART_WEBPACK)
+    .pipe(
+      switchMap(() =>
+        this.store
+          .select(webpackState)
+          .pipe(
+            filter(s => !isRunning(s)),
+            take(1),
+            mapTo(<Action>new StartWebpack()),
+            startWith(<Action>new StopWebpack()),
+          ),
+      ),
     );
 
   /**
@@ -59,7 +81,7 @@ export class ControlEffects {
   @Effect()
   public readonly bootServerOnOpen = this.actions
     .ofType<SetOpenProject>(ProjectActionTypes.SET_OPEN_PROJECT)
-    .pipe(map(({ project }) => new StartWebpack(project.directory)));
+    .pipe(map(() => new StartWebpack()));
 
   /**
    * Halts webpack when the relevant action is dispatched.
@@ -87,7 +109,7 @@ export class ControlEffects {
     .pipe(
       withLatestFrom(this.store.select(fromLayout.goldenLayout)),
       switchMap(([{ state }, layout]) => {
-        if (isRunning(state) && state !== WebpackState.Compiled) {
+        if (state !== WebpackState.Compiled) {
           if (!layout || !focusGolden(layout.root, GoldenPanel.WebpackConsole)) {
             return of(new AutoOpenConsole());
           }

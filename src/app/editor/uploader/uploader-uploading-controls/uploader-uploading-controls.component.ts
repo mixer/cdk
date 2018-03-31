@@ -10,7 +10,6 @@ import { UpdateWebpackConsole, UploaderActionTypes } from '../uploader.actions';
 @Component({
   selector: 'uploader-uploading-controls',
   templateUrl: './uploader-uploading-controls.component.html',
-  styleUrls: ['./uploader-uploading-controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploaderUploadingControls {

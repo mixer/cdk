@@ -4,20 +4,24 @@
   <p>When you upload, only people who you've shared your project will be able to use your bundle.</p>
 
   <advanced-toggle>
-    <mat-checkbox
-      [ngModel]="uploadSchema | async"
-      (ngModelChange)="setUploadSchema($event)">
-      Upload schema
-    </mat-checkbox>
-    <mat-checkbox
-      [ngModel]="uploadControls | async"
-      (ngModelChange)="setUploadControls($event)">
-      Upload control bundle
-    </mat-checkbox>
+    <div class="layout-row">
+      <mat-checkbox
+        class="flex-50"
+        [ngModel]="uploadSchema | async"
+        (ngModelChange)="setUploadSchema($event)">
+        Upload schema
+      </mat-checkbox>
+      <mat-checkbox
+        class="flex-50"
+        [ngModel]="uploadControls | async"
+        (ngModelChange)="setUploadControls($event)">
+        Upload control bundle
+      </mat-checkbox>
+    </div>
   </advanced-toggle>
 </div>
 <div mat-dialog-actions>
-  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-button (click)="dialogRef.close()">Cancel</button>
   <span class="flex-fill"></span>
-  <button mat-button (click)="next()" cdkFocusInitial>Create a Project</button>
+  <button mat-button (click)="next()" cdkFocusInitial>Upload</button>
 </div>

@@ -23,6 +23,7 @@ const availableIcons = [
   'trash-can',
   'undo',
   'upload',
+  'reboot',
   'warning',
 ];
 

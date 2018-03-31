@@ -27,6 +27,15 @@ export class RpcError extends Error implements IRemoteError {
     super(message);
     this.stack = stack;
   }
+
+  public toJSON() {
+    return {
+      message: this.message,
+      stack: this.stack,
+      originalName: this.originalName,
+      metadata: this.metadata,
+    };
+  }
 }
 
 /**

@@ -9,7 +9,7 @@ import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/
 import { RequireLink, StartOpenProject } from '../../project/project.actions';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
-import { CopyWorldSchema, UploadWorldSchema } from '../../schema/schema.actions';
+import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
 import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
 
@@ -66,7 +66,7 @@ export class TopNavComponent {
    * Uploads the control schema.
    */
   public uploadControlSchema() {
-    this.store.dispatch(new RequireAuth(new RequireLink(UploadWorldSchema)));
+    this.store.dispatch(new RequireAuth(new RequireLink(QuickUploadWorldSchema)));
   }
 
   /**

@@ -7,7 +7,8 @@ import { AdvancedToggleComponent } from './advanced-toggle.component';
  * Module for a spoiler-style toggle.
  */
 @NgModule({
-  exports: [AdvancedToggleComponent, CommonModule],
+  imports: [CommonModule],
+  exports: [AdvancedToggleComponent],
   declarations: [AdvancedToggleComponent],
 })
 export class AdvancedToggleModule {}

@@ -49,12 +49,10 @@ export const enum ControlsMethods {
 }
 
 /**
- * Starts the webpack dev server in the given (usually project!) directory.
+ * Starts the webpack dev server in the project directory.
  */
 export class StartWebpack implements Action {
   public readonly type = ControlsActionTypes.START_WEBPACK;
-
-  constructor(public readonly directory: string) {}
 }
 
 /**

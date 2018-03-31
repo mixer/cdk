@@ -13,6 +13,7 @@ import { MomentModule } from 'angular2-moment';
 import { AccountModule } from '../account/account.module';
 import { ToastsModule } from '../toasts/toasts.module';
 import { MenuBarModule } from '../ui/menu-bar/menu-bar.module';
+import { UploaderModule } from '../uploader/uploader.module';
 import { LinkProjectDialogComponent } from './link-dialog/link-dialog.component';
 import { ProjectDropdownComponent } from './project-dropdown/project-dropdown.component';
 import { ProjectEffects } from './project.effects';
@@ -30,6 +31,7 @@ import { projectReducer } from './project.reducer';
     MenuBarModule,
     MatButtonModule,
     AccountModule,
+    UploaderModule,
     MatDialogModule,
     MomentModule,
     EffectsModule.forFeature([ProjectEffects]),

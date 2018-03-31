@@ -1,2 +1,2 @@
-<a class="header" [class.expanded]="expanded">Advanced</span>
+<a class="header" [class.expanded]="expanded" (click)="expanded = !expanded">Advanced</a>
 <ng-container *ngIf="expanded"><ng-content></ng-content></ng-container>

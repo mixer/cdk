@@ -38,12 +38,11 @@ export const enum LayoutMethod {
  * Tries to bring the content item into focus. Returns true if it's successful.
  */
 export function focus(panel: GoldenLayout.ContentItem): boolean {
-  if (
-    panel.parent &&
-    panel.parent.getActiveContentItem &&
-    panel.parent.getActiveContentItem() !== panel
-  ) {
-    panel.parent.setActiveContentItem(panel);
+  if (panel.parent && panel.parent.getActiveContentItem) {
+    if (panel.parent.getActiveContentItem() !== panel) {
+      panel.parent.setActiveContentItem(panel);
+    }
+
     return true;
   }
 

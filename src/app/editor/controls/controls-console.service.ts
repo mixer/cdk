@@ -15,9 +15,21 @@ export class ControlsConsoleService {
   public static lineLimit = 10000;
 
   /**
+   * Can be fired upon to clear the console output.
+   */
+  public clear = new Subject<void>();
+
+  /**
    * A subject that emits with any new lines, as they're added.
    */
   private readonly newLines = new Subject<string>();
+
+  /**
+   * Current console contents.
+   */
+  public get contents() {
+    return this.lines.join('');
+  }
 
   private lines: string[] = [];
 
@@ -37,7 +49,7 @@ export class ControlsConsoleService {
   /**
    * Returns an observable of the console contents.
    */
-  public contents(): Observable<string> {
+  public observe(): Observable<string> {
     return of(this.lines.join('')).pipe(merge(this.newLines), map(l => l));
   }
 }

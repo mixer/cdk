@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { MatIconModule, MatProgressSpinnerModule } from '@angular/material';
+import { MatButtonModule, MatIconModule, MatProgressSpinnerModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
@@ -28,6 +28,7 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
     EffectsModule.forFeature([ControlEffects]),
     MatIconModule,
     MatProgressSpinnerModule,
+    MatButtonModule,
     SharedModule,
     EmulationModule,
     StoreModule.forFeature('controls', controlReducer),
