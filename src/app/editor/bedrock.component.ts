@@ -40,7 +40,7 @@ export class BedrockComponent {
     availableIcons.forEach(icon => {
       icons.addSvgIcon(
         icon,
-        sanitizer.bypassSecurityTrustResourceUrl(`/assets/images/${icon}.svg`),
+        sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${icon}.svg`),
       );
     });
   }

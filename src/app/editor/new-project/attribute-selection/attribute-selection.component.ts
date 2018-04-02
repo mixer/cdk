@@ -57,6 +57,10 @@ export class AttributeSelectionComponent {
       .subscribe(details => this.form.setValue(details!));
   }
 
+  public getInput(name: string) {
+    return this.form.get(name)!;
+  }
+
   public setLayout(layout: string) {
     this.store.dispatch(new SetDetails({ ...this.form.value }));
     this.store.dispatch(new SetLayout(layout));

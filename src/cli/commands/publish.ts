@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 
-import { WriterReporter } from '../../server/metadata/evilsniffer';
 import { Publisher } from '../../server/publish/publisher';
 import { WebpackBundleTask } from '../../server/webpack-bundler-task';
 import { IGlobalOptions } from '../options';
@@ -22,10 +21,6 @@ export default async function(options: IPublishOptions): Promise<void> {
   }
 
   await ensureWebpackDependencies(options.project);
-
-  if (!await new WriterReporter(options.project).checkEvil(writer)) {
-    return;
-  }
 
   const bundler = new WebpackBundleTask(options.project);
   bundler.data.subscribe(data => process.stdout.write(data));

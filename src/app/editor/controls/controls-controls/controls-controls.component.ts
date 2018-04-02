@@ -11,6 +11,6 @@ import { BaseStateSyncService } from '../sync/base-state-sync.service';
   templateUrl: './controls-controls.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ControlsBootstrapComponent {
+export class ControlsControlsComponent {
   constructor(public readonly sync: BaseStateSyncService) {}
 }

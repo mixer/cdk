@@ -1,28 +1,33 @@
-#!/usr/bin/env electron
+import { BrowserWindow, app } from 'electron';
+import * as path from 'path';
+import * as url from 'url';
+import * as fixPath from 'fix-path';
 
-const { BrowserWindow, app } = require('electron');
-const path = require('path');
-const url = require('url');
-const { ElectronServer } = require('../dist/src/server/electron-server');
+import { ElectronServer } from './server/electron-server';
 
-let window;
-let server;
+let window: BrowserWindow | null = null;
+let server: ElectronServer;
 
 const isDebug = process.argv.includes('--debug');
+fixPath();
 
 function createWindow() {
   window = new BrowserWindow({
     width: 1280,
     height: 720,
+    webPreferences: {
+      webSecurity: false
+    }
   });
+
+  window.webContents.openDevTools();
 
   if (isDebug) {
     window.loadURL(`http://localhost:4200`);
-    window.webContents.openDevTools();
   } else {
     window.loadURL(
       url.format({
-        pathname: path.join(__dirname, '../dist/src/app/index.html'),
+        pathname: path.join(__dirname, '../app/index.html'),
         protocol: 'file:',
         slashes: true,
       })

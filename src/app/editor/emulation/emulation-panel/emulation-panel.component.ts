@@ -82,7 +82,7 @@ export class EmulationPanelComponent {
   /**
    * Updates the locale.
    */
-  public setLocale(language: string) {
+  public setLanguage(language: string) {
     this.store.dispatch(new SetLanguage(language));
   }
 

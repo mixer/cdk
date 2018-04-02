@@ -9,13 +9,13 @@ import { EmulationModule } from '../emulation/emulation.module';
 import { SharedModule } from '../shared/shared.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { ControlEffects } from './control.effects';
-import { ControlsBootstrapComponent } from './controls-bootstrap/controls-bootstrap.component';
 import { ControlsConsoleService } from './controls-console.service';
 import { ControlsPanelComponent } from './controls-panel/controls-panel.component';
 import { controlReducer } from './controls.reducer';
 import { LocalControlsComponent } from './local-controls/local-controls.component';
 import { BaseStateSyncService } from './sync/base-state-sync.service';
 import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-console-panel.component';
+import { ControlsControlsComponent } from './controls-controls/controls-controls.component';
 
 /**
  * Handles display and state of the custom controls.
@@ -35,7 +35,7 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
   ],
   providers: [BaseStateSyncService, ControlsConsoleService],
   declarations: [
-    ControlsBootstrapComponent,
+    ControlsControlsComponent,
     ControlsPanelComponent,
     WebpackConsolePanelComponent,
     LocalControlsComponent,
