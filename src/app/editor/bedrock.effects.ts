@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
 import { tap } from 'rxjs/operators';
 
-import { BedrockActions, ReportGenericError, ReportRpcError } from './bedrock.actions';
+import {
+  BedrockActions,
+  CommonMethods,
+  ReportGenericError,
+  ReportRpcError,
+} from './bedrock.actions';
+import { ElectronService } from './electron.service';
 import { IssueService } from './issue.service';
 
 /**
@@ -25,6 +31,17 @@ export class BedrockEffects {
   public readonly reportGenericError = this.actions
     .ofType<ReportGenericError>(BedrockActions.ReportGenericError)
     .pipe(tap(err => this.issues.reportIssue(err.title, err.message)));
+  /**
+   * Fired when we want to report a generic error.
+   */
+  @Effect({ dispatch: false })
+  public readonly toggleDevtools = this.actions
+    .ofType(BedrockActions.ToggleDevTools)
+    .pipe(tap(() => this.electron.call(CommonMethods.ToggleDevTools)));
 
-  constructor(private readonly actions: Actions, private readonly issues: IssueService) {}
+  constructor(
+    private readonly actions: Actions,
+    private readonly issues: IssueService,
+    private readonly electron: ElectronService,
+  ) {}
 }

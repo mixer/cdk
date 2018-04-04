@@ -1,4 +1,6 @@
 import * as RSA from 'node-rsa';
+import { gzip } from 'zlib';
+import { promiseCallback } from '../../../server/util';
 
 const key = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAwSlQJBp1OBG2HgeXGO9J
@@ -28,7 +30,8 @@ export class Encrypter {
   /**
    * Encrypts the data with the held public key.
    */
-  public encrypt(data: string): string {
-    return this.key.encrypt(data, 'base64');
+  public async encrypt(data: string): Promise<string> {
+    const compressed = await promiseCallback(callback => gzip(data, { level: 9 }, callback));
+    return this.key.encrypt(compressed, 'base64');
   }
 }

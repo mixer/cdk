@@ -3,10 +3,9 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import * as GoldenLayout from 'golden-layout';
 import { Observable } from 'rxjs/Observable';
-
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
-import { debounceTime, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, filter, map, mapTo, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 
 import { combineLatest } from 'rxjs/operators/combineLatest';
 import * as fromRoot from '../bedrock.reducers';
@@ -16,6 +15,7 @@ import * as fromProject from '../project/project.reducer';
 import {
   ClosePanel,
   findGoldenPanel,
+  focus,
   LayoutActionTypes,
   LayoutMethod,
   LayoutScreen,
@@ -53,6 +53,14 @@ export class LayoutEffects {
         return of<Action>(new SavePanels(panels, false), open);
       }),
     );
+
+  /**
+   * Goes back to the welcome screen when we close a project.
+   */
+  @Effect()
+  public readonly closeProject = this.actions
+    .ofType(ProjectActionTypes.CLOSE_PROJECT)
+    .pipe(mapTo(new OpenScreen(LayoutScreen.Welcome)));
 
   /**
    * Persists panel configuration to the server when it chamges.
@@ -101,7 +109,9 @@ export class LayoutEffects {
   public readonly openGoldenPanel = this.withLayout(layout =>
     this.actions.ofType<OpenPanel>(LayoutActionTypes.OPEN_PANEL).pipe(
       tap(({ panel, locator }) => {
-        if (findGoldenPanel([layout.root], panel)) {
+        const existing = findGoldenPanel([layout.root], panel);
+        if (existing) {
+          focus(existing);
           return; // don't open the panel if it already exists
         }
 

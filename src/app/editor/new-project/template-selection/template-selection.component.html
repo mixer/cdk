@@ -10,6 +10,15 @@
         Start with a simple HTML page and roll your own.
       </radio-icon>
     </radio-icon-list>
+
+    <advanced-toggle>
+      <mat-form-field style="width:100%">
+        <input matInput
+          placeholder="Custom Tarball URL"
+          [ngModel]="template | async"
+          (ngModelChange)="setTemplate($event)">
+      </mat-form-field>
+    </advanced-toggle>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="back()">Back</button>

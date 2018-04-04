@@ -1,7 +1,7 @@
-import { BrowserWindow, app } from 'electron';
+import { app, BrowserWindow } from 'electron';
+import * as fixPath from 'fix-path';
 import * as path from 'path';
 import * as url from 'url';
-import * as fixPath from 'fix-path';
 
 import { ElectronServer } from './server/electron-server';
 
@@ -16,13 +16,13 @@ function createWindow() {
     width: 1280,
     height: 720,
     webPreferences: {
-      webSecurity: false
-    }
+      webSecurity: false,
+    },
   });
 
-  window.webContents.openDevTools();
-
   if (isDebug) {
+    window.webContents.openDevTools();
+    // tslint:disable-next-line
     window.loadURL(`http://localhost:4200`);
   } else {
     window.loadURL(
@@ -30,7 +30,7 @@ function createWindow() {
         pathname: path.join(__dirname, '../app/index.html'),
         protocol: 'file:',
         slashes: true,
-      })
+      }),
     );
   }
 
@@ -44,11 +44,13 @@ function createWindow() {
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-  server.tasks.stopAll();
-
-  if (process.platform === 'darwin') {
-    app.quit();
-  }
+  server.tasks
+    .stopAll()
+    .catch(() => undefined)
+    .then(() => {
+      app.quit();
+    })
+    .catch(() => undefined);
 });
 
 app.on('activate', () => {

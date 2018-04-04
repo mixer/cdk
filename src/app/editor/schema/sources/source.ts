@@ -2,7 +2,8 @@ import { Selector } from '@ngrx/store';
 import * as patch from 'fast-json-patch';
 import { omit } from 'lodash';
 import { Observable } from 'rxjs/Observable';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { of } from 'rxjs/observable/of';
+import { distinctUntilChanged, pairwise, startWith, switchMap } from 'rxjs/operators';
 
 import { mapSet, setSub } from '../../shared/ds';
 
@@ -18,37 +19,23 @@ export interface ICall {
  * Source represents source code for a resource in Interactive.
  */
 export abstract class Source<T> {
-  private lastSrc: T;
-
   /**
    * Returns a stream of events to send to the embedded frame. This shuld
    * generally emit whenever the source code is updated.
    */
-  public getEvents(src: Observable<T>): Observable<ICall[]> {
+  public getEvents(src: Observable<T>): Observable<ICall> {
     return src.pipe(
       distinctUntilChanged(),
-      map(parsed => {
-        if (this.lastSrc) {
-          const calls = this.compare(this.lastSrc, parsed);
-          this.lastSrc = parsed;
-          return calls;
+      startWith<T | null>(null),
+      pairwise(),
+      switchMap(([previous, current]) => {
+        if (previous) {
+          return of(...this.compare(previous, current!));
         }
 
-        this.lastSrc = parsed;
-        return this.createPacket(this.lastSrc);
+        return of(...this.createPacket(current!));
       }),
     );
-  }
-
-  /**
-   * Returns a packet to recreate the resources this source owns, if possible.
-   */
-  public getCreatePacket(): ICall[] {
-    if (!this.lastSrc) {
-      return [];
-    }
-
-    return this.createPacket(this.lastSrc);
   }
 
   /**

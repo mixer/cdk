@@ -1,3 +1,17 @@
-<button mat-icon-button (click)="sync.refresh.next()">
+<button (click)="sync.refresh.next()">
   <mat-icon svgIcon="refresh"></mat-icon>
+  Refresh
+</button>
+<button (click)="toggleDevtools()">
+  <mat-icon svgIcon="tools"></mat-icon>
+  Devtools
+</button>
+<button (click)="showConsole()" [class.hasAlert]="hasUnreadError | async">
+  <mat-icon svgIcon="console"></mat-icon>
+  Console
+</button>
+<button (click)="toggleReady()">
+  <mat-icon svgIcon="checkbox-empty" *ngIf="!(isReady | async)"></mat-icon>
+  <mat-icon svgIcon="checkbox-checked" *ngIf="isReady | async"></mat-icon>
+  Ready State
 </button>

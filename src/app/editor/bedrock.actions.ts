@@ -7,12 +7,14 @@ export const enum CommonMethods {
   CheckIfExePresent = '[Bedrock] Check if an Executable is in the Path',
   LaunchProgram = '[Bedrock] Launch a program',
   EncryptString = '[Bedrock] Encrypt a string',
+  ToggleDevTools = '[Bedrock] Toggle devtools',
 }
 
 export const enum BedrockActions {
   UnexpectedError = '[Bedrock] An unexpected error occurred',
   ReportRpcError = '[Bedrock] Report a RPC error',
   ReportGenericError = '[Bedrock] Report a generic error',
+  ToggleDevTools = '[Bedrock] Toggle devtools',
 }
 
 /**
@@ -46,4 +48,11 @@ export class ReportGenericError implements Action {
   public readonly type = BedrockActions.ReportGenericError;
 
   constructor(public readonly title: string, public readonly message: string) {}
+}
+
+/**
+ * Fired to open or close developer tools.
+ */
+export class ToggleDevTools implements Action {
+  public readonly type = BedrockActions.ToggleDevTools;
 }

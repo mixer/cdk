@@ -4,9 +4,11 @@ import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 
 import { RequireAuth } from '../../account/account.actions';
+import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
+import { LocateWebpackConfig, RestartWebpack } from '../../controls/controls.actions';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
-import { RequireLink, StartOpenProject } from '../../project/project.actions';
+import { CloseProject, RequireLink, StartOpenProject } from '../../project/project.actions';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
 import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
@@ -84,10 +86,32 @@ export class TopNavComponent {
   }
 
   /**
+   * Closes the currently open project.
+   */
+  public closeProject() {
+    this.store.dispatch(new CloseProject());
+  }
+
+  /**
+   * Pops a window to submit an issue to the project.
+   */
+  public openIssue() {
+    this.store.dispatch(new ReportGenericError('My Error Report', 'Enter your details here'));
+  }
+
+  /**
    * Returns an observable that emits whether the given panel is open.
    */
   public panelOpen(panel: GoldenPanel) {
     return this.store.select(panelIsOpen(panel));
+  }
+
+  public restartWebpack() {
+    this.store.dispatch(new RestartWebpack());
+  }
+
+  public setWebpackConfig() {
+    this.store.dispatch(new LocateWebpackConfig());
   }
 
   /**

@@ -13,6 +13,7 @@ export interface IControlState {
   webpackState: WebpackState;
   consoleOutput: string;
   didAutoOpenConsole: boolean;
+  isReady: boolean;
   instance?: IWebpackInstance;
 }
 
@@ -24,6 +25,7 @@ const initialState: IControlState = {
   webpackState: WebpackState.Stopped,
   consoleOutput: '',
   didAutoOpenConsole: false,
+  isReady: true,
 };
 
 export function controlReducer(
@@ -50,6 +52,8 @@ export function controlReducer(
       return { ...state, didAutoOpenConsole: false };
     case ControlsActionTypes.AUTO_OPEN_CONSOLE:
       return { ...state, didAutoOpenConsole: true };
+    case ControlsActionTypes.SET_IS_READY:
+      return { ...state, isReady: action.isReady === undefined ? !state.isReady : action.isReady };
     default:
       return state;
   }
@@ -79,3 +83,8 @@ export const webpackInstance = createSelector(controlState, s => s.instance);
  * Selector for wheher the webpack console was automatically opened.
  */
 export const didAutoOpenWebpackConsole = createSelector(controlState, s => s.didAutoOpenConsole);
+
+/**
+ * Selector for whether the controls are currently ready.
+ */
+export const selectIsReady = createSelector(controlState, s => s.isReady);

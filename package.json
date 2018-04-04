@@ -21,7 +21,7 @@
     "build:editor:base": "rimraf dist app && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
-    "start:electron": "wait-on http-get://localhost:4200/ && electron bin/electron --serve --debug",
+    "start:electron": "wait-on http-get://localhost:4200/ && electron dist/src/electron --serve --debug",
     "prepare": "npm run -s build:cli"
   },
   "build": {
@@ -135,7 +135,7 @@
     "ts-node": "^3.3.0",
     "tslint": "^5.6.0",
     "tslint-microsoft-contrib": "5.0.1",
-    "typescript": "^2.6.2",
+    "typescript": "~2.6.2",
     "wait-on": "^2.1.0",
     "xterm": "^3.2.0",
     "zone.js": "^0.8.16"

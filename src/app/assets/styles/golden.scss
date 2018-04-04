@@ -182,11 +182,6 @@ $color10: #ffffff; // Appears 2 time
 
 // If a specific Pane is maximized
 .lm_maximised {
-  // Pane Header (container of Tabs for each pane) can have different style when is Maximized
-  .lm_header {
-    background-color: $color0;
-  }
-
   // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)
   .lm_controls {
     .lm_maximise {

@@ -8,7 +8,7 @@ import { Subject } from 'rxjs/Subject';
  * Service that holds state about what's in the webpack console output.
  */
 @Injectable()
-export class ControlsConsoleService {
+export class ControlsWebpackConsoleService {
   /**
    * Maximum number of console output lines to store.
    */
@@ -41,8 +41,8 @@ export class ControlsConsoleService {
     this.newLines.next(line);
 
     // Trim any excess.
-    if (this.lines.length > ControlsConsoleService.lineLimit) {
-      this.lines = this.lines.slice(-Math.round(ControlsConsoleService.lineLimit * 2 / 3));
+    if (this.lines.length > ControlsWebpackConsoleService.lineLimit) {
+      this.lines = this.lines.slice(-Math.round(ControlsWebpackConsoleService.lineLimit * 2 / 3));
     }
   }
 

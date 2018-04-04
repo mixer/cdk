@@ -3,7 +3,7 @@ import { Store } from '@ngrx/store';
 
 import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
-import { ControlsConsoleService } from '../controls-console.service';
+import { ControlsWebpackConsoleService } from '../controls-webpack-console.service';
 import { RestartWebpack, WebpackState } from '../controls.actions';
 import { webpackState } from '../controls.reducer';
 
@@ -13,7 +13,7 @@ import { webpackState } from '../controls.reducer';
 @Component({
   selector: 'webpack-console-panel',
   templateUrl: './webpack-console-panel.component.html',
-  styleUrls: ['./webpack-console-panel.scss'],
+  styleUrls: ['./webpack-console-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WebpackConsolePanelComponent implements OnDestroy {
@@ -35,7 +35,7 @@ export class WebpackConsolePanelComponent implements OnDestroy {
 
   constructor(
     private readonly store: Store<fromRoot.IState>,
-    private readonly controlsConsole: ControlsConsoleService,
+    private readonly controlsConsole: ControlsWebpackConsoleService,
   ) {}
 
   public openIssue(title: string) {

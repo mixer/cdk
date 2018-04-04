@@ -111,3 +111,10 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 }
+
+@mixin unstyled-input() {
+  background: none;
+  border: none;
+  outline: 0 !important;
+  color: currentColor;
+}

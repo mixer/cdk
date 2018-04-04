@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 import * as ora from 'ora';
 
+import { WebpackBundleTask } from '../../server/webpack-bundler-task';
 import { IGlobalOptions } from '../options';
 import { ensureWebpackDependencies } from '../prereqs';
-import { WebpackBundleTask } from '../../server/webpack-bundler-task';
 
 export default async function(options: IGlobalOptions): Promise<void> {
   await ensureWebpackDependencies(options.project);

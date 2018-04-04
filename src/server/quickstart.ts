@@ -9,8 +9,8 @@ import { Task } from './tasks/task';
 import { exists, mkdir, readFile, writeFile } from './util';
 
 const templateAliases: { [key: string]: string } = {
-  preact: 'interactive-launchpad_1.0.tar.gz',
-  html: 'interactive-html-starter_1.0.tar.gz',
+  preact: 'cdk-preact-starter_1.0.tar.gz',
+  html: 'cdk-html-starter_1.0.tar.gz',
 };
 
 /**

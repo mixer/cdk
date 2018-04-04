@@ -75,6 +75,13 @@ export const initialWorld: IWorld = <any>{
               x: 0,
               y: 0,
             },
+            {
+              width: 10,
+              height: 8,
+              size: 'medium',
+              x: 0,
+              y: 0,
+            },
           ],
         },
         {
@@ -88,6 +95,13 @@ export const initialWorld: IWorld = <any>{
               width: 7,
               height: 7,
               size: 'large',
+              x: 11,
+              y: 0,
+            },
+            {
+              width: 7,
+              height: 7,
+              size: 'medium',
               x: 11,
               y: 0,
             },

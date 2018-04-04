@@ -3,23 +3,20 @@ import { ISettings, RPC } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { isEqual } from 'lodash';
 import { fromEvent } from 'rxjs/observable/fromEvent';
+import { merge as mergeObs } from 'rxjs/observable/merge';
 import { delay, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operators';
 
+import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import * as fromRoot from '../../bedrock.reducers';
+import { bindToRPC } from '../../controls-console/controls-remote-console.service';
 import { emulationState } from '../../emulation/emulation.reducer';
 import { ControlsSource } from '../../schema/sources/controls';
 import { GroupSource } from '../../schema/sources/group';
 import { ParticipantSource } from '../../schema/sources/participant';
 import { Source } from '../../schema/sources/source';
-import { untilDestroyed } from '../../shared/untilDestroyed';
-import { BaseStateSyncService } from './base-state-sync.service';
-
-const enum State {
-  Loading,
-  AwaitingValid,
-  Ready,
-}
+import { selectIsReady } from '../controls.reducer';
+import { BaseStateSyncService, takeUntilRpcClosed } from './base-state-sync.service';
 
 /**
  * The LocalStateSyncService manages synchronizing state between what's in the
@@ -28,87 +25,23 @@ const enum State {
  */
 @Injectable()
 export class LocalStateSyncService implements OnDestroy {
-  private rpc: RPC;
-  private state = State.Loading;
-  private sources: Source<any>[] = [
+  /**
+   * A list of world state sources.
+   */
+  public static sources: Source<any>[] = [
     new ControlsSource(),
     new GroupSource(),
     new ParticipantSource(),
   ];
+
   private closed = new ReplaySubject<void>(1);
 
-  constructor(
-    private readonly store: Store<fromRoot.IState>,
-    private readonly base: BaseStateSyncService,
-  ) {
-    this.sources.forEach(source =>
-      source
-        .getEvents(this.store.select(source.getSelector()))
-        .pipe(untilDestroyed(this))
-        .subscribe(calls => {
-          if (this.state === State.Ready) {
-            this.sendInteractive(...calls);
-          }
-        }),
-    );
-  }
-
   /**
-   * Attaches listeners to the iframe.
+   * A list of effects to run while connected to the frame.
    */
-  public bind(frame: HTMLIFrameElement): this {
-    this.rpc = new RPC(frame.contentWindow, '1.0');
-    this.rpc.expose('controlsReady', () => this.sendInitialState());
-
-    this.base.attachInternalMethods(this.rpc, this.closed);
-
-    fromEvent(frame, 'loaded')
-      .pipe(takeUntil(this.closed), takeUntil(this.base.refresh))
-      .subscribe(() => (this.state = State.Loading));
-
-    this.base.refresh.pipe(takeUntil(this.closed), take(1)).subscribe(() => {
-      this.rpc.destroy();
-      frame.src = frame.src;
-      this.bind(frame);
-    });
-
-    return this;
-  }
-
-  /**
-   * Tears down resources associated with the service.
-   */
-  public unbind() {
-    if (this.rpc) {
-      this.rpc.destroy();
-    }
-
-    this.closed.next(undefined);
-  }
-
-  public ngOnDestroy() {
-    this.unbind();
-  }
-
-  /**
-   * Sends down the initial/current controls state, fired when the controls
-   * first call `controlsReady`.
-   */
-  private sendInitialState() {
-    const create = this.sources
-      .map(src => src.getCreatePacket())
-      .reduce((prev, next) => prev.concat(next), []);
-
-    if (create.some(packet => packet === undefined)) {
-      this.state = State.AwaitingValid;
-      return;
-    }
-
-    this.store
-      .select(emulationState)
-      .pipe(
-        takeUntil(this.closed),
-        takeUntil(this.base.refresh),
+  private fx: (() => Observable<{ method: string; params: any }>)[] = [
+    () =>
+      this.store.select(emulationState).pipe(
         map(
           state =>
             <ISettings>{
@@ -118,32 +51,73 @@ export class LocalStateSyncService implements OnDestroy {
             },
         ),
         distinctUntilChanged<ISettings>(isEqual),
-      )
-      .subscribe(settings => this.rpc.call('updateSettings', settings, false));
+        map(settings => ({ method: 'updateSettings', params: settings })),
+      ),
 
-    this.store
-      .pipe(
-        map(() => true), // todo(connor4312): select ready state
+    () =>
+      this.store.select(selectIsReady).pipe(
         delay(1),
-        takeUntil(this.base.refresh),
-        takeUntil(this.closed),
         distinctUntilChanged(),
-      )
-      .subscribe(isReady => {
-        this.sendInteractive({
-          method: 'onReady',
-          params: { isReady },
-        });
-      });
+        map(isReady => ({
+          method: 'recieveInteractivePacket',
+          params: {
+            method: 'onReady',
+            params: { isReady },
+          },
+        })),
+      ),
 
-    this.sendInteractive(...create.map(call => call!));
+    () =>
+      mergeObs(
+        ...LocalStateSyncService.sources.map(source =>
+          source.getEvents(this.store.select(source.getSelector())),
+        ),
+      ).pipe(map(packet => ({ method: 'recieveInteractivePacket', params: packet }))),
+  ];
 
-    this.state = State.Ready;
+  constructor(
+    private readonly store: Store<fromRoot.IState>,
+    private readonly base: BaseStateSyncService,
+  ) {}
+
+  /**
+   * Attaches listeners to the iframe.
+   */
+  public bind(frame: HTMLIFrameElement): this {
+    const rpc = new RPC(frame.contentWindow, '1.0');
+    bindToRPC(this.store, rpc);
+
+    rpc.expose('controlsReady', () => {
+      mergeObs(...this.fx.map(fn => fn()))
+        .pipe(takeUntilRpcClosed(rpc))
+        .subscribe(data => rpc.call(data.method, data.params, false));
+    });
+
+    this.base.attachInternalMethods(rpc);
+
+    mergeObs(this.base.refresh, fromEvent(frame, 'loaded'))
+      .pipe(takeUntil(this.closed), take(1))
+      .subscribe(
+        () => {
+          rpc.destroy();
+          frame.src = `${frame.src}.`;
+          this.bind(frame);
+        },
+        undefined,
+        () => rpc.destroy(),
+      );
+
+    return this;
   }
 
-  private sendInteractive(...packets: { method: string; params: object }[]): void {
-    packets.forEach(packet => {
-      this.rpc.call('recieveInteractivePacket', packet, false);
-    });
+  /**
+   * Tears down resources associated with the service.
+   */
+  public unbind() {
+    this.closed.next(undefined);
+  }
+
+  public ngOnDestroy() {
+    this.unbind();
   }
 }

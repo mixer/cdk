@@ -8,6 +8,7 @@ import { CommonMethods } from '../app/editor/bedrock.actions';
 import * as forControls from '../app/editor/controls/controls.actions';
 import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
+import * as forPreflight from '../app/editor/preflight/preflight.actions';
 import * as forProject from '../app/editor/project/project.actions';
 import * as forSchema from '../app/editor/schema/schema.actions';
 import * as forUploader from '../app/editor/uploader/uploader.actions';
@@ -18,6 +19,7 @@ import { Encrypter } from '../app/editor/shared/encrypter';
 import { FileDataStore } from './datastore';
 import { hasMetadata, NoAuthenticationError } from './errors';
 import { OpenBuilder } from './file-selector';
+import { NodeChecker } from './node-checker';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { ProjectLinker } from './project-linker';
@@ -137,7 +139,14 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
    * Encrypts a string of text.
    */
   [CommonMethods.EncryptString]: async (options: { data: string }) => {
-    return new Encrypter().encrypt(options.data);
+    return await new Encrypter().encrypt(options.data);
+  },
+
+  /**
+   * Toggles the visibility of Chrome dev tools.
+   */
+  [CommonMethods.ToggleDevTools]: async (_options: void, server) => {
+    server.window.webContents.toggleDevTools();
   },
 
   /**
@@ -293,6 +302,11 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
 
     return wds.start();
   },
+
+  /**
+   * Returns data about the node install, or lack thereof, on this machine.
+   */
+  [forPreflight.PreflightMethods.GetNodeData]: async () => new NodeChecker().check(),
 };
 
 /**
