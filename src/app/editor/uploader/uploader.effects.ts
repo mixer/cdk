@@ -4,7 +4,7 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { merge } from 'rxjs/observable/merge';
-import { filter, map, mapTo, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, map, mapTo, switchMap, take, tap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService, RpcError } from '../electron.service';
@@ -12,6 +12,7 @@ import { RequireLink } from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
 import { SchemaActionTypes, UploadWorldFailed, UploadWorldSchema } from '../schema/schema.actions';
 import { catchErrorType } from '../shared/catchErrorType';
+import { toLatestFrom } from '../shared/operators';
 import { UploaderConsoleService } from './uploader-console.service';
 import { UploaderDialogComponent } from './uploader-dialog/uploader-dialog.component';
 import {
@@ -41,9 +42,9 @@ export class UploaderEffects {
       withLatestDirectory(this.store),
       switchMap(([, directory]) =>
         fromPromise(this.electron.call(UploaderMethods.StartUpload, { directory })).pipe(
-          withLatestFrom(this.store.select(selectUploadSchema)),
+          toLatestFrom(this.store.select(selectUploadSchema)),
           map(
-            ([, uploadSchema]) =>
+            uploadSchema =>
               new SetScreen(
                 uploadSchema ? UploaderScreen.UploadingSchema : UploaderScreen.Completed,
               ),
@@ -102,9 +103,9 @@ export class UploaderEffects {
   public readonly startUploading = this.actions
     .ofType(UploaderActionTypes.START_UPLOADING)
     .pipe(
-      withLatestFrom(this.store.select(selectUploadControls)),
+      toLatestFrom(this.store.select(selectUploadControls)),
       map(
-        ([, uploadControls]) =>
+        uploadControls =>
           new SetScreen(
             uploadControls ? UploaderScreen.UploadingControls : UploaderScreen.UploadingSchema,
           ),

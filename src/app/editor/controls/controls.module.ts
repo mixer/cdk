@@ -12,6 +12,7 @@ import { StoreModule } from '@ngrx/store';
 
 import { ControlsConsoleModule } from '../controls-console/controls-console.module';
 import { EmulationModule } from '../emulation/emulation.module';
+import { RemoteConnectModule } from '../remote-connect/remote-connect.module';
 import { SharedModule } from '../shared/shared.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { ControlEffects } from './control.effects';
@@ -39,6 +40,7 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
     MatDialogModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    RemoteConnectModule,
     SharedModule,
     StoreModule.forFeature('controls', controlReducer),
   ],
@@ -46,15 +48,15 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
   declarations: [
     ControlsControlsComponent,
     ControlsPanelComponent,
-    WebpackConsolePanelComponent,
     LocalControlsComponent,
     WebpackConfigLocatorModalComponent,
+    WebpackConsolePanelComponent,
   ],
   exports: [ControlsPanelComponent, WebpackConsolePanelComponent],
   entryComponents: [
     ControlsPanelComponent,
-    WebpackConsolePanelComponent,
     WebpackConfigLocatorModalComponent,
+    WebpackConsolePanelComponent,
   ],
 })
 export class ControlsModule {}

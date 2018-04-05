@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { cloneDeep } from 'lodash';
 import { stringify } from 'querystring';
-import { combineLatest, switchMap, take } from 'rxjs/operators';
+import { switchMap, take, withLatestFrom } from 'rxjs/operators';
 
 import { currentUser } from './account/account.reducer';
 import { CommonMethods } from './bedrock.actions';
@@ -72,7 +72,7 @@ export class IssueService {
             })
             .catch(() => null),
         ),
-        combineLatest(this.store.select(currentUser)),
+        withLatestFrom(this.store.select(currentUser)),
       )
       .subscribe(([encrypted, user]) => {
         body = unindent(`

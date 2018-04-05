@@ -1,7 +1,7 @@
 import { OnDestroy } from '@angular/core';
 import { UnaryFunction } from 'rxjs/interfaces';
 import { Observable } from 'rxjs/Observable';
-import { takeUntil } from 'rxjs/operators';
+import { switchMap, take, takeUntil } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 /**
@@ -27,4 +27,14 @@ export function untilDestroyed<T>(
   };
 
   return takeUntil<T>(notifier);
+}
+
+/**
+ * toLatestFrom merges the last result of the given
+ * observable to this chain.
+ */
+export function toLatestFrom<T>(
+  other: Observable<T>,
+): UnaryFunction<Observable<any>, Observable<T>> {
+  return switchMap(() => other.pipe(take(1)));
 }

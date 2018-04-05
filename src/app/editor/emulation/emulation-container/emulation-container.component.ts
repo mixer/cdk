@@ -25,7 +25,7 @@ import {
 
 import * as fromRoot from '../../bedrock.reducers';
 import { LayoutActionTypes } from '../../layout/layout.actions';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { untilDestroyed } from '../../shared/operators';
 import { IBlock, IDevice } from '../devices';
 import { SetEffectiveDimensions, SetFittedVideoSize } from '../emulation.actions';
 import {

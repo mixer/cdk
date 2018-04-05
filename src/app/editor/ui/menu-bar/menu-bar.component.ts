@@ -13,7 +13,7 @@ import { fromEvent } from 'rxjs/observable/fromEvent';
 import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 
 import { IState } from '../../bedrock.reducers';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { untilDestroyed } from '../../shared/operators';
 import { CloseMenu, OpenDirection, OpenMenu } from './menu-bar.actions';
 import * as fromMenu from './menu-bar.reducer';
 

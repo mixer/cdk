@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>An Error Occurred</h1>
+<div mat-dialog-content>
+    <p *ngIf="(error | async)">
+      An error occurred while uploading your schema: {{ (error | async)?.message }}. Please <a (click)="openIssue()" class="body-link">open an issue</a> if you think this one's on us!
+    </p>
+</div>
+<div mat-dialog-actions>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="cancel()">Close</button>
+</div>

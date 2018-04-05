@@ -41,7 +41,7 @@ import { BaseStateSyncService } from './sync/base-state-sync.service';
 import { WebpackConfigLocatorModalComponent } from './webpack-config-locator-modal/webpack-config-locator-modal.component';
 
 /**
- * Effects module for account actions.
+ * Effects module for controls actions.
  */
 @Injectable()
 export class ControlEffects {

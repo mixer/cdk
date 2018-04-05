@@ -13,7 +13,7 @@ import { debounceTime } from 'rxjs/operators';
 import { ITheme, Terminal } from 'xterm';
 
 import { LayoutActionTypes } from '../../layout/layout.actions';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { untilDestroyed } from '../../shared/operators';
 import { baseTheme } from './themes';
 
 /**

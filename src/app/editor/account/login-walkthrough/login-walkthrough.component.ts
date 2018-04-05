@@ -6,7 +6,7 @@ import { filter, map } from 'rxjs/operators';
 
 import { IUser } from '../../../../server/profile';
 import * as fromRoot from '../../bedrock.reducers';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { untilDestroyed } from '../../shared/operators';
 import { AccountLinkingService } from '../account-linking.service';
 import * as fromAccount from '../account.reducer';
 

@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>Waiting for Game to Connect</h1>
+<div mat-dialog-content>
+    <div class="layout-row layout-align-center-center margin-vertical-6x">
+      <mat-spinner [diameter]="64"></mat-spinner>
+    </div>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="dialog.close()">Cancel</button>
+</div>

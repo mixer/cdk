@@ -3,11 +3,12 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of } from 'rxjs/observable/of';
-import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
-import { TryOpenProject } from '../project/project.actions';
+import { CloseProject, TryOpenProject } from '../project/project.actions';
+import { toLatestFrom } from '../shared/operators';
 import {
   AppendCreateUpdate,
   ErrorCreating,
@@ -36,6 +37,7 @@ export class NewProjectEffects {
             .call(NewProjectMethods.StartCreate, action.options)
             .return(new FinishCreating()),
         ).pipe(
+          startWith(<Action>new CloseProject()),
           catchError(err =>
             of<Action>(new AppendCreateUpdate(err.stack), new ErrorCreating(err.stack)),
           ),
@@ -50,8 +52,8 @@ export class NewProjectEffects {
   public readonly finishCreation = this.actions
     .ofType<FinishCreating>(NewProjectActionTypes.CREATE_COMPLETE)
     .pipe(
-      withLatestFrom(this.store.select(targetDirectory).pipe(filter(Boolean))),
-      map(([, dir]) => new TryOpenProject(dir)),
+      toLatestFrom(this.store.select(targetDirectory).pipe(filter(Boolean))),
+      map(dir => new TryOpenProject(dir)),
     );
 
   constructor(

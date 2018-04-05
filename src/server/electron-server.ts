@@ -10,6 +10,7 @@ import * as forLayout from '../app/editor/layout/layout.actions';
 import * as forNewProject from '../app/editor/new-project/new-project.actions';
 import * as forPreflight from '../app/editor/preflight/preflight.actions';
 import * as forProject from '../app/editor/project/project.actions';
+import * as forRemote from '../app/editor/remote-connect/remote-connect.actions';
 import * as forSchema from '../app/editor/schema/schema.actions';
 import * as forUploader from '../app/editor/uploader/uploader.actions';
 
@@ -20,6 +21,7 @@ import { hasMetadata, NoAuthenticationError } from './errors';
 import { OpenBuilder } from './file-selector';
 import { IssueTracker } from './issue-tracker';
 import { NodeChecker } from './node-checker';
+import { ParticipantConnector } from './participant-connector';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { ProjectLinker } from './project-linker';
@@ -244,6 +246,13 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     const relative = path.relative(options.directory, file);
     await new WebpackDevServer(new Project(options.directory)).setConfigFilename(relative);
     return relative;
+  },
+
+  /**
+   * Joins the user as a participant to the target channel.
+   */
+  [forRemote.RemoteConnectMethods.ConnectParticipant]: async (options: { channelId: number }) => {
+    return await new ParticipantConnector(options.channelId).join();
   },
 
   /**
