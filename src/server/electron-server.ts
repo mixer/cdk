@@ -15,10 +15,10 @@ import * as forUploader from '../app/editor/uploader/uploader.actions';
 
 import { spawn } from 'child_process';
 import { IRemoteError } from '../app/editor/electron.service';
-import { Encrypter } from '../app/editor/shared/encrypter';
 import { FileDataStore } from './datastore';
 import { hasMetadata, NoAuthenticationError } from './errors';
 import { OpenBuilder } from './file-selector';
+import { IssueTracker } from './issue-tracker';
 import { NodeChecker } from './node-checker';
 import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
@@ -138,8 +138,8 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   /**
    * Encrypts a string of text.
    */
-  [CommonMethods.EncryptString]: async (options: { data: string }) => {
-    return await new Encrypter().encrypt(options.data);
+  [CommonMethods.EncryptString]: async data => {
+    return await new IssueTracker().save(data);
   },
 
   /**

@@ -7,7 +7,7 @@ import { CommonMethods, UnhandledError } from '../bedrock.actions';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import * as forNewProject from './new-project.actions';
-import { screen } from './new-project.reducer';
+import { selectScreen } from './new-project.reducer';
 
 /**
  * The NewProjectService holds common state while the project wizard is open.
@@ -27,10 +27,13 @@ export class NewProjectService {
   public setDialog(ref: MatDialogRef<any>) {
     this.dialog = ref;
 
-    this.store.select(screen).pipe(
-      takeUntil(ref.afterClosed()),
-      map(screen => screen === forNewProject.NewProjectScreen.Creating),
-    ).subscribe(disableClose => ref.disableClose = disableClose);
+    this.store
+      .select(selectScreen)
+      .pipe(
+        takeUntil(ref.afterClosed()),
+        map(screen => screen === forNewProject.NewProjectScreen.Creating),
+      )
+      .subscribe(disableClose => (ref.disableClose = disableClose));
 
     ref.afterClosed().subscribe(() => this.store.dispatch(new forNewProject.Cancel()));
   }

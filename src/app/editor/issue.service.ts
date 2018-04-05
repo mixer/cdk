@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { cloneDeep } from 'lodash';
 import { stringify } from 'querystring';
 import { combineLatest, switchMap, take } from 'rxjs/operators';
 
@@ -10,7 +11,29 @@ import { AppConfig } from './editor.config';
 import { ElectronService, RpcError } from './electron.service';
 import { unindent } from './shared/ds';
 import { Electron } from './shared/electron';
-import { jsonifyPlain } from './shared/jsonify-plain';
+
+/**
+ * Removes complex/unnecessary objects from the given state, for issue
+ * reporting.
+ */
+function simplifyState(state: forRoot.IState) {
+  const cloned: any = cloneDeep(state);
+  delete cloned.layout.goldenLayout;
+  return cloned;
+}
+
+/**
+ * Maximum number of characters to include in stacktraces / bodies.
+ */
+const maxCharacters = 256;
+
+function truncate(text: string, toMax: number = maxCharacters, trailer: string = '...') {
+  if (text.length < toMax) {
+    return text;
+  }
+
+  return text.slice(0, toMax - trailer.length) + trailer;
+}
 
 /**
  * The IssueService provides utilities for the user to report an issue
@@ -26,60 +49,53 @@ export class IssueService {
   /**
    * Opens a window to report a Github issue.
    */
-  public reportIssue(title: string, body: string) {
-    this.store
-      .pipe(
-        take(1),
-        switchMap(state =>
-          this.electron
-            .call<string>(CommonMethods.EncryptString, { data: jsonifyPlain(state) })
-            .catch(() => null),
-        ),
-        combineLatest(this.store.select(currentUser)),
-      )
-      .subscribe(([state, user]) => {
-        body = unindent(body);
-        if (state) {
-          body +=
-            // tslint:disable-next-line
-            '\n\n' +
-            unindent(`
-            ### Editor Details
-
-            **Version**: ${AppConfig.version}
-            **Mixer User ID**: ${user ? user.id : 'Anonymous'}
-
-            <!-- This contains information about your editor's state. It is encrypted
-              so that only Mixer can read it, but you can delete it if you want. -->
-
-            \`\`\`
-            ${state}
-            \`\`\`
-          `);
-        }
-
-        const url = `https://github.com/mixer/miix-cli/issues/new?${stringify({ title, body })}`;
-        Electron.shell.openExternal(url);
-      });
+  public reportIssue(title: string, body: string, metadata?: any) {
+    this.sendReport(title, truncate(body), metadata);
   }
 
   /**
    * Wraps and reports an error that occurred from an electron service.
    */
-  public reportRpcError(title: string, err: RpcError) {
-    this.reportIssue(
-      title,
-      `
-      ### Steps to Reproduce
+  public reportRpcError(title: string, err: RpcError, metadata?: any) {
+    this.sendReport(title, truncate(JSON.stringify(err, null, 2)), metadata);
+  }
 
-      <!-- Add your reproduction steps here! -->
+  private sendReport(title: string, body: string, metadata?: any) {
+    this.store
+      .pipe(
+        take(1),
+        switchMap(state =>
+          this.electron
+            .call<string>(CommonMethods.EncryptString, {
+              state: simplifyState(state),
+              metadata,
+            })
+            .catch(() => null),
+        ),
+        combineLatest(this.store.select(currentUser)),
+      )
+      .subscribe(([encrypted, user]) => {
+        body = unindent(`
+          ### Steps to Reproduce
 
-      ### Error
+          <!-- Add your reproduction steps here! -->
 
-      \`\`\`
-      ${jsonifyPlain(err)}
-      \`\`\`
-    `,
-    );
+          ### Error
+
+          ${body}
+
+          ### Editor Details
+
+          **Version**: ${AppConfig.version}
+          **Mixer User ID**: ${user ? user.id : 'Anonymous'}
+          <!-- We encrypted and stored information about editor's state. Only
+            Mixer can read it, and only if you include the below data in your
+            issue. You can delete it if you need to. -->
+          **Encrypted Editor State**: \`${encrypted ? JSON.stringify(encrypted) : 'FAILED'}\`
+        `);
+
+        const url = `https://github.com/mixer/miix-cli/issues/new?${stringify({ title, body })}`;
+        Electron.shell.openExternal(url);
+      });
   }
 }

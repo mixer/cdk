@@ -3,18 +3,18 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of } from 'rxjs/observable/of';
-import { filter, map, catchError, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { TryOpenProject } from '../project/project.actions';
 import {
+  AppendCreateUpdate,
   ErrorCreating,
   FinishCreating,
   NewProjectActionTypes,
   NewProjectMethods,
   StartCreating,
-  AppendCreateUpdate,
 } from './new-project.actions';
 import { targetDirectory } from './new-project.reducer';
 
@@ -31,10 +31,15 @@ export class NewProjectEffects {
     .ofType<StartCreating>(NewProjectActionTypes.CREATE_START)
     .pipe(
       switchMap(action =>
-        fromPromise(this.electron
-          .call(NewProjectMethods.StartCreate, action.options)
-          .return(new FinishCreating()))
-          .pipe(catchError(err => of<Action>(new AppendCreateUpdate(err.stack), new ErrorCreating(err.stack)))),
+        fromPromise(
+          this.electron
+            .call(NewProjectMethods.StartCreate, action.options)
+            .return(new FinishCreating()),
+        ).pipe(
+          catchError(err =>
+            of<Action>(new AppendCreateUpdate(err.stack), new ErrorCreating(err.stack)),
+          ),
+        ),
       ),
     );
 

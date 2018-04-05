@@ -47,5 +47,5 @@
 <div mat-dialog-actions>
   <button mat-button (click)="back()">Back</button>
   <span class="flex-fill"></span>
-  <button mat-button (click)="submit()" [disabled]="!form.valid">Confirm</button>
+  <button mat-button (click)="submit()" [disabled]="!form.valid && !form.pristine">Confirm</button>
 </div>

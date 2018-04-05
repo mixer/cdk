@@ -1,7 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { MatButtonModule, MatDialogModule, MatInputModule, ErrorStateMatcher } from '@angular/material';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ErrorStateMatcher,
+  MatButtonModule,
+  MatDialogModule,
+  MatInputModule,
+} from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
@@ -20,7 +25,7 @@ import { NewProjectService } from './new-project.service';
 import { TemplateSelectionComponent } from './template-selection/template-selection.component';
 import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.component';
 
-const errorStateMatcher = { isErrorState: (ctrl:FormControl) => ctrl.invalid };
+const errorStateMatcher = { isErrorState: (ctrl: FormControl) => ctrl.invalid };
 
 /**
  * Module containing wizardry for creating a new project.
@@ -41,10 +46,7 @@ const errorStateMatcher = { isErrorState: (ctrl:FormControl) => ctrl.invalid };
     StoreModule.forFeature('newProject', newProjectReducer),
   ],
   entryComponents: [NewProjectDialogComponent],
-  providers: [
-    NewProjectService,
-    {provide: ErrorStateMatcher, useValue: errorStateMatcher },
-  ],
+  providers: [NewProjectService, { provide: ErrorStateMatcher, useValue: errorStateMatcher }],
   declarations: [
     NewProjectDialogComponent,
     WelcomeScreenComponent,
