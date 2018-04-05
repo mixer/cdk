@@ -7,19 +7,22 @@
         <mat-form-field>
           <input matInput #message maxlength="60" placeholder="Project Name*" formControlName="projectName">
           <mat-hint align="start">Should be globally unique.</mat-hint>
-          <mat-error *ngIf="getInput('projectName').touched && getInput('projectName').hasError('projectName')">
+          <mat-error *ngIf="getInput('projectName').hasError('length')">
+            Your project name should be between 2 and 60 characters.
+          </mat-error>
+          <mat-error *ngIf="getInput('projectName').hasError('projectName')">
             Your project name can only contain alphanumeric characters with dashes.
           </mat-error>
-          <mat-error *ngIf="getInput('projectName').touched && getInput('projectName').hasError('projectNameTaken')">
+          <mat-error *ngIf="getInput('projectName').hasError('projectNameTaken')">
             Shucks! That project name has already been taken.
           </mat-error>
-          <mat-error *ngIf="getInput('projectName').touched && getInput('projectName').hasError('required')">
+          <mat-error *ngIf="getInput('projectName').hasError('required')">
             The project name is required.
           </mat-error>
         </mat-form-field>
         <mat-form-field>
           <input matInput #message maxlength="60" placeholder="Author*" formControlName="author">
-          <mat-error *ngIf="getInput('author').touched && getInput('author').hasError('required')">
+          <mat-error *ngIf="getInput('author').hasError('required')">
             The project author is required.
           </mat-error>
         </mat-form-field>
@@ -44,5 +47,5 @@
 <div mat-dialog-actions>
   <button mat-button (click)="back()">Back</button>
   <span class="flex-fill"></span>
-  <button mat-button (click)="submit()" [disabled]="!form.valid && !form.pristine">Confirm</button>
+  <button mat-button (click)="submit()" [disabled]="!form.valid">Confirm</button>
 </div>
