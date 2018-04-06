@@ -5,6 +5,8 @@ import { ToggleDevTools } from '../../bedrock.actions';
 import { IState } from '../../bedrock.reducers';
 import { ControlsRemoteConsoleService } from '../../controls-console/controls-remote-console.service';
 import { GoldenPanel, OpenPanel, stackedLocator } from '../../layout/layout.actions';
+import { RemoteState, SetRemoteState } from '../../remote-connect/remote-connect.actions';
+import { isRemoteConnected } from '../../remote-connect/remote-connect.reducer';
 import { SetReady } from '../controls.actions';
 import { selectIsReady } from '../controls.reducer';
 import { BaseStateSyncService } from '../sync/base-state-sync.service';
@@ -24,6 +26,11 @@ export class ControlsControlsComponent {
    * Emits if there's any unread error message.
    */
   public hasUnreadError = this.console.hasUnreadError();
+
+  /**
+   * Emits whether the controls have a remote connection running.
+   */
+  public readonly isRemoteConnected = this.store.select(isRemoteConnected);
 
   /**
    * Selects whether the controls are ready.
@@ -48,5 +55,9 @@ export class ControlsControlsComponent {
 
   public toggleReady() {
     this.store.dispatch(new SetReady());
+  }
+
+  public disconnectRemote() {
+    this.store.dispatch(new SetRemoteState(RemoteState.Disconnected));
   }
 }

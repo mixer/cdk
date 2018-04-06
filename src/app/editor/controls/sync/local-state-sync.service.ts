@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { ISettings, RPC } from '@mcph/miix-std/dist/internal';
+import { RPC } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
-import { isEqual } from 'lodash';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { merge as mergeObs } from 'rxjs/observable/merge';
 import { delay, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operators';
@@ -9,14 +8,12 @@ import { delay, distinctUntilChanged, map, take, takeUntil } from 'rxjs/operator
 import { Observable } from 'rxjs/Observable';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import * as fromRoot from '../../bedrock.reducers';
-import { bindToRPC } from '../../controls-console/controls-remote-console.service';
-import { emulationState } from '../../emulation/emulation.reducer';
 import { ControlsSource } from '../../schema/sources/controls';
 import { GroupSource } from '../../schema/sources/group';
 import { ParticipantSource } from '../../schema/sources/participant';
 import { Source } from '../../schema/sources/source';
 import { selectIsReady } from '../controls.reducer';
-import { BaseStateSyncService, takeUntilRpcClosed } from './base-state-sync.service';
+import { BaseStateSyncService } from './base-state-sync.service';
 
 /**
  * The LocalStateSyncService manages synchronizing state between what's in the
@@ -41,20 +38,6 @@ export class LocalStateSyncService implements OnDestroy {
    */
   private fx: (() => Observable<{ method: string; params: any }>)[] = [
     () =>
-      this.store.select(emulationState).pipe(
-        map(
-          state =>
-            <ISettings>{
-              language: state.language,
-              placesVideo: state.device.placesVideo,
-              platform: state.device.platform,
-            },
-        ),
-        distinctUntilChanged<ISettings>(isEqual),
-        map(settings => ({ method: 'updateSettings', params: settings })),
-      ),
-
-    () =>
       this.store.select(selectIsReady).pipe(
         delay(1),
         distinctUntilChanged(),
@@ -77,7 +60,7 @@ export class LocalStateSyncService implements OnDestroy {
 
   constructor(
     private readonly store: Store<fromRoot.IState>,
-    private readonly base: BaseStateSyncService,
+    public readonly base: BaseStateSyncService,
   ) {}
 
   /**
@@ -85,15 +68,7 @@ export class LocalStateSyncService implements OnDestroy {
    */
   public bind(frame: HTMLIFrameElement): this {
     const rpc = new RPC(frame.contentWindow, '1.0');
-    bindToRPC(this.store, rpc);
-
-    rpc.expose('controlsReady', () => {
-      mergeObs(...this.fx.map(fn => fn()))
-        .pipe(takeUntilRpcClosed(rpc))
-        .subscribe(data => rpc.call(data.method, data.params, false));
-    });
-
-    this.base.attachInternalMethods(rpc);
+    this.base.attachInternalMethods(rpc, this.fx);
 
     mergeObs(this.base.refresh, fromEvent(frame, 'loaded'))
       .pipe(takeUntil(this.closed), take(1))

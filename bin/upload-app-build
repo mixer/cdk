@@ -1,0 +1,17 @@
+#!/bin/sh
+
+read -p "Publish the current build for general availability (y/n)? " RES
+if [ "$RES" != "y" ]; then
+  exit 0
+fi
+
+npm run build:editor:dist
+
+for path in app/*.{dmg,exe,yml,zip,blockmap,json}; do
+  blob=$(basename "$path")
+  echo "Uploading $blob"
+  az storage blob upload \
+    -c cdk-ga \
+    -f $path \
+    -n $blob
+done

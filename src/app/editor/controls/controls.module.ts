@@ -21,6 +21,7 @@ import { ControlsPanelComponent } from './controls-panel/controls-panel.componen
 import { ControlsWebpackConsoleService } from './controls-webpack-console.service';
 import { controlReducer } from './controls.reducer';
 import { LocalControlsComponent } from './local-controls/local-controls.component';
+import { RemoteControlsComponent } from './remote-controls/remote-controls.component';
 import { BaseStateSyncService } from './sync/base-state-sync.service';
 import { WebpackConfigLocatorModalComponent } from './webpack-config-locator-modal/webpack-config-locator-modal.component';
 import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-console-panel.component';
@@ -49,6 +50,7 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
     ControlsControlsComponent,
     ControlsPanelComponent,
     LocalControlsComponent,
+    RemoteControlsComponent,
     WebpackConfigLocatorModalComponent,
     WebpackConsolePanelComponent,
   ],

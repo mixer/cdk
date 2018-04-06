@@ -4,8 +4,10 @@
   position: absolute;
   top: $dimension-gutter-sm;
   left: $dimension-gutter-sm;
+  right: $dimension-gutter-sm;
   z-index: 5;
   display: flex;
+  pointer-events: none;
 }
 
 
@@ -20,6 +22,7 @@ button {
   cursor: pointer;
   border: 1px solid transparent;
   position: relative;
+  pointer-events: auto;
 
   mat-icon {
     width: 1.2em;

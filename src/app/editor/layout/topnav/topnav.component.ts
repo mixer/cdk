@@ -11,7 +11,7 @@ import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/
 import { CloseProject, RequireLink, StartOpenProject } from '../../project/project.actions';
 import { RemoteConnectionDialogComponent } from '../../remote-connect/dialog/dialog.component';
 import { RemoteState, SetRemoteState } from '../../remote-connect/remote-connect.actions';
-import { selectRemoteState } from '../../remote-connect/remote-connect.reducer';
+import { isRemoteConnected } from '../../remote-connect/remote-connect.reducer';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
 import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
@@ -48,9 +48,7 @@ export class TopNavComponent {
   /**
    * Selects whether the editor screen is open.
    */
-  public readonly hasRemoteConnection = this.store
-    .select(selectRemoteState)
-    .pipe(map(s => s !== RemoteState.Disconnected));
+  public readonly hasRemoteConnection = this.store.select(isRemoteConnected);
 
   constructor(private readonly dialog: MatDialog, private readonly store: Store<fromRoot.IState>) {}
 

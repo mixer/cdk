@@ -304,12 +304,13 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     options: { directory: string },
     server: ElectronServer,
   ) => {
-    const wds = new WebpackBundleTask(new Project(options.directory));
+    const project = new Project(options.directory);
+    const wds = new WebpackBundleTask(project);
     server.tasks.add(wds);
     wds.data.subscribe(data => server.sendAction(new forUploader.UpdateWebpackConsole(data)));
     wds.state.subscribe(state => server.sendAction(new forUploader.UpdateWebpackState(state)));
 
-    return wds.start();
+    return await wds.start();
   },
 
   /**

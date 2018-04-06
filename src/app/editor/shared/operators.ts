@@ -1,7 +1,7 @@
 import { OnDestroy } from '@angular/core';
 import { UnaryFunction } from 'rxjs/interfaces';
 import { Observable } from 'rxjs/Observable';
-import { switchMap, take, takeUntil } from 'rxjs/operators';
+import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 /**
@@ -37,4 +37,14 @@ export function toLatestFrom<T>(
   other: Observable<T>,
 ): UnaryFunction<Observable<any>, Observable<T>> {
   return switchMap(() => other.pipe(take(1)));
+}
+
+const boolFilter = filter(Boolean);
+
+/**
+ * toLatestFrom merges the last result of the given
+ * observable to this chain.
+ */
+export function truthy<T>(): UnaryFunction<Observable<T | void | undefined | null>, Observable<T>> {
+  return boolFilter;
 }

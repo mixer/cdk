@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
-import { filter, take, takeUntil } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 
 import { ReportRpcError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
-import { toLatestFrom } from '../../shared/operators';
+import { toLatestFrom, truthy } from '../../shared/operators';
 import { RemoteState, SetRemoteState } from '../remote-connect.actions';
-import { selectRemoteError, selectRemoteState } from '../remote-connect.reducer';
+import { isRemoteConnected, selectRemoteError, selectRemoteState } from '../remote-connect.reducer';
 
 /**
  * The RemoteConnectionDialog walks the user through plugging their local
@@ -48,8 +48,8 @@ export class RemoteConnectionDialogComponent {
 
     // Once we're active, close the dialog.
     store
-      .select(selectRemoteState)
-      .pipe(takeUntil(dialog.beforeClose()), filter(s => s === RemoteState.Active))
+      .select(isRemoteConnected)
+      .pipe(takeUntil(dialog.beforeClose()), truthy())
       .subscribe(() => dialog.close());
   }
 

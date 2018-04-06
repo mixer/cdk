@@ -3,12 +3,12 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of } from 'rxjs/observable/of';
-import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
+import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { CloseProject, TryOpenProject } from '../project/project.actions';
-import { toLatestFrom } from '../shared/operators';
+import { withLatestDirectory } from '../project/project.reducer';
 import {
   AppendCreateUpdate,
   ErrorCreating,
@@ -17,7 +17,6 @@ import {
   NewProjectMethods,
   StartCreating,
 } from './new-project.actions';
-import { targetDirectory } from './new-project.reducer';
 
 /**
  * Effects module for account actions.
@@ -51,10 +50,7 @@ export class NewProjectEffects {
   @Effect()
   public readonly finishCreation = this.actions
     .ofType<FinishCreating>(NewProjectActionTypes.CREATE_COMPLETE)
-    .pipe(
-      toLatestFrom(this.store.select(targetDirectory).pipe(filter(Boolean))),
-      map(dir => new TryOpenProject(dir)),
-    );
+    .pipe(withLatestDirectory(this.store), map(([, dir]) => new TryOpenProject(dir)));
 
   constructor(
     private readonly actions: Actions,

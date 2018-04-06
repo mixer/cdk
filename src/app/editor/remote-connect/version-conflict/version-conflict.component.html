@@ -2,8 +2,8 @@
 <div mat-dialog-content>
   <p>
     We were able to connect, but the Interactive game connected to your channel is {{ connectedGameName | async }} (version ID {{ connectedVersionId | async }}),
-    <span *ngIf="(linkedGame | async)">while this custom control bundle is linked to {{ linkedGame | async }} (version ID {{ linkedVersionId | async }}).</span>
-    <span *ngIf="!(linkedGame | async)">while this custom control bundle is not linked to any game.</span>
+    <span *ngIf="(linkedGameName | async)">while this custom control bundle is linked to {{ linkedGameName | async }} (version ID {{ linkedVersionId | async }}).</span>
+    <span *ngIf="!(linkedGameName | async)">while this custom control bundle is not linked to any game.</span>
     Because the sets of controls are different, you may have some unexpected results if the game sends events your controls don't understand.
   </p>
   <p>
@@ -17,5 +17,5 @@
   <button mat-button (click)="dialog.close()">Cancel</button>
   <span class="flex-fill"></span>
   <button mat-button (click)="continue()">Continue</button>
-  <button mat-button (click)="link()">Link Game</button>
+  <button mat-button (click)="link()" cdkFocusInitial>Link Game</button>
 </div>

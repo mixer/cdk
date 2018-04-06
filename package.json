@@ -1,5 +1,5 @@
 {
-  "name": "@mcph/miix-cli",
+  "name": "@mixer/cdk",
   "version": "0.2.7",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "./dist/src/electron.js",
@@ -17,7 +17,7 @@
     "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test,types}/**/*.ts\"",
     "build:cli": "rimraf dist && tsc",
     "build:editor:pack": "npm run -s build:editor:base && electron-builder --dir",
-    "build:editor:dist": "npm run -s build:editor:base && electron-builder",
+    "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
@@ -27,6 +27,7 @@
   "build": {
     "appId": "com.mixer.dev.cdk",
     "productName": "Control Development Kit",
+    "artifactName": "CDK-${version}.${ext}",
     "copyright": "Copyright Microsoft",
     "directories": {
       "output": "app"
@@ -36,7 +37,13 @@
     ],
     "mac": {
       "category": "public.app-category.developer-tools"
-    }
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://cdkreleases.blob.core.windows.net/cdk-ga/"
+      }
+    ]
   },
   "nyc": {
     "include": [
