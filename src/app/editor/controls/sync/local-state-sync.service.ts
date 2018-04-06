@@ -70,6 +70,11 @@ export class LocalStateSyncService implements OnDestroy {
     const rpc = new RPC(frame.contentWindow, '1.0');
     this.base.attachInternalMethods(rpc, this.fx);
 
+    rpc.expose('sendInteractivePacket', () => {
+      // noop: in production we'd send this to the server, for
+      // now we'll let it go to the control log and drop it.
+    });
+
     mergeObs(this.base.refresh, fromEvent(frame, 'loaded'))
       .pipe(takeUntil(this.closed), take(1))
       .subscribe(

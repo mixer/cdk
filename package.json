@@ -13,7 +13,7 @@
     "test:unit": "mocha",
     "test:lint": "tslint --project tsconfig.json '{src,test}/**/*.ts'",
     "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js && npm run test:lint -- --fix",
-    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\" \"bin/*\"",
+    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\" \"bin/miix\"",
     "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test,types}/**/*.ts\"",
     "build:cli": "rimraf dist && tsc",
     "build:editor:pack": "npm run -s build:editor:base && electron-builder --dir",
