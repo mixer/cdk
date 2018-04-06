@@ -30,7 +30,8 @@
     "artifactName": "CDK-${version}.${ext}",
     "copyright": "Copyright Microsoft",
     "directories": {
-      "output": "app"
+      "output": "app",
+      "buildResources": "."
     },
     "files": [
       "./dist"

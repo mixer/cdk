@@ -8,7 +8,6 @@ import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { CloseProject, TryOpenProject } from '../project/project.actions';
-import { withLatestDirectory } from '../project/project.reducer';
 import {
   AppendCreateUpdate,
   ErrorCreating,
@@ -17,6 +16,8 @@ import {
   NewProjectMethods,
   StartCreating,
 } from './new-project.actions';
+import { toLatestFrom, truthy } from '../shared/operators';
+import { targetDirectory } from './new-project.reducer';
 
 /**
  * Effects module for account actions.
@@ -50,7 +51,10 @@ export class NewProjectEffects {
   @Effect()
   public readonly finishCreation = this.actions
     .ofType<FinishCreating>(NewProjectActionTypes.CREATE_COMPLETE)
-    .pipe(withLatestDirectory(this.store), map(([, dir]) => new TryOpenProject(dir)));
+    .pipe(
+      toLatestFrom(this.store.select(targetDirectory).pipe(truthy())),
+      map(dir => new TryOpenProject(dir)),
+    );
 
   constructor(
     private readonly actions: Actions,
