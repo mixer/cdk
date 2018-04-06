@@ -326,6 +326,11 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   [forPreflight.PreflightMethods.GetNodeData]: async () => new NodeChecker().check(),
 };
 
+const enum ServerState {
+  Open,
+  Closed,
+}
+
 /**
  * Host for the electron server, which exposes IPC methods that the renderer
  * process will call. Relatively stateless, contains most of the nitty gritty
@@ -342,29 +347,51 @@ export class ElectronServer {
    */
   public readonly methods = methods;
 
+  /**
+   * Whether the server has been closed.
+   */
+  private state = ServerState.Closed;
+
   constructor(public readonly window: BrowserWindow) {}
 
   /**
    * Emits a Redux action to the rednerer.
    */
   public sendAction(action: Action) {
-    this.window.webContents.send('dispatch', action);
+    this.send('dispatch', action);
   }
 
   /**
    * Boots the electron server.
    */
   public start() {
+    this.state = ServerState.Open;
     this.attachMethods();
+  }
+
+  /**
+   * Stops all running tasks and tears down the server.
+   */
+  public async stop() {
+    this.state = ServerState.Closed;
+    await this.tasks.stopAll();
+  }
+
+  private send(event: string, data: any) {
+    // Guard this to avoid any errors sending data after closing, see
+    // https://github.com/mixer/cdk/issues/60
+    if (this.state === ServerState.Open) {
+      this.window.webContents.send(event, data);
+    }
   }
 
   private attachMethods() {
     Object.keys(this.methods).forEach(name =>
-      ipcMain.addListener(name, (ev: Event, { id, params }: { id: number; params: any }) => {
+      ipcMain.addListener(name, (_ev: Event, { id, params }: { id: number; params: any }) => {
         methods[name](params, this)
-          .then(result => ev.sender.send(name, { id, result }))
+          .then(result => this.send(name, { id, result }))
           .catch((error: Error) =>
-            ev.sender.send(name, {
+            this.send(name, {
               id,
               error: <IRemoteError>{
                 message: error.message,

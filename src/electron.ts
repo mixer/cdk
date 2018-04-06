@@ -44,8 +44,8 @@ function createWindow() {
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-  server.tasks
-    .stopAll()
+  server
+    .stop()
     .catch(() => undefined)
     .then(() => {
       app.quit();
