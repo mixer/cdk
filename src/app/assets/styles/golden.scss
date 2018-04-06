@@ -188,6 +188,11 @@ $color10: #ffffff; // Appears 2 time
       background-image: url('assets/layout/lm_minimize_white.png');
     }
   }
+
+  // Hide other panels if this one is maximized
+  ~ .lm_item {
+    opacity: 0;
+  }
 }
 
 .lm_transition_indicator {
