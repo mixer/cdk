@@ -147,8 +147,15 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   /**
    * Toggles the visibility of Chrome dev tools.
    */
-  [CommonMethods.ToggleDevTools]: async (_options: void, server) => {
-    server.window.webContents.toggleDevTools();
+  [CommonMethods.ToggleDevTools]: async (options: undefined | { x: number; y: number }, server) => {
+    const web = server.window.webContents;
+    if (web.isDevToolsOpened()) {
+      web.closeDevTools();
+    } else if (options) {
+      web.inspectElement(Math.round(options.x), Math.round(options.y));
+    } else {
+      web.openDevTools();
+    }
   },
 
   /**

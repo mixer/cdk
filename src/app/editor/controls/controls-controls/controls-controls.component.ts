@@ -44,7 +44,16 @@ export class ControlsControlsComponent {
   ) {}
 
   public toggleDevtools() {
-    this.store.dispatch(new ToggleDevTools());
+    const frame = document.body.querySelector('iframe');
+    if (!frame) {
+      this.store.dispatch(new ToggleDevTools());
+      return;
+    }
+
+    const rect = frame.getBoundingClientRect();
+    this.store.dispatch(
+      new ToggleDevTools({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }),
+    );
   }
 
   public showConsole() {
