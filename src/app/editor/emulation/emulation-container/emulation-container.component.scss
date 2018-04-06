@@ -19,7 +19,7 @@
 
   &::before,
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     z-index: 1;
   }
@@ -158,8 +158,7 @@
         top: $dimension-gutter-md;
         height: $ghost-height;
         right: $dimension-gutter-md;
-        box-shadow:
-          0 ($ghost-height + $ghost-spacing) * 1 0 $ghost-color,
+        box-shadow: 0 ($ghost-height + $ghost-spacing) * 1 0 $ghost-color,
           0 ($ghost-height + $ghost-spacing) * 2 0 $ghost-color,
           0 ($ghost-height + $ghost-spacing) * 3 0 $ghost-color;
       }

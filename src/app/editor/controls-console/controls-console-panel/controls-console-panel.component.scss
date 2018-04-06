@@ -38,7 +38,7 @@
     }
 
     &:nth-child(odd) {
-      background:  rgba(#fff, 0.02);
+      background: rgba(#fff, 0.02);
     }
 
     &:hover,
@@ -50,36 +50,36 @@
       opacity: 1;
     }
 
-    &[data-line-type="ReceivedMethod"],
-    &[data-line-type="ReceivedReply"] {
+    &[data-line-type='ReceivedMethod'],
+    &[data-line-type='ReceivedReply'] {
       &::before {
         content: '<<<';
         color: $color-success;
       }
     }
 
-    &[data-line-type="SentMethod"],
-    &[data-line-type="SentReply"] {
+    &[data-line-type='SentMethod'],
+    &[data-line-type='SentReply'] {
       &::before {
         content: '>>>';
         color: $color-highlight;
       }
     }
 
-    &[data-line-type="Log"] {
-      &[data-line-level="error"]::before {
+    &[data-line-type='Log'] {
+      &[data-line-level='error']::before {
         content: 'ERR';
         color: $color-danger;
       }
-      &[data-line-level="warn"]::before {
+      &[data-line-level='warn']::before {
         content: 'WARN';
         color: $color-spark;
       }
-      &[data-line-level="info"]::before {
+      &[data-line-level='info']::before {
         content: 'INFO';
         color: $color-primary2;
       }
-      &[data-line-level="debug"]::before {
+      &[data-line-level='debug']::before {
         content: 'DEBG';
         color: $color-text-muted;
       }

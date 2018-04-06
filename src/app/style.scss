@@ -51,7 +51,7 @@ $scrollbars-track-bg: transparent;
 
 ::-webkit-scrollbar-thumb {
   background: rgba($scrollbars-thumb-bg, $scrollbars-opacity);
-  transition: all .3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:vertical {

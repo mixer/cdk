@@ -119,7 +119,7 @@ $color10: #ffffff; // Appears 2 time
 .lm_tab {
   &:hover, // If Tab is hovered
   &.lm_active // If Tab is active, so if it's in foreground
-  {
+ {
     background: $color-primary;
     color: $color-primary-contrast;
   }
@@ -163,14 +163,14 @@ $color10: #ffffff; // Appears 2 time
   // Icon to toggle Pane Docking at mouse hover
   .lm_dock {
     background-image: url('assets/layout/lm_docked_white.png');
-    transform:rotate(-45deg);
-    transition:transform 300ms;
+    transform: rotate(-45deg);
+    transition: transform 300ms;
   }
 }
 
 .lm_stack.lm_docked {
   .lm_controls .lm_dock {
-    transform:rotate(0deg);
+    transform: rotate(0deg);
   }
 
   > .lm_items {
