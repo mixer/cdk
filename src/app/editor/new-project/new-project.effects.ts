@@ -8,6 +8,7 @@ import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { CloseProject, TryOpenProject } from '../project/project.actions';
+import { toLatestFrom, truthy } from '../shared/operators';
 import {
   AppendCreateUpdate,
   ErrorCreating,
@@ -16,7 +17,6 @@ import {
   NewProjectMethods,
   StartCreating,
 } from './new-project.actions';
-import { toLatestFrom, truthy } from '../shared/operators';
 import { targetDirectory } from './new-project.reducer';
 
 /**

@@ -125,6 +125,7 @@
     "chai-subset": "^1.5.0",
     "codemirror": "^5.28.0",
     "core-js": "^2.5.0",
+    "devtron": "^1.4.0",
     "electron": "^1.7.9",
     "electron-builder": "^20.8.1",
     "electron-reload": "^1.2.2",

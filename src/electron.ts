@@ -21,6 +21,8 @@ function createWindow() {
   });
 
   if (isDebug) {
+    // tslint:disable-next-line
+    require('devtron').install();
     window.webContents.openDevTools();
     // tslint:disable-next-line
     window.loadURL(`http://localhost:4200`);
