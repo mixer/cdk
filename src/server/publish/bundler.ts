@@ -1,13 +1,12 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { fork } from 'child_process';
 import * as path from 'path';
+import * as tar from 'tar';
 
 import { PackageIntegrityError } from '../errors';
 import { findReadme, getPackageExecutable } from '../npm';
 import { Project } from '../project';
 import { awaitChildProcess, copy, exists, readDir } from '../util';
-
-const tar = require('tar'); // typings are pretty bad for this module.
 
 /**
  * IBundlerOutput is returned from Bundler.bundle
