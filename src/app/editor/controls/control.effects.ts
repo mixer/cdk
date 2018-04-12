@@ -19,6 +19,7 @@ import {
 import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
+import { truthy } from '../shared/operators';
 import { ControlsWebpackConsoleService } from './controls-webpack-console.service';
 import {
   AutoCloseConsole,
@@ -149,7 +150,7 @@ export class ControlEffects {
               focusGolden(layout.root, GoldenPanel.Controls);
             }
           }),
-          filter(Boolean),
+          truthy(),
           mapTo(<Action>new AutoCloseConsole()),
         );
       }),
@@ -207,7 +208,7 @@ export class ControlEffects {
           .call(ControlsMethods.SetWebpackConfig, { directory })
           .then(path => (path ? new StartWebpack() : null)),
       ),
-      filter(Boolean),
+      truthy(),
     );
 
   constructor(

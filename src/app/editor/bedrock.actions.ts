@@ -55,4 +55,6 @@ export class ReportGenericError implements Action {
  */
 export class ToggleDevTools implements Action {
   public readonly type = BedrockActions.ToggleDevTools;
+
+  constructor(public readonly inspectCoords?: { x: number; y: number }) {}
 }

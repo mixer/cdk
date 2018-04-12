@@ -1,5 +1,5 @@
 {
-  "name": "@mcph/miix-cli",
+  "name": "@mixer/cdk",
   "version": "0.2.7",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "./dist/src/electron.js",
@@ -13,11 +13,11 @@
     "test:unit": "mocha",
     "test:lint": "tslint --project tsconfig.json '{src,test}/**/*.ts'",
     "fmt": "npm-run-all --parallel --silent fmt:ts fmt:js && npm run test:lint -- --fix",
-    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\" \"bin/*\"",
-    "fmt:ts": "prettier --single-quote --trailing-comma all --parser typescript --print-width 100 --write \"{src,test,types}/**/*.ts\"",
+    "fmt:js": "prettier --single-quote --trailing-comma es5 --write --print-width 100 \"src/**/*.js\" \"bin/miix\"",
+    "fmt:ts": "prettier --write \"{src,test,types}/**/*.{scss,js,ts}\"",
     "build:cli": "rimraf dist && tsc",
     "build:editor:pack": "npm run -s build:editor:base && electron-builder --dir",
-    "build:editor:dist": "npm run -s build:editor:base && electron-builder",
+    "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
@@ -27,16 +27,24 @@
   "build": {
     "appId": "com.mixer.dev.cdk",
     "productName": "Control Development Kit",
+    "artifactName": "CDK-${version}.${ext}",
     "copyright": "Copyright Microsoft",
     "directories": {
-      "output": "app"
+      "output": "app",
+      "buildResources": "."
     },
     "files": [
       "./dist"
     ],
     "mac": {
       "category": "public.app-category.developer-tools"
-    }
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://cdkreleases.blob.core.windows.net/cdk-ga/"
+      }
+    ]
   },
   "nyc": {
     "include": [
@@ -55,6 +63,11 @@
     ],
     "sourceMap": true,
     "instrument": true
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "singleQuote": true,
+    "printWidth": 100
   },
   "repository": {
     "type": "git",
@@ -112,6 +125,7 @@
     "chai-subset": "^1.5.0",
     "codemirror": "^5.28.0",
     "core-js": "^2.5.0",
+    "devtron": "^1.4.0",
     "electron": "^1.7.9",
     "electron-builder": "^20.8.1",
     "electron-reload": "^1.2.2",

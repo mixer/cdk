@@ -14,6 +14,7 @@ import { filter, map, switchMap, take, tap } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
 import { SendControlPacket } from '../../controls/controls.actions';
+import { truthy } from '../../shared/operators';
 import {
   Clear,
   IFilter,
@@ -184,10 +185,8 @@ export class ControlsControlsPanelComponent implements AfterContentInit {
   public hoveredMessage(message: IMessage) {
     this.console
       .getPairMessage(message)
-      .pipe(take(1), filter(Boolean))
-      .subscribe(pair => {
-        this.hoveredPair.next(pair.message.id);
-      });
+      .pipe(take(1), truthy())
+      .subscribe(pair => this.hoveredPair.next(pair.message.id));
   }
 
   /**

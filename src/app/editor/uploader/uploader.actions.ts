@@ -24,6 +24,7 @@ export enum UploaderScreen {
   Confirming,
   UploadingSchema,
   UploadingControls,
+  LinkingGame,
   Completed,
 }
 

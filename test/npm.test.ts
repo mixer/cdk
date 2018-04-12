@@ -17,7 +17,7 @@ describe('npm', () => {
   });
 
   it('mustLoadPackageJson', () => {
-    expect(mustLoadPackageJson(__dirname)).to.containSubset({ name: '@mcph/miix-cli' });
+    expect(mustLoadPackageJson(__dirname)).to.containSubset({ name: '@mixer/cdk' });
     expect(() => mustLoadPackageJson('/')).to.throw(/Could not find a package/);
   });
 

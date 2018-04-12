@@ -1,3 +1,4 @@
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import * as fromRoot from '../bedrock.reducers';
@@ -13,6 +14,7 @@ export interface IRemoteConnectState {
   channelId?: number;
   connectionError?: RpcError;
   join?: IInteractiveJoin;
+  stateDump?: IStateDump;
   remoteState: RemoteState;
 }
 
@@ -45,12 +47,18 @@ export function remoteConnectReducer(
       return {
         ...state,
         connectionError: undefined,
+        stateDump: undefined,
         remoteState: action.state,
       };
     case RemoteConnectActionTypes.SET_REMOTE_CREDENTIALS:
       return {
         ...state,
         join: action.join,
+      };
+    case RemoteConnectActionTypes.SET_STATE_DUMP:
+      return {
+        ...state,
+        stateDump: action.dump,
       };
     default:
       return state;
@@ -73,6 +81,14 @@ export const selectRemoteState = createSelector(remoteState, s => s.remoteState)
 export const selectRemoteChannel = createSelector(remoteState, s => s.channelId);
 
 /**
+ * Selector for whether we should be connected to the remote controls.
+ */
+export const isRemoteConnected = createSelector(
+  remoteState,
+  s => s.remoteState === RemoteState.Active,
+);
+
+/**
  * Selector for any remote connection error that occurred.
  */
 export const selectRemoteError = createSelector(remoteState, s => s.connectionError);
@@ -81,3 +97,8 @@ export const selectRemoteError = createSelector(remoteState, s => s.connectionEr
  * Selector for the join message the API gave back to us.
  */
 export const selectJoin = createSelector(remoteState, s => s.join);
+
+/**
+ * Selector for the state dump of the current controls.
+ */
+export const selectStateDump = createSelector(remoteState, s => s.stateDump);

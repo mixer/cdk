@@ -25,7 +25,7 @@ import {
 
 import * as fromRoot from '../../bedrock.reducers';
 import { LayoutActionTypes } from '../../layout/layout.actions';
-import { untilDestroyed } from '../../shared/operators';
+import { truthy, untilDestroyed } from '../../shared/operators';
 import { IBlock, IDevice } from '../devices';
 import { SetEffectiveDimensions, SetFittedVideoSize } from '../emulation.actions';
 import {
@@ -92,7 +92,7 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
   /**
    * Device "frame" to display.
    */
-  public state = this.store.select(selectEffectiveDimensions).pipe(filter(Boolean));
+  public state = this.store.select(selectEffectiveDimensions).pipe(truthy());
 
   /**
    * The currently selected device.

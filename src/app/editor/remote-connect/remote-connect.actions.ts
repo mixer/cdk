@@ -1,3 +1,4 @@
+import { IStateDump } from '@mcph/miix-std/dist/internal';
 import { Action } from '@ngrx/store';
 import { RpcError } from '../electron.service';
 import { IInteractiveVersion } from '../project/project.actions';
@@ -14,14 +15,15 @@ export enum RemoteState {
 }
 
 export const enum RemoteConnectActionTypes {
-  SET_REMOTE_CHANNEL = '[Controls] Set remote channel',
-  SET_REMOTE_STATE = '[Controls] Set remote state',
-  SET_REMOTE_CREDENTIALS = '[Controls] Set remote credentials',
-  SET_REMOTE_ERROR = '[Controls] Set remote connection error',
+  SET_REMOTE_CHANNEL = '[RemoteConnect] Set remote channel',
+  SET_REMOTE_STATE = '[RemoteConnect] Set remote state',
+  SET_REMOTE_CREDENTIALS = '[RemoteConnect] Set remote credentials',
+  SET_REMOTE_ERROR = '[RemoteConnect] Set remote connection error',
+  SET_STATE_DUMP = '[RemoteConnect] Set state dump',
 }
 
 export const enum RemoteConnectMethods {
-  ConnectParticipant = '[Controls] Connect participant',
+  ConnectParticipant = '[RemoteConnect] Connect participant',
 }
 
 /**
@@ -91,8 +93,19 @@ export class SetRemoteCredentials implements Action {
   constructor(public readonly join: IInteractiveJoin) {}
 }
 
+/**
+ * Called when the control state is updated in a remote connection.
+ * Updates the preview shown in the codemirror editor.
+ */
+export class SetStateDump implements Action {
+  public readonly type = RemoteConnectActionTypes.SET_STATE_DUMP;
+
+  constructor(public readonly dump: IStateDump) {}
+}
+
 export type RemoteConnectActions =
   | SetRemoteState
   | SetRemoteChannel
   | SetRemoteError
-  | SetRemoteCredentials;
+  | SetRemoteCredentials
+  | SetStateDump;
