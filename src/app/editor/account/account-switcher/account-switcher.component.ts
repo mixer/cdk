@@ -22,7 +22,7 @@ export class AccountSwitcherComponent {
    */
   public currentUser = this.store.select(fromAccount.currentUser);
 
-  constructor(private readonly store: Store<fromRoot.State>, private readonly dialog: MatDialog) {}
+  constructor(private readonly store: Store<fromRoot.IState>, private readonly dialog: MatDialog) {}
 
   public openLogin() {
     this.dialog.open(LoginDialogComponent);

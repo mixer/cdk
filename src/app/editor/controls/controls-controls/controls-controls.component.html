@@ -1,0 +1,23 @@
+<button (click)="sync.refresh.next()">
+  <mat-icon svgIcon="refresh"></mat-icon>
+  Refresh
+</button>
+<button (click)="toggleDevtools()">
+  <mat-icon svgIcon="tools"></mat-icon>
+  Devtools
+</button>
+<button (click)="showConsole()" [class.hasAlert]="hasUnreadError | async">
+  <mat-icon svgIcon="console"></mat-icon>
+  Console
+</button>
+<button (click)="toggleReady()" *ngIf="!(isRemoteConnected | async)">
+  <mat-icon svgIcon="checkbox-empty" *ngIf="!(isReady | async)"></mat-icon>
+  <mat-icon svgIcon="checkbox-checked" *ngIf="isReady | async"></mat-icon>
+  Ready State
+</button>
+
+<span class="flex-fill"></span>
+<button (click)="disconnectRemote()" class="text-secondary" *ngIf="(isRemoteConnected | async)">
+  <mat-icon svgIcon="link"></mat-icon>
+  Disconnect
+</button>

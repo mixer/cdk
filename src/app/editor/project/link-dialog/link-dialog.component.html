@@ -1,0 +1,18 @@
+<h1 mat-dialog-title>Link your Project</h1>
+<div mat-dialog-content>
+  <p style="max-width:500px">Linking your controls to an Interactive project will allow people who watch the game to see them. You can also upload your working control schema, or download to the miix editor.</p>
+
+  <div class="layout-row layout-align-center-center margin-vertical-4x" *ngIf="!(games | async)">
+    <mat-spinner [diameter]="32"></mat-spinner>
+  </div>
+
+  <mat-list *ngIf="games | async">
+    <mat-list-item *ngFor="let game of (games | async)">
+      <h4 matLine>{{ game.name }}</h4>
+      <p matLine>Updated: {{ game.updatedAt | amTimeAgo }}</p>
+      <button mat-raised-button color="primary" *ngIf="(linkedGame | async)?.id !== game.id "
+        (click)="link(game)">Link</button>
+      <button mat-raised-button disabled *ngIf="(linkedGame | async)?.id === game.id">Linked</button>
+    </mat-list-item>
+  </mat-list>
+</div>

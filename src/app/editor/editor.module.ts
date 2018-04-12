@@ -7,9 +7,13 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
 import { BedrockComponent } from './bedrock.component';
-import { reducers } from './bedrock.reducers';
+import { BedrockEffects } from './bedrock.effects';
+import { metaReducers, reducers } from './bedrock.reducers';
 import { ElectronService } from './electron.service';
+import { IssueService } from './issue.service';
 import { LayoutModule } from './layout/layout.module';
+import { PreflightModule } from './preflight/preflight.module';
+import { RaygunModule } from './raygun/raygun.module';
 
 /**
  * Primary Editor application.
@@ -19,13 +23,15 @@ import { LayoutModule } from './layout/layout.module';
     BrowserAnimationsModule,
     BrowserModule,
     CommonModule,
-    EffectsModule.forRoot([]),
+    EffectsModule.forRoot([BedrockEffects]),
     LayoutModule,
     MatIconModule,
-    StoreModule.forRoot(reducers),
+    PreflightModule,
+    RaygunModule,
+    StoreModule.forRoot(reducers, { metaReducers }),
   ],
   declarations: [BedrockComponent],
-  providers: [ElectronService],
+  providers: [IssueService, ElectronService],
   bootstrap: [BedrockComponent],
 })
 export class AppModule {}

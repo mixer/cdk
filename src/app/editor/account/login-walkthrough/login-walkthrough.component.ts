@@ -6,7 +6,7 @@ import { filter, map } from 'rxjs/operators';
 
 import { IUser } from '../../../../server/profile';
 import * as fromRoot from '../../bedrock.reducers';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { truthy, untilDestroyed } from '../../shared/operators';
 import { AccountLinkingService } from '../account-linking.service';
 import * as fromAccount from '../account.reducer';
 
@@ -39,12 +39,9 @@ export class LoginWalkthroughComponent implements OnDestroy {
   /**
    * codeUrl is the full Mixer URL the user should go to
    */
-  public codeUrl = this.code.pipe(
-    filter(Boolean),
-    map(code => `https://mixer.com/go?code=${code!.code}`),
-  );
+  public codeUrl = this.code.pipe(truthy(), map(code => `https://mixer.com/go?code=${code!.code}`));
 
-  constructor(private readonly store: Store<fromRoot.State>, linking: AccountLinkingService) {
+  constructor(private readonly store: Store<fromRoot.IState>, linking: AccountLinkingService) {
     linking
       .requestLinkCodes()
       .pipe(untilDestroyed(this))

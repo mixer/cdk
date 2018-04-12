@@ -10,6 +10,7 @@ import { OAuthClient } from '../src/server/shortcode';
 import { api } from '../src/server/util';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
 
+// tslint:disable-next-line
 const rimraf = require('rimraf');
 
 describe('profile', () => {

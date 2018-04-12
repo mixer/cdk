@@ -19,17 +19,18 @@ export class NewProjectDialogComponent {
   /**
    * Current screen we're on.
    */
-  public readonly screen = this.store.select(fromNewProject.screen);
+  public readonly screen = this.store.select(fromNewProject.selectScreen);
 
   /**
    * Template hoise.
    */
+  // tslint:disable-next-line
   public readonly Screens = NewProjectScreen;
 
   constructor(
     dialog: MatDialogRef<undefined>,
     project: NewProjectService,
-    private readonly store: Store<fromRoot.State>,
+    private readonly store: Store<fromRoot.IState>,
   ) {
     project.setDialog(dialog);
   }

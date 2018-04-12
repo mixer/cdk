@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
+import { map, takeUntil } from 'rxjs/operators';
 
-import { CommonMethods } from '../bedrock.actions';
+import { CommonMethods, UnhandledError } from '../bedrock.actions';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import * as forNewProject from './new-project.actions';
+import { selectScreen } from './new-project.reducer';
 
 /**
  * The NewProjectService holds common state while the project wizard is open.
@@ -15,7 +17,7 @@ export class NewProjectService {
   private dialog: MatDialogRef<any>;
 
   constructor(
-    private readonly store: Store<fromRoot.State>,
+    private readonly store: Store<fromRoot.IState>,
     private readonly electron: ElectronService,
   ) {}
 
@@ -24,6 +26,14 @@ export class NewProjectService {
    */
   public setDialog(ref: MatDialogRef<any>) {
     this.dialog = ref;
+
+    this.store
+      .select(selectScreen)
+      .pipe(
+        takeUntil(ref.afterClosed()),
+        map(screen => screen === forNewProject.NewProjectScreen.Creating),
+      )
+      .subscribe(disableClose => (ref.disableClose = disableClose));
 
     ref.afterClosed().subscribe(() => this.store.dispatch(new forNewProject.Cancel()));
   }
@@ -39,13 +49,16 @@ export class NewProjectService {
    * Chooses the directory
    */
   public chooseDirectory() {
-    this.electron.call<string>(CommonMethods.ChooseDirectory).then(dir => {
-      if (!dir) {
-        return;
-      }
+    this.electron
+      .call<string>(CommonMethods.ChooseDirectory, { context: 'newProject' })
+      .then(dir => {
+        if (!dir) {
+          return;
+        }
 
-      this.store.dispatch(new forNewProject.SetTargetDirectory(dir));
-      this.store.dispatch(new forNewProject.ChangeScreen(forNewProject.NewProjectScreen.Layout));
-    });
+        this.store.dispatch(new forNewProject.SetTargetDirectory(dir));
+        this.store.dispatch(new forNewProject.ChangeScreen(forNewProject.NewProjectScreen.Layout));
+      })
+      .catch(err => this.store.dispatch(new UnhandledError(err)));
   }
 }

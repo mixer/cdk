@@ -3,24 +3,24 @@ import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/s
 import * as fromRoot from '../../bedrock.reducers';
 import { MenuBarActions, MenuBarActionTypes, OpenDirection } from './menu-bar.actions';
 
-export interface MenuBarState {
+export interface IMenuBarState {
   openMenu: string | null;
   direction: OpenDirection;
 }
 
-export interface State extends fromRoot.State {
-  menuBar: MenuBarState;
+export interface IState extends fromRoot.IState {
+  menuBar: IMenuBarState;
 }
 
-const initialState: MenuBarState = {
+const initialState: IMenuBarState = {
   openMenu: null,
   direction: OpenDirection.Right,
 };
 
 export function menuBarReducer(
-  state: MenuBarState = initialState,
+  state: IMenuBarState = initialState,
   action: MenuBarActions,
-): MenuBarState {
+): IMenuBarState {
   switch (action.type) {
     case MenuBarActionTypes.OPEN_MENU:
       return { ...state, openMenu: action.menuId, direction: action.direction };
@@ -38,8 +38,8 @@ export function menuBarReducer(
 /**
  * Selector for the menuBar feature.
  */
-export const menuBarState: MemoizedSelector<State, MenuBarState> = createFeatureSelector<
-  MenuBarState
+export const menuBarState: MemoizedSelector<IState, IMenuBarState> = createFeatureSelector<
+  IMenuBarState
 >('menuBar');
 
 /**

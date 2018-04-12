@@ -3,18 +3,19 @@
     <p>Choose your initial control layout. Don't worry, you can always customize this, or change it later.</p>
 
     <radio-icon-list [value]="layout | async" (change)="setLayout($event)">
-      <radio-icon icon="/assets/new-project/layout-fullscreen.svg" value="fullscreen" name="Full Screen">
+      <radio-icon icon="assets/new-project/layout-fullscreen.svg" value="fullscreen" name="Full Screen">
         Your UI will cover the entire video.
       </radio-icon>
-      <radio-icon icon="/assets/new-project/layout-below-video.svg" value="belowVideo" name="Below Video">
+      <radio-icon icon="assets/new-project/layout-below-video.svg" value="belowVideo" name="Below Video">
         Your UI will appear below the video.
       </radio-icon>
-      <radio-icon icon="/assets/new-project/layout-overlay.svg" value="overlay" name="Overlay">
+      <radio-icon icon="assets/new-project/layout-overlay.svg" value="overlay" name="Overlay">
         Your UI will appear in an overlay to the right of the player.
       </radio-icon>
     </radio-icon-list>
 </div>
 <div mat-dialog-actions>
+  <button mat-button (click)="back()">Back</button>
   <span class="flex-fill"></span>
-  <button mat-button (click)="next()">Select</button>
+  <button mat-button (click)="next()" cdkFocusInitial>Select</button>
 </div>

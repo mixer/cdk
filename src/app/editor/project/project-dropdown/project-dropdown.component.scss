@@ -1,0 +1,14 @@
+@import '../../../assets/styles/declarations';
+
+menu-bar-text {
+  border-bottom: none;
+  height: $dimension-toolbar-height;
+
+  &.active small {
+    color: $color-primary-contrast;
+  }
+
+  small {
+    color: $color-text-muted;
+  }
+}

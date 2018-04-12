@@ -3,26 +3,19 @@
 :host {
   padding-bottom: 0;
   display: inline-block;
-  cursor: pointer;
   position: relative;
   margin-right: 1px;
+  z-index: $z-index-base;
+  cursor: pointer;
 
   &.active {
-    background: $color-primary;
-    color: $color-primary-contrast;
-
-    span {
-      border-bottom-color: rgba(#000, 0.1);
-    }
+    z-index: $z-index-active;
   }
-}
 
-span {
-  display: inline-block;
-  padding: 0 $dimension-gutter-sm;
-  line-height: $dimension-toolbar-height - 3px;
-  border-bottom: 3px solid rgba(#fff, 0.1);
-  font-size: 0.9em;
+  &.disabled {
+    cursor: default;
+    color: $color-text-muted;
+  }
 }
 
 .items {

@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>Locate Webpack Config</h1>
+<div mat-dialog-content>
+    <p>We couldn't find a webpack config file in its default location, <code>webpack.config.js</code>, in the folder you chose. You may have opened the wrong folder, or moved your config file.</p>
+    <p>Click the "Choose Config File" button below if you moved your config file and would like the CDK to use its new location.</p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="dialog.close()">Cancel</button>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="open()" cdkFocusInitial>Choose Config File</button>
+</div>
