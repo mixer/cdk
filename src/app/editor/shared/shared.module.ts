@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { BytesPipe } from './bytes.pipe';
+import { IframeSrcDirective } from './iframe-src.directive';
+import { KeysPipe } from './keys.pipe';
 import { OpenExternalDirective } from './open-external.directive';
 import { SafePipe } from './safe.pipe';
 
@@ -10,7 +12,7 @@ import { SafePipe } from './safe.pipe';
  */
 @NgModule({
   imports: [CommonModule],
-  declarations: [SafePipe, BytesPipe, OpenExternalDirective],
-  exports: [SafePipe, BytesPipe, OpenExternalDirective],
+  declarations: [SafePipe, BytesPipe, OpenExternalDirective, IframeSrcDirective, KeysPipe],
+  exports: [SafePipe, BytesPipe, OpenExternalDirective, IframeSrcDirective, KeysPipe],
 })
 export class SharedModule {}

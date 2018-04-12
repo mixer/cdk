@@ -37,21 +37,27 @@ export const enum ControlsActionTypes {
   RESTART_WEBPACK = '[Controls] Restart webpack',
   STOP_WEBPACK = '[Controls] Stop webpack',
   SET_WEBPACK_INSTANCE = '[Controls] Set webpack instance',
+  AUTO_OPEN_CONSOLE = '[Controls] Auto open webpack console',
+  AUTO_CLOSE_CONSOLE = '[Controls] Auto close webpack console',
+  REFRESH_CONTROLS = '[Controls] Refresh the displayed controls',
+  SEND_CONTROL_PACKET = '[Controls] Send a packet to the controls',
+  SET_IS_READY = '[Controls] Set ready',
+  PROMPT_LOCATE_WEBPACK_CONFIG = '[Controls] Prompt to locate webpack config',
+  LOCATE_WEBPACK_CONFIG = '[Controls] Locate webpack config',
 }
 
 export const enum ControlsMethods {
-  StartWebpack = '[Project] Start webpack',
-  StopWebpack = '[Project] Stop webpack',
-  SetWebpackConfig = '[Project] Set webpack config',
+  StartWebpack = '[Controls] Start webpack',
+  StopWebpack = '[Controls] Stop webpack',
+  SetWebpackConfig = '[Controls] Set webpack config',
+  LocateWebpackConfig = '[Controls] Locate webpack config',
 }
 
 /**
- * Starts the webpack dev server in the given (usually project!) directory.
+ * Starts the webpack dev server in the project directory.
  */
 export class StartWebpack implements Action {
   public readonly type = ControlsActionTypes.START_WEBPACK;
-
-  constructor(public readonly directory: string) {}
 }
 
 /**
@@ -96,10 +102,70 @@ export class SetWebpackInstance implements Action {
   constructor(public readonly instance: IWebpackInstance) {}
 }
 
+/**
+ * Dispatched when we want to automatically open the dev console, as a result
+ * of compilation errors for example.
+ */
+export class AutoOpenConsole implements Action {
+  public readonly type = ControlsActionTypes.AUTO_OPEN_CONSOLE;
+}
+
+/**
+ * Dispatched when we want to automatically close the dev console, as a result
+ * of a successful compilation for example.
+ */
+export class AutoCloseConsole implements Action {
+  public readonly type = ControlsActionTypes.AUTO_CLOSE_CONSOLE;
+}
+
+/**
+ * Dispatched when we want to refresh the controls within the frame.
+ */
+export class RefreshControls implements Action {
+  public readonly type = ControlsActionTypes.REFRESH_CONTROLS;
+}
+
+/**
+ * Dispatched when we want to send data to the controls.
+ */
+export class SendControlPacket implements Action {
+  public readonly type = ControlsActionTypes.SEND_CONTROL_PACKET;
+
+  constructor(public readonly method: string, public readonly params: any) {}
+}
+
+/**
+ * Dispatched to set or unset the ready state. If isReady is omitted, toggle.
+ */
+export class SetReady implements Action {
+  public readonly type = ControlsActionTypes.SET_IS_READY;
+
+  constructor(public readonly isReady?: boolean) {}
+}
+
+/**
+ * Asks the user to provide the location of their webpack config on disk.
+ */
+export class PromptLocateWebpackConfig implements Action {
+  public readonly type = ControlsActionTypes.PROMPT_LOCATE_WEBPACK_CONFIG;
+}
+
+/**
+ * Asks the user to provide the location of their webpack config on disk.
+ */
+export class LocateWebpackConfig implements Action {
+  public readonly type = ControlsActionTypes.LOCATE_WEBPACK_CONFIG;
+}
+
 export type ControlActions =
   | StartWebpack
   | UpdateWebpackState
   | UpdateWebpackConsole
   | RestartWebpack
   | StopWebpack
-  | SetWebpackInstance;
+  | SetWebpackInstance
+  | AutoCloseConsole
+  | AutoOpenConsole
+  | SetReady
+  | PromptLocateWebpackConfig
+  | LocateWebpackConfig;

@@ -1,16 +1,16 @@
 import chalk from 'chalk';
-import { spawn } from 'child_process';
-import { EventEmitter } from 'events';
 import nodeFetch, { Response } from 'node-fetch';
 import * as path from 'path';
 import { extract } from 'tar';
 
 import { UnexpectedHttpError } from './errors';
-import { awaitChildProcess, exists, mkdir, readFile, writeFile } from './util';
+import { NpmInstallTask } from './tasks/npm-install-task';
+import { Task } from './tasks/task';
+import { exists, mkdir, readFile, writeFile } from './util';
 
 const templateAliases: { [key: string]: string } = {
-  preact: 'interactive-launchpad_1.0.tar.gz',
-  html: 'interactive-html-starter_1.0.tar.gz',
+  preact: 'cdk-preact-starter_1.0.tar.gz',
+  html: 'cdk-html-starter_1.0.tar.gz',
 };
 
 /**
@@ -29,7 +29,7 @@ export interface IQuickstartOptions {
 /**
  * Quickstarter helps with creating and install projects.
  */
-export class Quickstarter extends EventEmitter {
+export class Quickstarter extends Task<void> {
   constructor(private readonly options: Readonly<IQuickstartOptions>) {
     super();
   }
@@ -39,27 +39,24 @@ export class Quickstarter extends EventEmitter {
    * the process runs.
    */
   public async start() {
-    const res = await this.getTarball();
-    await this.extractProject(res);
-    await this.updateProjectJson();
-    await this.installDependences();
-    this.emit('data', chalk.green('\nInstallation completed successfully.'));
+    await this.workflow(
+      async () => this.extractProject(await this.getTarball()),
+      async () => this.updateProjectJson(),
+      () => this.installDependences(),
+    );
+
+    this.data.next(chalk.green('\nInstallation completed successfully.\n'));
+    return this.stop();
   }
 
   /**
-   * Installs npm dependencies.
+   * Returns a task that installs npm dependencies.
    */
-  private async installDependences() {
+  private installDependences() {
     this.emitPrompt('npm install');
-    const proc = spawn('npm', ['install', '-d', '--color=always'], {
-      cwd: this.targetPath(),
-      env: process.env,
-      shell: true,
-    });
-
-    proc.stdout.on('data', data => this.emit('data', data.toString()));
-    proc.stderr.on('data', data => this.emit('data', data.toString()));
-    await awaitChildProcess(proc);
+    const task = new NpmInstallTask(this.targetPath());
+    task.data.subscribe(data => this.data.next(data));
+    return task;
   }
 
   /**
@@ -147,7 +144,7 @@ export class Quickstarter extends EventEmitter {
    * Emits a prompt-style
    */
   private emitPrompt(...contents: string[]) {
-    this.emit('data', `> ${contents.join(' ')}\n`);
+    this.data.next(`> ${contents.join(' ')}\n`);
   }
 
   /**

@@ -3,18 +3,18 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import * as GoldenLayout from 'golden-layout';
 import { Observable } from 'rxjs/Observable';
-
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
-import { filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, filter, map, mapTo, switchMap, takeUntil, tap } from 'rxjs/operators';
 
-import { combineLatest } from 'rxjs/operators/combineLatest';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import * as fromProject from '../project/project.reducer';
 import {
   ClosePanel,
+  findGoldenPanel,
+  focus,
   LayoutActionTypes,
   LayoutMethod,
   LayoutScreen,
@@ -24,30 +24,6 @@ import {
   SavePanels,
   SetGoldenLayout,
 } from './layout.actions';
-
-/**
- * Finds the content panel matching the predicate.
- */
-export function findPanel(
-  items: GoldenLayout.ContentItem[],
-  predicate: (item: GoldenLayout.ContentItem) => boolean,
-): GoldenLayout.ContentItem | null {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (predicate(item)) {
-      return item;
-    }
-
-    if (item.contentItems) {
-      const found = findPanel(item.contentItems, predicate);
-      if (found) {
-        return found;
-      }
-    }
-  }
-
-  return null;
-}
 
 /**
  * Effects module for account actions.
@@ -78,6 +54,14 @@ export class LayoutEffects {
     );
 
   /**
+   * Goes back to the welcome screen when we close a project.
+   */
+  @Effect()
+  public readonly closeProject = this.actions
+    .ofType(ProjectActionTypes.CLOSE_PROJECT)
+    .pipe(mapTo(new OpenScreen(LayoutScreen.Welcome)));
+
+  /**
    * Persists panel configuration to the server when it chamges.
    */
   @Effect({ dispatch: false })
@@ -85,7 +69,7 @@ export class LayoutEffects {
     .ofType<SavePanels>(LayoutActionTypes.PANELS_SAVE)
     .pipe(
       filter(action => action.propogateToServer),
-      combineLatest(this.store.select(fromProject.directory).pipe(filter(Boolean), take(1))),
+      fromProject.withLatestDirectory(this.store),
       switchMap(([action, project]) =>
         this.electron.call(LayoutMethod.SavePanels, { panels: action.panels, project }),
       ),
@@ -96,7 +80,10 @@ export class LayoutEffects {
    */
   @Effect()
   public readonly saveGoldenPanelsOnChange = this.withLayout(layout =>
-    fromEvent(layout, 'stateChanged').pipe(map(() => new SavePanels(layout.toConfig().content))),
+    fromEvent(layout, 'stateChanged').pipe(
+      debounceTime(50),
+      map(() => new SavePanels(layout.toConfig().content)),
+    ),
   );
 
   /**
@@ -106,10 +93,7 @@ export class LayoutEffects {
   public readonly closeGoldenPanel = this.withLayout(layout =>
     this.actions.ofType<ClosePanel>(LayoutActionTypes.CLOSE_PANEL).pipe(
       tap(action => {
-        const panel = findPanel(
-          [layout.root],
-          p => p.isComponent && (<any>p).componentName === action.panel,
-        );
+        const panel = findGoldenPanel([layout.root], action.panel);
         if (panel) {
           panel.remove();
         }
@@ -123,8 +107,20 @@ export class LayoutEffects {
   @Effect({ dispatch: false })
   public readonly openGoldenPanel = this.withLayout(layout =>
     this.actions.ofType<OpenPanel>(LayoutActionTypes.OPEN_PANEL).pipe(
-      tap(({ panel }) => {
-        const parent = layout.root.contentItems[0] || layout.root;
+      tap(({ panel, locator }) => {
+        const existing = findGoldenPanel([layout.root], panel);
+        if (existing) {
+          focus(existing);
+          return; // don't open the panel if it already exists
+        }
+
+        let parent: GoldenLayout.ContentItem | null = null;
+        if (locator) {
+          parent = locator(layout);
+        }
+        if (!parent) {
+          parent = layout.root.contentItems[0] || layout.root;
+        }
 
         parent.addChild({
           type: 'component',

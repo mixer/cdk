@@ -1,3 +1,4 @@
+@import './declarations';
 
 // Color variables (appears count calculates by raw css)
 $color0: #000000; // Appears 7 times
@@ -15,15 +16,20 @@ $color10: #ffffff; // Appears 2 time
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 
-// Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
-.lm_goldenlayout {
-  background: $color0;
-}
-
 // Single Pane content (area in which final dragged content is contained)
 .lm_content {
-  background: $color1;
-  border: 1px solid transparent;
+  background: $color-medium-gray;
+  border: 1px solid $color-light-gray;
+  border-top-color: $color-primary;
+  box-shadow: 0 2px 5px rgba(#000, 0.3);
+
+  > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
 }
 
 // Single Pane content during Drag (style of moving window following mouse)
@@ -47,13 +53,12 @@ $color10: #ffffff; // Appears 2 time
 
 // Separator line (handle to change pane size)
 .lm_splitter {
-  background: $color0;
+  background: $color5;
   opacity: 0.001;
   transition: opacity 200ms ease;
 
   &:hover, // When hovered by mouse...
   &.lm_dragging {
-    background: $color5;
     opacity: 1;
   }
 }
@@ -67,8 +72,6 @@ $color10: #ffffff; // Appears 2 time
     font-family: Arial, sans-serif;
     font-size: 12px;
     color: $color6;
-    background: $color7;
-    box-shadow: 2px -2px 2px rgba($color0, 0.3);
     margin-right: 2px;
     padding-bottom: 2px;
     padding-top: 2px;
@@ -82,7 +85,7 @@ $color10: #ffffff; // Appears 2 time
     .lm_close_tab {
       width: 11px;
       height: 11px;
-      background-image: url('/assets/layout/lm_close_white.png');
+      background-image: url('assets/layout/lm_close_white.png');
       background-position: center center;
       background-repeat: no-repeat;
       top: 4px;
@@ -97,32 +100,10 @@ $color10: #ffffff; // Appears 2 time
     // If Tab is active, so if it's in foreground
     &.lm_active {
       border-bottom: none;
-      box-shadow: 0 -2px 2px $color0;
       padding-bottom: 3px;
 
       .lm_close_tab {
         opacity: 1;
-      }
-    }
-  }
-}
-
-.lm_dragProxy,
-.lm_stack {
-  &.lm_right {
-    .lm_header .lm_tab {
-      &.lm_active {
-        box-shadow: 2px -2px 2px $color0;
-      }
-    }
-  }
-
-  &.lm_bottom {
-    .lm_header .lm_tab {
-      box-shadow: 2px 2px 2px rgba($color0, 0.3);
-
-      &.lm_active {
-        box-shadow: 0 2px 2px $color0;
       }
     }
   }
@@ -138,9 +119,9 @@ $color10: #ffffff; // Appears 2 time
 .lm_tab {
   &:hover, // If Tab is hovered
   &.lm_active // If Tab is active, so if it's in foreground
-  {
-    background: $color1;
-    color: $color3;
+ {
+    background: $color-primary;
+    color: $color-primary-contrast;
   }
 }
 
@@ -166,30 +147,30 @@ $color10: #ffffff; // Appears 2 time
 
   // Icon to PopOut Pane, so move it to a different Browser Window
   .lm_popout {
-    background-image: url('/assets/layout/lm_popout_white.png');
+    background-image: url('assets/layout/lm_popout_white.png');
   }
 
   // Icon to Maximize Pane, so it will fill the entire GoldenLayout Container
   .lm_maximise {
-    background-image: url('/assets/layout/lm_maximise_white.png');
+    background-image: url('assets/layout/lm_maximise_white.png');
   }
 
   // Icon to Close Pane and so remove it from GoldenLayout Container
   .lm_close {
-    background-image: url('/assets/layout/lm_close_white.png');
+    background-image: url('assets/layout/lm_close_white.png');
   }
 
   // Icon to toggle Pane Docking at mouse hover
   .lm_dock {
-    background-image: url('/assets/layout/lm_docked_white.png');
-    transform:rotate(-45deg);
-    transition:transform 300ms;
+    background-image: url('assets/layout/lm_docked_white.png');
+    transform: rotate(-45deg);
+    transition: transform 300ms;
   }
 }
 
 .lm_stack.lm_docked {
   .lm_controls .lm_dock {
-    transform:rotate(0deg);
+    transform: rotate(0deg);
   }
 
   > .lm_items {
@@ -201,16 +182,16 @@ $color10: #ffffff; // Appears 2 time
 
 // If a specific Pane is maximized
 .lm_maximised {
-  // Pane Header (container of Tabs for each pane) can have different style when is Maximized
-  .lm_header {
-    background-color: $color0;
-  }
-
   // Pane controls are different in Maximized Mode, especially the old Icon "Maximise" that now has a different meaning, so "Minimize" (even if CSS Class did not change)
   .lm_controls {
     .lm_maximise {
-      background-image: url('/assets/layout/lm_minimize_white.png');
+      background-image: url('assets/layout/lm_minimize_white.png');
     }
+  }
+
+  // Hide other panels if this one is maximized
+  ~ .lm_item {
+    opacity: 0;
   }
 }
 
@@ -231,7 +212,7 @@ $color10: #ffffff; // Appears 2 time
 
   // Icon to Restore original position in Golden Layout Container
   .lm_icon {
-    background-image: url('/assets/layout/lm_popin_white.png');
+    background-image: url('assets/layout/lm_popin_white.png');
     background-position: center center;
     background-repeat: no-repeat;
     border-left: 1px solid $color2;

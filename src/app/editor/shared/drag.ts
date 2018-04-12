@@ -1,10 +1,6 @@
 import { Observable } from 'rxjs/Observable';
-
-import 'rxjs/add/observable/fromEvent';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/startWith';
-import 'rxjs/add/operator/takeUntil';
+import { fromEvent } from 'rxjs/observable/fromEvent';
+import { filter, map, startWith, takeUntil } from 'rxjs/operators';
 
 function touchMatcher(touch: Touch): (ev: TouchEvent) => Touch | undefined {
   return ev => Array.from(ev.changedTouches).find(t => t.identifier === touch.identifier);
@@ -18,17 +14,19 @@ export function captureDrag(ev: MouseEvent | TouchEvent): Observable<MouseEvent 
   ev.preventDefault();
 
   if (ev instanceof MouseEvent) {
-    return Observable.fromEvent<MouseEvent>(window, 'mousemove')
-      .startWith(ev)
-      .takeUntil(dragCancelled(ev));
+    return fromEvent<MouseEvent>(window, 'mousemove').pipe(
+      startWith(ev),
+      takeUntil(dragCancelled(ev)),
+    );
   }
 
   const match = touchMatcher(ev.touches[0]);
-  return Observable.fromEvent<TouchEvent>(window, 'touchmove')
-    .startWith(ev)
-    .map(match)
-    .filter(Boolean)
-    .takeUntil(dragCancelled(ev));
+  return fromEvent<TouchEvent>(window, 'touchmove').pipe(
+    startWith(ev),
+    map(match),
+    filter(Boolean),
+    takeUntil(dragCancelled(ev)),
+  );
 }
 
 /**
@@ -36,8 +34,9 @@ export function captureDrag(ev: MouseEvent | TouchEvent): Observable<MouseEvent 
  */
 export function dragCancelled(ev: MouseEvent | TouchEvent): Observable<void> {
   return ev instanceof MouseEvent
-    ? Observable.fromEvent(window, 'mouseup')
-    : Observable.fromEvent<TouchEvent>(window, 'touchend')
-        .map(touchMatcher(ev.touches[0]))
-        .filter(Boolean);
+    ? fromEvent(window, 'mouseup')
+    : fromEvent<TouchEvent>(window, 'touchend').pipe(
+        map(touchMatcher(ev.touches[0])),
+        filter(Boolean),
+      );
 }

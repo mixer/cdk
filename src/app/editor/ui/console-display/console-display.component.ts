@@ -1,5 +1,3 @@
-import { ITheme, Terminal } from 'xterm';
-
 import {
   AfterContentInit,
   ChangeDetectionStrategy,
@@ -7,18 +5,24 @@ import {
   ElementRef,
   Input,
   OnDestroy,
+  ViewChild,
 } from '@angular/core';
+import { Actions } from '@ngrx/effects';
 import { Observable } from 'rxjs/Observable';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { debounceTime } from 'rxjs/operators';
+import { ITheme, Terminal } from 'xterm';
+
+import { LayoutActionTypes } from '../../layout/layout.actions';
+import { untilDestroyed } from '../../shared/operators';
 import { baseTheme } from './themes';
-import { tap } from 'rxjs/operators';
 
 /**
  * The layout selection chooses which schema is initially seeded.
  */
 @Component({
   selector: 'console-display',
-  template: '<div class="console"></div>',
+  template: '<div #target></div>',
+  styleUrls: ['./console-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConsoleDisplayComponent implements AfterContentInit, OnDestroy {
@@ -33,30 +37,64 @@ export class ConsoleDisplayComponent implements AfterContentInit, OnDestroy {
   @Input() public theme: Partial<ITheme>;
 
   /**
+   * Element to mount the terminal in.
+   */
+  @ViewChild('target') public target: ElementRef;
+
+  /**
    * Terminal instance currently displayed.
    */
-  private terminal: Terminal;
+  public terminal: Terminal;
 
-  constructor(private readonly el: ElementRef) {}
+  constructor(private readonly el: ElementRef, private readonly actions: Actions) {}
 
   public ngAfterContentInit() {
     const container: HTMLElement = this.el.nativeElement;
+    const rect = container.getBoundingClientRect();
     const terminal = new Terminal({
       theme: { ...baseTheme, ...this.theme },
       fontSize: 13,
+      fontFamily: 'Source Code Pro',
       lineHeight: 1.2,
+      rows: this.calculateRows(rect),
+      cols: this.calculateColumns(rect),
     });
 
-    // Sync opening appears to toss xterm.js into a bad state, sometimes.
-    setTimeout(() => terminal.open(<HTMLElement>container.querySelector('.console')));
-
     this.data
-      .pipe(untilDestroyed(this), tap(console.log))
+      .pipe(untilDestroyed(this))
       .subscribe(data => terminal.write(data.replace(/\r?\n/g, '\r\n')));
+
+    this.actions
+      .ofType(LayoutActionTypes.PANELS_SAVE)
+      .pipe(untilDestroyed(this), debounceTime(2))
+      .subscribe(() => this.resizeConsole());
+
     this.terminal = terminal;
+    terminal.open(this.target.nativeElement);
   }
 
   public ngOnDestroy() {
     this.terminal.destroy();
+  }
+
+  /**
+   * Trigged when the screen size changes.
+   */
+  private resizeConsole() {
+    const rect = this.el.nativeElement.getBoundingClientRect();
+    this.terminal.resize(this.calculateColumns(rect), this.calculateRows(rect));
+  }
+
+  /**
+   * Yea, this has to be done manually sadly, no option for "fill container".
+   * Event VSCode does it manually: https://git.io/vxu3B. 20.8695 is
+   * the computed height for our font.
+   */
+  private calculateRows(rect: ClientRect = this.el.nativeElement.getBoundingClientRect()) {
+    return Math.max(Math.floor(rect.height / 20.8695), 5);
+  }
+
+  private calculateColumns(rect: ClientRect = this.el.nativeElement.getBoundingClientRect()) {
+    return Math.max(Math.floor(rect.width / 8.75), 40);
   }
 }

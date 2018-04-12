@@ -2,17 +2,19 @@ import {
   ComponentFactoryResolver,
   ComponentRef,
   Injectable,
-  Injector,
-  ReflectiveInjector,
   Type,
+  ViewContainerRef,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as GoldenLayout from 'golden-layout';
 import { filter, take } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { ControlsControlsPanelComponent } from '../../controls-console/controls-console-panel/controls-console-panel.component';
 import { ControlsPanelComponent } from '../../controls/controls-panel/controls-panel.component';
-import { ControlSchemaComponent } from '../control-schema/control-schema.component';
+import { WebpackConsolePanelComponent } from '../../controls/webpack-console-panel/webpack-console-panel.component';
+import { EmulationPanelComponent } from '../../emulation/emulation-panel/emulation-panel.component';
+import { WorldSchemaPanelComponent } from '../../schema/world-schema-panel/world-schema-panel.component';
 import { ClearGoldenLayout, GoldenPanel, SetGoldenLayout } from '../layout.actions';
 import { goldenLayout, goldenPanels } from '../layout.reducer';
 
@@ -42,22 +44,27 @@ export class GoldenService {
 
   constructor(
     private readonly componentFactoryResolver: ComponentFactoryResolver,
-    private readonly injector: Injector,
     private readonly store: Store<fromRoot.IState>,
   ) {}
 
   /**
    * Creates the golden layout in the container.
    */
-  public create(container: HTMLElement) {
+  public create(container: HTMLElement, viewRef: ViewContainerRef) {
     this.store
       .select(goldenPanels)
       .pipe(take(1))
       .subscribe(content => {
         const golden = new GoldenLayout({ content, ...this.defaultSettings }, container);
 
-        this.registerComponent(golden, GoldenPanel.ControlSchema, ControlSchemaComponent);
-        this.registerComponent(golden, GoldenPanel.Controls, ControlsPanelComponent);
+        this.registerAllComponents(viewRef, golden, {
+          [GoldenPanel.ControlSchema]: WorldSchemaPanelComponent,
+          [GoldenPanel.Controls]: ControlsPanelComponent,
+          [GoldenPanel.WebpackConsole]: WebpackConsolePanelComponent,
+          [GoldenPanel.DeviceEmulation]: EmulationPanelComponent,
+          [GoldenPanel.ControlsConsole]: ControlsControlsPanelComponent,
+        });
+
         golden.init();
 
         this.store.dispatch(new SetGoldenLayout(golden));
@@ -86,21 +93,36 @@ export class GoldenService {
       });
   }
 
-  private registerComponent(golden: GoldenLayout, name: GoldenPanel, componentCtor: Type<any>) {
+  private registerAllComponents(
+    viewRef: ViewContainerRef,
+    golden: GoldenLayout,
+    cmps: { [key in keyof typeof GoldenPanel]: Type<any> },
+  ) {
+    Object.keys(cmps).forEach((key: GoldenPanel) => {
+      this.registerComponent(viewRef, golden, key, cmps[key]);
+    });
+  }
+
+  private registerComponent(
+    viewref: ViewContainerRef,
+    golden: GoldenLayout,
+    name: GoldenPanel,
+    componentCtor: Type<any>,
+  ) {
     // Note: the below function can't be an arrow, because Golden tries to
     // `new` it, which fails. So make an arrow and wrap it up.
 
     const factoryFn = (container: GoldenLayout.Container) => {
-      const factory = this.componentFactoryResolver.resolveComponentFactory(componentCtor);
-      const injector = ReflectiveInjector.resolveAndCreate(
-        [{ provide: GoldenLayout, useValue: golden }],
-        this.injector,
-      );
-      const compRef = factory.create(injector);
+      // Give it a second to initialize, it seems that creating things
+      // immediately cause issues with both CodeMirror and xterm.js.
+      setTimeout(() => {
+        const factory = this.componentFactoryResolver.resolveComponentFactory(componentCtor);
+        const compRef = viewref.createComponent(factory);
 
-      container.getElement().append(compRef.location.nativeElement);
-      setComponentRef(container, compRef);
-      compRef.changeDetectorRef.detectChanges();
+        container.getElement().append(compRef.location.nativeElement);
+        setComponentRef(container, compRef);
+        compRef.changeDetectorRef.detectChanges();
+      });
     };
 
     // tslint:disable-next-line
