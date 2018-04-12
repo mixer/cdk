@@ -10,7 +10,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Actions } from '@ngrx/effects';
 import * as CodeMirror from 'codemirror';
 import * as json5 from 'json5';
 import { fromEvent } from 'rxjs/observable/fromEvent';
@@ -24,11 +24,12 @@ import 'codemirror/addon/lint/lint';
 import 'codemirror/addon/selection/active-line';
 import 'codemirror/mode/javascript/javascript';
 
+import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import * as fromRoot from '../../bedrock.reducers';
+import { LayoutActionTypes } from '../../layout/layout.actions';
 import { captureDrag } from '../../shared/drag';
-import { untilDestroyed } from '../../shared/untilDestroyed';
-import { CloseMask, OpenMask } from '../../ui/content-mask/content-mask.actions';
+import { untilDestroyed } from '../../shared/operators';
+import { ContentMaskService } from '../content-mask/content-mask.service';
 
 CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {
   try {
@@ -90,7 +91,7 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
    * Fired when the schema content changes. Fired with the valid, JSON5-parsed
    * contents.
    */
-  @Output('change') public change = new Subject<object>();
+  @Output('contentChange') public change = new Subject<object>();
 
   /**
    * Whether we're currently programmatically triggering a CodeMirror change.
@@ -107,7 +108,11 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
    */
   private el: HTMLElement;
 
-  constructor(el: ElementRef, private readonly store: Store<fromRoot.IState>) {
+  constructor(
+    el: ElementRef,
+    private readonly mask: ContentMaskService,
+    private readonly actions: Actions,
+  ) {
     this.el = el.nativeElement;
   }
 
@@ -132,11 +137,18 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
         switchMap(ev =>
           captureDrag(ev).pipe(filter(o => Math.abs(ev.pageX - o.pageX) > 10), take(1), mapTo(ev)),
         ),
-        tap(() => this.store.next(new OpenMask())),
-        switchMap(ev => this.dragNumber(ev)),
+        tap(() => this.mask.open()),
+        switchMap(ev =>
+          this.dragNumber(ev).pipe(tap(() => undefined, () => undefined, () => this.mask.close())),
+        ),
         untilDestroyed(this),
       )
-      .subscribe(() => undefined, () => undefined, () => this.store.next(new CloseMask()));
+      .subscribe(() => undefined, () => undefined, () => this.mask.close());
+
+    this.actions
+      .ofType(LayoutActionTypes.PANELS_SAVE)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => cm.refresh());
 
     cm.on('changes', () => {
       this.updateStoredState();
@@ -196,7 +208,7 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
     setTimeout(() => (this.isTriggeringChange = false));
   }
 
-  private dragNumber(startEv: MouseEvent) {
+  private dragNumber(startEv: MouseEvent): Observable<null> {
     // for batching history, see https://codemirror.net/doc/manual.html#selection_origin
     const eventOrigin = `+dragNumber-${Date.now()}`;
     const doc = this.cm.getDoc();
@@ -247,6 +259,7 @@ export class JsonEditorComponent implements AfterContentInit, OnChanges, OnDestr
           { origin: eventOrigin },
         );
       }),
+      mapTo(null),
     );
   }
 }

@@ -64,6 +64,11 @@ function fitRatio(ratio: number, width: number, height: number): [number, number
 }
 
 /**
+ * Padding of components, in pixels.
+ */
+const displayPadding = 16;
+
+/**
  * Desktop web view
  */
 class DesktopDevice implements IDevice {
@@ -81,10 +86,10 @@ class DesktopDevice implements IDevice {
 
     return [
       {
-        x: 0,
-        y: 0,
-        width: width - chatWidth,
-        height,
+        x: displayPadding,
+        y: displayPadding,
+        width: width - chatWidth - displayPadding * 2,
+        height: height - displayPadding,
         type: 'controls',
       },
       {

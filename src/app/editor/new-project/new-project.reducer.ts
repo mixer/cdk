@@ -80,7 +80,7 @@ export const projectSelector: MemoizedSelector<IState, INewProjectState> = creat
 /**
  * Selector for the current screen.
  */
-export const screen = createSelector(projectSelector, s => s.screen);
+export const selectScreen = createSelector(projectSelector, s => s.screen);
 
 /**
  * Selector for the chosen layout.

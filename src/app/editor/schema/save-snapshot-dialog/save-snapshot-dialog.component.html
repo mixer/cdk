@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>Save Control Schema</h1>
+<div mat-dialog-content>
+  <p>You can save a new "snapshot" of your controls, or overwrite an old save.</p>
+  <form class="layout-row layout-margin layout-align-center-center" (ngSubmit)="saveSnapshot(saveName.getValue())">
+    <mat-form-field>
+      <input matInput placeholder="Save Name" name="saveName"
+        [ngModel]="saveName | async"
+        (ngModelChange)="saveName.next($event)">
+    </mat-form-field>
+    <button mat-button role="submit">
+      {{ (isOverwriting | async) ? 'Overwrite' : 'Save' }}
+    </button>
+  </form>
+  <mat-list>
+    <mat-list-item *ngFor="let snapshot of (snapshots | async)">
+      <ng-container *ngIf="snapshot.name === workingName">
+        <div class="text">
+          <h4 matLine>Working Copy</h4>
+          <p matLine>Updated: Just Now</p>
+        </div>
+        <div class="actions">
+          <button mat-icon-button disabled><mat-icon svgIcon="trash-can"></mat-icon></button>
+          <button mat-raised-button color="primary" disabled>Overwrite</button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="snapshot.name !== workingName">
+        <div class="text">
+          <h4 matLine>{{ snapshot.name }}</h4>
+          <p matLine>Updated: {{ snapshot.savedAt | amTimeAgo }}</p>
+        </div>
+        <div class="actions">
+          <button mat-icon-button (click)="deleteSnapshot(snapshot)">
+            <mat-icon svgIcon="trash-can"></mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="saveSnapshot(snapshot.name)">Overwrite</button>
+        </div>
+      </ng-container>
+    </mat-list-item>
+  </mat-list>
+</div>

@@ -27,6 +27,15 @@ export class RpcError extends Error implements IRemoteError {
     super(message);
     this.stack = stack;
   }
+
+  public toJSON() {
+    return {
+      message: this.message,
+      stack: this.stack,
+      originalName: this.originalName,
+      metadata: this.metadata,
+    };
+  }
 }
 
 /**
@@ -67,7 +76,6 @@ export class ElectronService {
           return;
         }
 
-        Electron.ipcRenderer.removeListener(method, listener);
         if (!AppConfig.production) {
           // tslint:disable-next-line
           console.debug('repl:', method, result);
@@ -88,7 +96,7 @@ export class ElectronService {
       };
 
       const outgoing = { id, params: data };
-      Electron.ipcRenderer.on(method, listener);
+      Electron.ipcRenderer.once(method, listener);
       Electron.ipcRenderer.send(method, outgoing);
 
       if (!AppConfig.production) {

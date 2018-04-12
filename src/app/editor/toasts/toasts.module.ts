@@ -5,6 +5,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
 import { ErrorToastComponent } from './error-toast/error-toast.component';
+import { RpcToastComponent } from './rpc-toast/rpc-toast.component';
 import { ToastEffects } from './toasts.effects';
 import { toastReducer } from './toasts.reducer';
 
@@ -19,7 +20,7 @@ import { toastReducer } from './toasts.reducer';
     EffectsModule.forFeature([ToastEffects]),
     StoreModule.forFeature('toasts', toastReducer),
   ],
-  declarations: [ErrorToastComponent],
-  entryComponents: [ErrorToastComponent],
+  declarations: [ErrorToastComponent, RpcToastComponent],
+  entryComponents: [ErrorToastComponent, RpcToastComponent],
 })
 export class ToastsModule {}

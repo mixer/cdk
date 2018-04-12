@@ -20,18 +20,19 @@ import {
   map,
   publishReplay,
   refCount,
+  startWith,
 } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { ControlStateSyncService } from '../../controls/sync/control-state-sync.service';
 import { LayoutActionTypes } from '../../layout/layout.actions';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { truthy, untilDestroyed } from '../../shared/operators';
 import { IBlock, IDevice } from '../devices';
-import { SetEffectiveDimensions } from '../emulation.actions';
+import { SetEffectiveDimensions, SetFittedVideoSize } from '../emulation.actions';
 import {
   emulationState,
   IEmulationState,
   selectDevice,
+  selectedMovedVideo,
   selectEffectiveDimensions,
 } from '../emulation.reducer';
 
@@ -84,9 +85,14 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
   public stubBlocks: IBlock[];
 
   /**
+   * Whether the stub blocks contains the video element.
+   */
+  public hasStubbedVideo = false;
+
+  /**
    * Device "frame" to display.
    */
-  public state = this.store.select(selectEffectiveDimensions).pipe(filter(Boolean));
+  public state = this.store.select(selectEffectiveDimensions).pipe(truthy());
 
   /**
    * The currently selected device.
@@ -101,10 +107,13 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
       .select(emulationState)
       .pipe(
         distinctUntilChanged(
-          (a, b) => a.device === b.device && a.effectiveDimensions === b.effectiveDimensions,
+          (a, b) =>
+            a.device === b.device &&
+            a.effectiveDimensions === b.effectiveDimensions &&
+            a.orientation === b.orientation,
         ),
       ),
-    this.actions.ofType(LayoutActionTypes.SET_GOLDEN_LAYOUT),
+    this.actions.ofType(LayoutActionTypes.PANELS_SAVE).pipe(startWith(<any>null)),
     state => state,
   );
 
@@ -112,8 +121,8 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
    * Observable for the computed video position, fitted with a 16:9 ratio into
    * the bounds provided by the controls.
    */
-  public videoFilledSize = this.controls
-    .getVideoSize()
+  public videoFilledSize = this.store
+    .select(selectedMovedVideo)
     .pipe(
       combineLatest(this.layoutResized),
       debounceTime(1),
@@ -129,7 +138,6 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     private readonly cdRef: ChangeDetectorRef,
     private readonly store: Store<fromRoot.IState>,
     private readonly sanitizer: DomSanitizer,
-    public readonly controls: ControlStateSyncService,
   ) {}
 
   public ngAfterContentInit() {
@@ -139,7 +147,7 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
 
     this.videoFilledSize
       .pipe(untilDestroyed(this))
-      .subscribe(rect => this.controls.updateFittedVideoSize(rect!));
+      .subscribe(rect => this.store.dispatch(new SetFittedVideoSize(rect)));
   }
 
   public ngOnDestroy() {
@@ -170,6 +178,7 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     }
 
     this.stubBlocks = blocks.filter(b => b.type !== 'controls');
+    this.hasStubbedVideo = blocks.some(b => b.type === 'video');
     this.controlsBlock = controlBlock;
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
@@ -195,11 +204,11 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     // Normalize any bottom/right bounds to width/height to make things easier.
 
     if (!out.width) {
-      out.width = backdropRect.width - out.left - out.right;
+      out.width = Math.max(1, backdropRect.width - out.left - out.right);
       delete out.right;
     }
     if (!rect.height) {
-      out.height = backdropRect.height - out.top - out.bottom;
+      out.height = Math.max(1, backdropRect.height - out.top - out.bottom);
       delete out.bottom;
     }
 

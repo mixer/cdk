@@ -1,3 +1,4 @@
+import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import { Action } from '@ngrx/store';
 import { IDevice } from './devices';
 
@@ -22,8 +23,11 @@ export interface IEffectiveDimensions {
 
 export const enum EmulationActionTypes {
   SET_DEVICE = '[Emulation] Set Device',
-  SET_ORIENTATION = '[Emulation] Set Orientation',
+  ROTATE_DEVICE = '[Emulation] Rotate device',
   SET_EFFECTIVE_DIMENSIONS = '[Emulation] Set Effective Dimensions',
+  SET_FITTED_VIDEO_SIZE = '[Emulation] Set Fitted Video Size',
+  SET_LANGUAGE = '[Emulation] Set langauge',
+  MOVE_VIDEO = '[Emulation] Move Video',
 }
 
 /**
@@ -38,10 +42,8 @@ export class SetDevice implements Action {
 /**
  * Sets the device orientation.
  */
-export class SetOrientation implements Action {
-  public readonly type = EmulationActionTypes.SET_ORIENTATION;
-
-  constructor(public readonly orientation: Orientation) {}
+export class RotateDevice implements Action {
+  public readonly type = EmulationActionTypes.ROTATE_DEVICE;
 }
 
 /**
@@ -53,4 +55,37 @@ export class SetEffectiveDimensions implements Action {
   constructor(public readonly dimensions: IEffectiveDimensions) {}
 }
 
-export type EmulationActions = SetDevice | SetOrientation | SetEffectiveDimensions;
+/**
+ * Sets the fitted video position within the controls.
+ */
+export class SetFittedVideoSize implements Action {
+  public readonly type = EmulationActionTypes.SET_FITTED_VIDEO_SIZE;
+
+  constructor(public readonly rect: ClientRect) {}
+}
+
+/**
+ * Moves the video position, called by the controls.
+ */
+export class MoveVideo implements Action {
+  public readonly type = EmulationActionTypes.MOVE_VIDEO;
+
+  constructor(public readonly options: IVideoPositionOptions) {}
+}
+
+/**
+ * Sets the control language.
+ */
+export class SetLanguage implements Action {
+  public readonly type = EmulationActionTypes.SET_LANGUAGE;
+
+  constructor(public readonly language: string) {}
+}
+
+export type EmulationActions =
+  | SetDevice
+  | RotateDevice
+  | SetEffectiveDimensions
+  | SetFittedVideoSize
+  | MoveVideo
+  | SetLanguage;

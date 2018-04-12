@@ -10,7 +10,7 @@ import { ContentMaskService } from './content-mask.service';
  * it entirely, so we need to add an overlay to prevent that from happening.
  */
 @NgModule({
-  imports: [StoreModule.forFeature('entryMask', contentMaskReducer)],
+  imports: [StoreModule.forFeature('contentMask', contentMaskReducer)],
   providers: [ContentMaskService],
 })
 export class ContentMaskModule {}

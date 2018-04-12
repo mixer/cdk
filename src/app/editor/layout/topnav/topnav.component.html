@@ -4,54 +4,38 @@
     <menu-bar-item (click)="createNewProject()" text="New Project"></menu-bar-item>
     <menu-bar-item (click)="openProject()" text="Open Project"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
-    <menu-bar-item text="Save Project"></menu-bar-item>
+    <menu-bar-item (click)="closeProject()" [disabled]="!(isOnEditor | async)" text="Close Project"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#run" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>Run</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item text="On my Computer"></menu-bar-item>
-    <menu-bar-item text="On my Channel Page"></menu-bar-item>
+    <menu-bar-item (click)="linkAndUpload()" text="On my Channel Page"></menu-bar-item>
+    <menu-bar-item (click)="startRemoteConnection()" *ngIf="!(hasRemoteConnection | async)" text="On my Computer"></menu-bar-item>
+    <menu-bar-item (click)="stopRemoteConnection()" *ngIf="hasRemoteConnection | async" text="Disconnect my Controls"></menu-bar-item>
+    <menu-bar-divider></menu-bar-divider>
+    <menu-bar-item (click)="restartWebpack()" text="Restart Webpack"></menu-bar-item>
+    <menu-bar-item (click)="setWebpackConfig()" text="Set Webpack Config"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#view" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>View</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item (click)="togglePanel(Panel.Console)" text="Console">
+    <menu-bar-item *ngFor="let key of goldenPanels | keys" (click)="togglePanel(key)" [text]="goldenPanels[key]">
       <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Console) | async"></mat-icon>
+        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(key) | async"></mat-icon>
       </menu-bar-icon>
     </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.ControlSchema)" text="Control Schema">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.ControlSchema) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Controls)" text="Control Schema">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Controls) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Devices)" text="Device Emulation">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Devices) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Participant)" text="Participant">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Participant) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.Groups)" text="Groups">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.Groups) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
-    <menu-bar-item (click)="togglePanel(Panel.WebpackConsole)" text="Webpack Console">
-      <menu-bar-icon>
-        <mat-icon svgIcon="check-mark" *ngIf="panelOpen(Panel.WebpackConsole) | async"></mat-icon>
-      </menu-bar-icon>
-    </menu-bar-item>
+  </menu-bar-items>
+</menu-bar>
+<menu-bar menuId="layout#schema" [disabled]="!(isOnEditor | async)">
+  <menu-bar-text>Control Schema</menu-bar-text>
+  <menu-bar-items>
+    <menu-bar-item text="Save" (click)="saveControlSchema()"></menu-bar-item>
+    <menu-bar-item text="Open" (click)="loadControlSchema()"></menu-bar-item>
+    <menu-bar-divider></menu-bar-divider>
+    <menu-bar-item (click)="copyControlSchema()" text="Copy from Linked Interactive Game"></menu-bar-item>
+    <menu-bar-item (click)="uploadControlSchema()" text="Upload to Linked Interactive Game"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#help">
@@ -59,11 +43,12 @@
   <menu-bar-items>
     <menu-bar-item openExternal="https://dev.mixer.com" text="Documentation"></menu-bar-item>
     <menu-bar-item openExternal="https://mixer.com/lab" text="Interactive Studio"></menu-bar-item>
-    <menu-bar-item openExternal="https://github.com/mixer/miix-cli/issues/new" text="Report Issue"></menu-bar-item>
-    <menu-bar-item text="About miix"></menu-bar-item>
+    <menu-bar-item (click)="openIssue()" text="Report Issue"></menu-bar-item>
+    <menu-bar-item text="About the CDK"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 
 <span style="flex:1"></span>
 
+<project-dropdown></project-dropdown>
 <account-switcher></account-switcher>

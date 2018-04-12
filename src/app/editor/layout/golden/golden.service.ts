@@ -10,8 +10,10 @@ import * as GoldenLayout from 'golden-layout';
 import { filter, take } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { ControlsControlsPanelComponent } from '../../controls-console/controls-console-panel/controls-console-panel.component';
 import { ControlsPanelComponent } from '../../controls/controls-panel/controls-panel.component';
 import { WebpackConsolePanelComponent } from '../../controls/webpack-console-panel/webpack-console-panel.component';
+import { EmulationPanelComponent } from '../../emulation/emulation-panel/emulation-panel.component';
 import { WorldSchemaPanelComponent } from '../../schema/world-schema-panel/world-schema-panel.component';
 import { ClearGoldenLayout, GoldenPanel, SetGoldenLayout } from '../layout.actions';
 import { goldenLayout, goldenPanels } from '../layout.reducer';
@@ -55,19 +57,14 @@ export class GoldenService {
       .subscribe(content => {
         const golden = new GoldenLayout({ content, ...this.defaultSettings }, container);
 
-        this.registerComponent(
-          viewRef,
-          golden,
-          GoldenPanel.ControlSchema,
-          WorldSchemaPanelComponent,
-        );
-        this.registerComponent(viewRef, golden, GoldenPanel.Controls, ControlsPanelComponent);
-        this.registerComponent(
-          viewRef,
-          golden,
-          GoldenPanel.WebpackConsole,
-          WebpackConsolePanelComponent,
-        );
+        this.registerAllComponents(viewRef, golden, {
+          [GoldenPanel.ControlSchema]: WorldSchemaPanelComponent,
+          [GoldenPanel.Controls]: ControlsPanelComponent,
+          [GoldenPanel.WebpackConsole]: WebpackConsolePanelComponent,
+          [GoldenPanel.DeviceEmulation]: EmulationPanelComponent,
+          [GoldenPanel.ControlsConsole]: ControlsControlsPanelComponent,
+        });
+
         golden.init();
 
         this.store.dispatch(new SetGoldenLayout(golden));
@@ -94,6 +91,16 @@ export class GoldenService {
         golden!.destroy();
         this.store.dispatch(new ClearGoldenLayout());
       });
+  }
+
+  private registerAllComponents(
+    viewRef: ViewContainerRef,
+    golden: GoldenLayout,
+    cmps: { [key in keyof typeof GoldenPanel]: Type<any> },
+  ) {
+    Object.keys(cmps).forEach((key: GoldenPanel) => {
+      this.registerComponent(viewRef, golden, key, cmps[key]);
+    });
   }
 
   private registerComponent(

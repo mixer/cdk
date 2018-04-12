@@ -10,12 +10,16 @@ export enum GoldenPanel {
   ControlSchema = 'ControlSchema',
   Controls = 'Controls',
   WebpackConsole = 'WebpackConsole',
+  DeviceEmulation = 'DeviceEmulation',
+  ControlsConsole = 'ControlsConsole',
 }
 
 export const panelTitles: { [k in GoldenPanel]: string } = {
   [GoldenPanel.ControlSchema]: 'Control Schema',
   [GoldenPanel.Controls]: 'Controls',
   [GoldenPanel.WebpackConsole]: 'Webpack Console',
+  [GoldenPanel.DeviceEmulation]: 'Device Emulation',
+  [GoldenPanel.ControlsConsole]: 'Control Output Console',
 };
 
 export const enum LayoutActionTypes {
@@ -30,6 +34,48 @@ export const enum LayoutActionTypes {
 export const enum LayoutMethod {
   SavePanels = '[Layout] Save panels',
   LoadPanels = '[Layout] Load panels',
+}
+
+/**
+ * Returns whether the given golden panel is currently visibile and in focus.
+ */
+export function isFocused(layout: GoldenLayout, panel: GoldenPanel): boolean {
+  const instance = findGoldenPanel([layout.root], panel);
+  if (!instance) {
+    return false;
+  }
+  if (!instance.parent) {
+    return true;
+  }
+
+  return instance.parent.getActiveContentItem() === instance;
+}
+
+/**
+ * Tries to bring the content item into focus. Returns true if it's successful.
+ */
+export function focus(panel: GoldenLayout.ContentItem): boolean {
+  if (panel.parent && panel.parent.getActiveContentItem) {
+    if (panel.parent.getActiveContentItem() !== panel) {
+      panel.parent.setActiveContentItem(panel);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Tries to bring the content item into focus. Returns true if it's successful.
+ */
+export function focusGolden(root: GoldenLayout.ContentItem, panel: GoldenPanel): boolean {
+  const contentItem = findGoldenPanel([root], panel);
+  if (!contentItem) {
+    return false;
+  }
+
+  return focus(contentItem);
 }
 
 /**
@@ -54,6 +100,22 @@ export function findPanel(
   }
 
   return null;
+}
+
+/**
+ * Function that finds
+ */
+export type Locator = (fn: GoldenLayout) => GoldenLayout.ContentItem | null;
+
+/**
+ * Returns a Locator that attempts to find the container holding another
+ * panel so that the newly created panel, in OpenPanel, will stack.
+ */
+export function stackedLocator(ontoPanel: GoldenPanel): Locator {
+  return (layout: GoldenLayout) => {
+    const panel = findGoldenPanel([layout.root], ontoPanel);
+    return panel ? panel.parent : null; // parent to add to the containing stack
+  };
 }
 
 /**
@@ -92,10 +154,7 @@ export class SavePanels implements Action {
 export class OpenPanel implements Action {
   public readonly type = LayoutActionTypes.OPEN_PANEL;
 
-  constructor(
-    public readonly panel: GoldenPanel,
-    public readonly locator?: (fn: GoldenLayout) => GoldenLayout.ContentItem | null,
-  ) {}
+  constructor(public readonly panel: GoldenPanel, public readonly locator?: Locator) {}
 }
 
 /**

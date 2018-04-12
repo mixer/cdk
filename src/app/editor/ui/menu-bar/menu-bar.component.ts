@@ -13,7 +13,7 @@ import { fromEvent } from 'rxjs/observable/fromEvent';
 import { filter, map, switchMap, take, takeUntil } from 'rxjs/operators';
 
 import { IState } from '../../bedrock.reducers';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { truthy, untilDestroyed } from '../../shared/operators';
 import { CloseMenu, OpenDirection, OpenMenu } from './menu-bar.actions';
 import * as fromMenu from './menu-bar.reducer';
 
@@ -69,7 +69,7 @@ export class MenuBarComponent implements OnDestroy {
     this.el = htmlElement;
     this.isOpen
       .pipe(
-        filter(Boolean),
+        truthy(),
         switchMap(() =>
           fromEvent<MouseEvent>(window, 'mousedown').pipe(
             filter(ev => !htmlElement.contains(<Node>ev.target)),
@@ -94,7 +94,7 @@ export class MenuBarComponent implements OnDestroy {
   public onHover() {
     this.state
       .select(fromMenu.selectOpenMenu)
-      .pipe(take(1), filter(Boolean))
+      .pipe(take(1), truthy())
       .subscribe(() => this.open());
   }
 
@@ -144,19 +144,25 @@ export class MenuBarItemComponent {
   /**
    * Whether this item is disabled.
    */
-  @Input() public disabled: boolean;
+  @HostBinding('class.disabled')
+  @Input()
+  public disabled: boolean;
 
   /**
    * Icon to display in the menu bar item.
    */
-  @HostBinding('class.disabled')
-  @Input()
-  public icon: boolean;
+  @Input() public icon: boolean;
 
   constructor(private readonly parent: MenuBarComponent) {}
 
-  @HostListener('click')
-  public onClick() {
+  @HostListener('click', ['$event'])
+  public onClick(ev: PointerEvent) {
+    if (this.disabled) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      return;
+    }
+
     this.parent.close();
   }
 }
