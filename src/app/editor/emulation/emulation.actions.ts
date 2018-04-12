@@ -26,6 +26,7 @@ export const enum EmulationActionTypes {
   ROTATE_DEVICE = '[Emulation] Rotate device',
   SET_EFFECTIVE_DIMENSIONS = '[Emulation] Set Effective Dimensions',
   SET_FITTED_VIDEO_SIZE = '[Emulation] Set Fitted Video Size',
+  SET_LANGUAGE = '[Emulation] Set langauge',
   MOVE_VIDEO = '[Emulation] Move Video',
 }
 
@@ -72,9 +73,19 @@ export class MoveVideo implements Action {
   constructor(public readonly options: IVideoPositionOptions) {}
 }
 
+/**
+ * Sets the control language.
+ */
+export class SetLanguage implements Action {
+  public readonly type = EmulationActionTypes.SET_LANGUAGE;
+
+  constructor(public readonly language: string) {}
+}
+
 export type EmulationActions =
   | SetDevice
   | RotateDevice
   | SetEffectiveDimensions
   | SetFittedVideoSize
-  | MoveVideo;
+  | MoveVideo
+  | SetLanguage;

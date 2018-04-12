@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { take } from 'rxjs/operators';
 
+import { MatDialogRef } from '@angular/material';
 import * as fromRoot from '../../bedrock.reducers';
-import { SetScreen, SetUploadControls, SetUploadSchema, UploaderScreen } from '../uploader.actions';
-import { selectUploadSchema } from '../uploader.reducer';
+import { SetUploadControls, SetUploadSchema, StartUploading } from '../uploader.actions';
+import { selectUploadControls, selectUploadSchema } from '../uploader.reducer';
 
 /**
  * Presents a brief into to uploading and allows users to select what
@@ -25,9 +25,12 @@ export class UploaderConfirmingComponent {
   /**
    * Whether to upload controls.
    */
-  public uploadControls = this.store.select(selectUploadSchema);
+  public uploadControls = this.store.select(selectUploadControls);
 
-  constructor(private readonly store: Store<fromRoot.IState>) {}
+  constructor(
+    private readonly store: Store<fromRoot.IState>,
+    public readonly dialogRef: MatDialogRef<any>,
+  ) {}
 
   public setUploadControls(shouldUpload: boolean) {
     this.store.dispatch(new SetUploadControls(shouldUpload));
@@ -38,12 +41,6 @@ export class UploaderConfirmingComponent {
   }
 
   public next() {
-    this.uploadSchema.pipe(take(1)).subscribe(uploadSchema => {
-      this.store.dispatch(
-        new SetScreen(
-          uploadSchema ? UploaderScreen.UploadingSchema : UploaderScreen.UploadingControls,
-        ),
-      );
-    });
+    this.store.dispatch(new StartUploading());
   }
 }

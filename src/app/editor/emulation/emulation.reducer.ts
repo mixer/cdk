@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
+import { ISettings, IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
 import * as fromRoot from '../bedrock.reducers';
 import { devices, IDevice } from './devices';
 import {
@@ -85,6 +85,8 @@ export function emulationReducer(
       return { ...state, fittedVideo: action.rect };
     case EmulationActionTypes.MOVE_VIDEO:
       return { ...state, movedVideo: action.options };
+    case EmulationActionTypes.SET_LANGUAGE:
+      return { ...state, language: action.language };
     default:
       return state;
   }
@@ -101,6 +103,11 @@ export const emulationState: MemoizedSelector<IState, IEmulationState> = createF
  * Selects the chosen device.
  */
 export const selectDevice = createSelector(emulationState, s => s.device);
+
+/**
+ * Selects the chosen language.
+ */
+export const selectLanguage = createSelector(emulationState, s => s.language);
 
 /**
  * Selects the chosen orientation.
@@ -121,3 +128,16 @@ export const selectedMovedVideo = createSelector(emulationState, s => s.movedVid
  * Selects whether the user has manually set dimensions for the given device.
  */
 export const selectedFittedVideo = createSelector(emulationState, s => s.fittedVideo);
+
+/**
+ * Selects ISettings from the emulation state.
+ */
+export const selectISettings = createSelector(
+  emulationState,
+  s =>
+    <ISettings>{
+      language: s.language,
+      platform: s.device.platform,
+      placesVideo: s.device.placesVideo,
+    },
+);

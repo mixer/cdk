@@ -10,6 +10,7 @@
     <div class="message">
         Compiling your code...
     </div>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
   </div>
   <div class="state" *ngSwitchCase="State.Stopping">
     <mat-spinner [diameter]="32"></mat-spinner>
@@ -23,13 +24,15 @@
         We ran into a problem compiling your code!
         <small>We'll watch your files for changes and automatically retry once you fix the error.</small>
     </div>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
   </div>
   <div class="state" *ngSwitchCase="State.Failed">
     <mat-icon svgIcon="warning"></mat-icon>
     <div class="message">
         We ran into a problem trying to start the Webpack dev server.
-        <small>This might be our fault! Please <a (click)="openIssue()" class="body-link">open an issue</a> if you think it is.</small>
-    </div>
+        <small>This might be our fault! Please <a (click)="openIssue('webpack-dev-server could not start')" class="body-link">open an issue</a> if you think it is.</small>
+      </div>
+      <button mat-raised-button class="recompile" color="primary" (click)="restart()">Retry</button>
   </div>
   <div class="state" *ngSwitchCase="State.Compiled">
     <mat-icon svgIcon="check-mark"></mat-icon>
@@ -37,6 +40,15 @@
         You're up to date!
         <small>We'll watch your files for changes to automatically recompile.</small>
     </div>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
+  </div>
+  <div class="state" *ngSwitchCase="State.Stopped">
+    <mat-icon svgIcon="warning"></mat-icon>
+    <div class="message">
+        Your webpack build has stopped gracefully.
+        <small>This is not expected when running the development server. Please <a (click)="openIssue('webpack-dev-server stopped gracefully')" class="body-link">open an issue</a>.</small>
+    </div>
+    <button mat-raised-button class="recompile" color="primary" (click)="restart()">Restart</button>
   </div>
 </ng-container>
 <console-display [data]="consoleData"></console-display>

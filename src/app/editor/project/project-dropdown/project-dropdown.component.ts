@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 
 import { RequireAuth } from '../../account/account.actions';
 import * as fromRoot from '../../bedrock.reducers';
+import { OpenUploader } from '../../uploader/uploader.actions';
 import { OpenDirectory, StartChangeLink } from '../project.actions';
 import * as fromProject from '../project.reducer';
 
@@ -45,5 +46,12 @@ export class ProjectDropdownComponent {
    */
   public changeLink() {
     this.store.dispatch(new RequireAuth(new StartChangeLink()));
+  }
+
+  /**
+   * Starts the controls uploading.
+   */
+  public upload() {
+    this.store.dispatch(new RequireAuth(new OpenUploader()));
   }
 }

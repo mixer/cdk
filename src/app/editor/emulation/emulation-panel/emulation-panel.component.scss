@@ -1,6 +1,8 @@
 @import '../../../assets/styles/declarations';
 
 :host {
+  @include scroll-y();
+
   padding: $dimension-gutter-lg;
 }
 

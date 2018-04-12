@@ -9,8 +9,9 @@ import {
   RotateDevice,
   SetDevice,
   SetEffectiveDimensions,
+  SetLanguage,
 } from '../emulation.actions';
-import { selectDevice, selectEffectiveDimensions } from '../emulation.reducer';
+import { selectDevice, selectEffectiveDimensions, selectLanguage } from '../emulation.reducer';
 
 /**
  * The host component holds the arrangement of macroscopic editor components.
@@ -31,6 +32,11 @@ export class EmulationPanelComponent {
    * Selects the displayed device.
    */
   public readonly device = this.store.select(selectDevice);
+
+  /**
+   * Selects the selected locale.
+   */
+  public readonly language = this.store.select(selectLanguage);
 
   /**
    * Selects the effective device dimensions.
@@ -71,6 +77,13 @@ export class EmulationPanelComponent {
    */
   public chooseDevice(device: IDevice) {
     this.store.dispatch(new SetDevice(device));
+  }
+
+  /**
+   * Updates the locale.
+   */
+  public setLanguage(language: string) {
+    this.store.dispatch(new SetLanguage(language));
   }
 
   private updateDimensions(partial: Partial<IEffectiveDimensions>) {

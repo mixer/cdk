@@ -4,12 +4,18 @@ import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 
 import { RequireAuth } from '../../account/account.actions';
+import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
+import { LocateWebpackConfig, RestartWebpack } from '../../controls/controls.actions';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
-import { RequireLink, StartOpenProject } from '../../project/project.actions';
+import { CloseProject, RequireLink, StartOpenProject } from '../../project/project.actions';
+import { RemoteConnectionDialogComponent } from '../../remote-connect/dialog/dialog.component';
+import { RemoteState, SetRemoteState } from '../../remote-connect/remote-connect.actions';
+import { isRemoteConnected } from '../../remote-connect/remote-connect.reducer';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
-import { CopyWorldSchema, UploadWorldSchema } from '../../schema/schema.actions';
+import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
+import { OpenUploader } from '../../uploader/uploader.actions';
 import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
 
@@ -39,6 +45,11 @@ export class TopNavComponent {
    */
   public readonly isOnEditor = this.store.select(isOnEditor);
 
+  /**
+   * Selects whether the editor screen is open.
+   */
+  public readonly hasRemoteConnection = this.store.select(isRemoteConnected);
+
   constructor(private readonly dialog: MatDialog, private readonly store: Store<fromRoot.IState>) {}
 
   /**
@@ -66,7 +77,7 @@ export class TopNavComponent {
    * Uploads the control schema.
    */
   public uploadControlSchema() {
-    this.store.dispatch(new RequireAuth(new RequireLink(UploadWorldSchema)));
+    this.store.dispatch(new RequireAuth(new RequireLink(QuickUploadWorldSchema)));
   }
 
   /**
@@ -84,10 +95,59 @@ export class TopNavComponent {
   }
 
   /**
+   * Closes the currently open project.
+   */
+  public closeProject() {
+    this.store.dispatch(new CloseProject());
+  }
+
+  /**
+   * Pops a window to submit an issue to the project.
+   */
+  public openIssue() {
+    this.store.dispatch(new ReportGenericError('My Error Report', 'Enter your details here'));
+  }
+
+  /**
    * Returns an observable that emits whether the given panel is open.
    */
   public panelOpen(panel: GoldenPanel) {
     return this.store.select(panelIsOpen(panel));
+  }
+
+  /**
+   * Stops and start webpack.
+   */
+  public restartWebpack() {
+    this.store.dispatch(new RestartWebpack());
+  }
+
+  /**
+   * Asks the user to point to the webpack config.
+   */
+  public setWebpackConfig() {
+    this.store.dispatch(new LocateWebpackConfig());
+  }
+
+  /**
+   * Asks for a link, then uploads the controls to the user's channel.
+   */
+  public linkAndUpload() {
+    this.store.dispatch(new RequireAuth(new RequireLink(OpenUploader)));
+  }
+
+  /**
+   * Opens a dialog to connect the controls to a Mixer channel.
+   */
+  public startRemoteConnection() {
+    this.dialog.open(RemoteConnectionDialogComponent);
+  }
+
+  /**
+   * Disconnects any ongoing link.
+   */
+  public stopRemoteConnection() {
+    this.store.dispatch(new SetRemoteState(RemoteState.Disconnected));
   }
 
   /**

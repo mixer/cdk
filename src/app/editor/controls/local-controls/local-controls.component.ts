@@ -1,16 +1,5 @@
-import {
-  // AfterContentInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
-import { Store } from '@ngrx/store';
-import { distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 
-import * as fromRoot from '../../bedrock.reducers';
-import { WebpackState } from '../controls.actions';
-import * as fromControls from '../controls.reducer';
 import { LocalStateSyncService } from '../sync/local-state-sync.service';
 
 /**
@@ -20,7 +9,7 @@ import { LocalStateSyncService } from '../sync/local-state-sync.service';
 @Component({
   selector: 'local-controls',
   templateUrl: './local-controls.component.html',
-  styleUrls: ['../controls.component.scss', './local-controls.component.scss'],
+  styleUrls: ['../controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [LocalStateSyncService],
 })
@@ -33,23 +22,9 @@ export class LocalControlsComponent {
   /**
    * Currently attached webpack instance.
    */
-  public readonly instance = this.store.select(fromControls.controlState).pipe(
-    // Wait until we get past the "starting" stage, before this point the
-    // server may not exist and loading the iframe will result in an error.
-    filter(
-      state =>
-        [WebpackState.Compiled, WebpackState.HadError].includes(state.webpackState) &&
-        !!state.instance,
-    ),
-    map(({ instance }) => instance!.address),
-    distinctUntilChanged(),
-    map(address => `${address}?${Date.now()}`),
-  );
+  public readonly instance = this.sync.base.controlsAddress;
 
-  constructor(
-    private readonly store: Store<fromRoot.IState>,
-    private readonly sync: LocalStateSyncService,
-  ) {}
+  constructor(private readonly sync: LocalStateSyncService) {}
 
   public ngAfterContentInit() {
     this.sync.bind(<HTMLIFrameElement>this.iframe.nativeElement);

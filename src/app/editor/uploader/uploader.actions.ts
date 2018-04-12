@@ -1,14 +1,18 @@
 import { Action } from '@ngrx/store';
+
 import { WebpackState } from '../controls/controls.actions';
+import { RpcError } from '../electron.service';
 
 export const enum UploaderActionTypes {
   OPEN_UPLOADER = '[Uploader] Open',
   UPDATE_WEBPACK_STATE = '[Uploader] Update webpack state',
   UPDATE_WEBPACK_CONSOLE = '[Uploader] Update webpack console',
   UPLOADER_CLOSED = '[Uploader] Closed',
+  START_UPLOADING = '[Uploader] Start uploading',
   SET_SCREEN = '[Uploader] Set Stage',
   SET_UPLOAD_SCHEMA = '[Uploader] Set whether to upload schema',
   SET_UPLOAD_CONTROLS = '[Uploader] Set whether to upload controls',
+  SET_ERROR = '[Uploader] Set Error',
 }
 
 export const enum UploaderMethods {
@@ -20,6 +24,7 @@ export enum UploaderScreen {
   Confirming,
   UploadingSchema,
   UploadingControls,
+  LinkingGame,
   Completed,
 }
 
@@ -83,6 +88,22 @@ export class UpdateWebpackConsole implements Action {
   constructor(public readonly data: string) {}
 }
 
+/**
+ * Fired when the user is ready to start uploading, with their set config.
+ */
+export class StartUploading implements Action {
+  public readonly type = UploaderActionTypes.START_UPLOADING;
+}
+
+/**
+ * Fired when an error occurs at some point in the process.
+ */
+export class SetError implements Action {
+  public readonly type = UploaderActionTypes.SET_ERROR;
+
+  constructor(public readonly error: RpcError) {}
+}
+
 export type UploaderActions =
   | OpenUploader
   | SetUploadControls
@@ -90,4 +111,5 @@ export type UploaderActions =
   | UpdateWebpackConsole
   | UpdateWebpackState
   | UploaderClosed
-  | SetScreen;
+  | SetScreen
+  | SetError;

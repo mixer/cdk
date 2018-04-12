@@ -10,7 +10,7 @@ import * as fromRoot from '../../bedrock.reducers';
 import { ElectronService } from '../../electron.service';
 import { createRandomProjectName } from '../../shared/name-generator';
 import { projectNameValidator } from '../../shared/validators';
-import { ChangeScreen, NewProjectScreen, SetDetails, SetLayout } from '../new-project.actions';
+import { ChangeScreen, NewProjectScreen, SetDetails } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**
@@ -26,7 +26,6 @@ export class AttributeSelectionComponent {
    * Form for input validation.
    */
   public form: FormGroup;
-
   constructor(
     private readonly store: Store<fromRoot.IState>,
     private readonly formBuilder: FormBuilder,
@@ -41,7 +40,7 @@ export class AttributeSelectionComponent {
         [Validators.required, projectNameValidator],
         this.checkProjectNameAvailable,
       ],
-      license: ['MIT', Validators.required],
+      license: 'MIT',
       description: '',
       keywords: '',
     });
@@ -57,13 +56,15 @@ export class AttributeSelectionComponent {
       .subscribe(details => this.form.setValue(details!));
   }
 
-  public setLayout(layout: string) {
-    this.store.dispatch(new SetDetails({ ...this.form.value }));
-    this.store.dispatch(new SetLayout(layout));
+  public getInput(name: string) {
+    return this.form.get(name)!;
   }
 
   public submit() {
-    this.store.dispatch(new SetDetails({ ...this.form.value }));
+    const data = { ...this.form.value };
+    data.license = data.license || 'Unlicensed'; // if they left license blank
+
+    this.store.dispatch(new SetDetails(data));
     this.store.dispatch(new ChangeScreen(NewProjectScreen.Template));
   }
 

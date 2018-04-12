@@ -1,10 +1,7 @@
 import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { expect } from 'chai';
-import * as path from 'path';
-import * as sinon from 'sinon';
 
 import { PublishPrivateError, UnexpectedHttpError } from '../src/server/errors';
-import { Project } from '../src/server/project';
 import { Publisher } from '../src/server/publish/publisher';
 import { MockRequester } from './_setup';
 
@@ -13,7 +10,6 @@ describe('Publisher', () => {
   let publisher: Publisher;
 
   // tslint:disable-next-line
-  const projectPath = path.join(__dirname, 'fixture/custom-readme');
   const mockConfig: IPackageConfig = {
     name: 'interactive-launchpad',
     version: '0.1.0',
@@ -29,17 +25,14 @@ describe('Publisher', () => {
   });
 
   it('refuses to publish private packages', async () => {
-    const project = new Project('');
-    sinon.stub(project, 'packageConfig').resolves({ ...mockConfig, private: true });
-
-    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(PublishPrivateError);
+    await expect(
+      publisher.publish({ ...mockConfig, private: true }, null),
+    ).to.eventually.be.rejectedWith(PublishPrivateError);
   });
 
   it('works otherwise', async () => {
-    const project = new Project(projectPath);
-    sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 200 });
-    await publisher.publish(project);
+    await publisher.publish(mockConfig, '<h1 id="heyo-">Heyo!</h1>\n');
 
     expect(requester.json).to.have.been.calledWith(
       'post',
@@ -54,10 +47,8 @@ describe('Publisher', () => {
   });
 
   it('formats errors nicely', async () => {
-    const project = new Project(projectPath);
-    sinon.stub(project, 'packageConfig').resolves(mockConfig);
     requester.json.resolves({ status: 400, text: async () => 'You messed up!' });
-    await expect(publisher.publish(project)).to.eventually.be.rejectedWith(
+    await expect(publisher.publish(mockConfig, null)).to.eventually.be.rejectedWith(
       UnexpectedHttpError,
       /Unexpected status code 400/,
     );
