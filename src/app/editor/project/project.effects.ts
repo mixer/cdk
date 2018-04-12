@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { Actions, Effect } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 import { of } from 'rxjs/observable/of';
 import { filter, map, startWith, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 
@@ -13,6 +13,7 @@ import { ErrorToastComponent } from '../toasts/error-toast/error-toast.component
 import * as forToast from '../toasts/toasts.actions';
 import { LinkProjectDialogComponent } from './link-dialog/link-dialog.component';
 import {
+  CloseProject,
   IInteractiveGame,
   IProject,
   LoadOwnedGames,
@@ -42,7 +43,7 @@ export class ProjectEffects {
         this.electron.call<string>(CommonMethods.ChooseDirectory, { context: 'openProject' }),
       ),
       filter(dir => !!dir),
-      map(dir => new TryOpenProject(dir)),
+      switchMap(dir => of<Action>(new CloseProject(), new TryOpenProject(dir))),
     );
 
   /**

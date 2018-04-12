@@ -79,13 +79,7 @@ const yargs = require('yargs')
   .command(
     'upload',
     'Uploads your controls to Mixer so you can use them on your channel. Controls are private until you run `miix publish`.',
-    argv =>
-      argv.option('tarball', {
-        description:
-          'Control archive to upload as created with `miix pack`. ' +
-          'Will be created automatically if one is not specified.',
-        alias: 't',
-      }),
+    {},
     execute
   )
   .command(
@@ -109,23 +103,11 @@ const yargs = require('yargs')
     'publish',
     'Makes your control bundle accessible to everyone on Mixer.',
     argv =>
-      argv
-        .option('tarball', {
-          description:
-            'Control archive to upload as created with `miix pack`. ' +
-            'Will be created automatically if one is not specified.',
-          alias: 't',
-        })
-        .option('skip-bundle', {
-          description: 'Publishes an existing version without recreating the bundle',
-          alias: 's',
-          type: 'boolean',
-        })
-        .option('force', {
-          alias: 'f',
-          description: 'Skip confirmation prompt',
-          type: 'boolean',
-        }),
+      argv.option('force', {
+        alias: 'f',
+        description: 'Skip confirmation prompt',
+        type: 'boolean',
+      }),
     execute
   )
   .command(

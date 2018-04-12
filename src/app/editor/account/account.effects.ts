@@ -6,8 +6,10 @@ import { of } from 'rxjs/observable/of';
 import { filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material';
+import { IUser } from '../../../server/profile';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
+import { truthy } from '../shared/operators';
 import {
   AccountActionTypes,
   AccountMethods,
@@ -29,8 +31,8 @@ export class AccountEffects {
    */
   @Effect()
   public readonly getInitialAccount = defer(async () =>
-    this.electron.call(AccountMethods.GetLinkedAccount),
-  ).pipe(filter(Boolean), map(account => new SetLoggedInAccount(account)));
+    this.electron.call<IUser | undefined>(AccountMethods.GetLinkedAccount),
+  ).pipe(truthy(), map(account => new SetLoggedInAccount(account)));
 
   /**
    * Runs a logout action.

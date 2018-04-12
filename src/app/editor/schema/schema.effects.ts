@@ -1,29 +1,44 @@
 import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material';
 import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
+import { merge } from 'rxjs/observable/merge';
 import { of } from 'rxjs/observable/of';
-import { debounceTime, map, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import {
+  debounceTime,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  take,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
 
-import { MatSnackBar } from '@angular/material';
 import * as fromRoot from '../bedrock.reducers';
-import { ElectronService } from '../electron.service';
+import { ElectronService, RpcError } from '../electron.service';
 import {
   IFullInteractiveVersion,
   ProjectActionTypes,
   SetOpenProject,
 } from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
+import { RpcToastComponent } from '../toasts/rpc-toast/rpc-toast.component';
+import { OpenToast } from '../toasts/toasts.actions';
 import {
   CopyWorldSchema,
   DeleteSnapshot,
   initialWorld,
   ISnapshot,
   LoadSnapshot,
+  QuickUploadWorldSchema,
   SaveSnapshot,
   SchemaActionTypes,
   SchemaMethod,
   SnapshotCreated,
   UpdateWorldSchema,
+  UploadWorldComplete,
+  UploadWorldFailed,
   UploadWorldSchema,
   workingSnapshoptName,
 } from './schema.actions';
@@ -135,22 +150,53 @@ export class SchemaEffects {
     );
 
   /**
+   * Uploads the world schema to the given and shows an appropriate toast on
+   * success or failure.
+   */
+  @Effect()
+  public readonly quickUploadWorld = this.actions
+    .ofType<QuickUploadWorldSchema>(SchemaActionTypes.QUICK_UPLOAD_WORLD)
+    .pipe(
+      switchMap(action =>
+        merge(
+          this.actions.ofType<UploadWorldFailed>(SchemaActionTypes.UPLOAD_WORLD_FAILED).pipe(
+            map(
+              ({ error }) =>
+                new OpenToast(RpcToastComponent, {
+                  message: 'An error occurred uploading your schema',
+                  error,
+                }),
+            ),
+          ),
+          this.actions
+            .ofType(SchemaActionTypes.UPLOAD_WORLD_COMPLETE)
+            .pipe(
+              tap(() => this.snacks.open('Control Schema Uploaded', undefined, { duration: 1000 })),
+              filter(() => false),
+            ),
+        ).pipe(take(1), startWith(new UploadWorldSchema(action.game))),
+      ),
+    );
+
+  /**
    * Uploads the world schema to the given version
    */
-  @Effect({ dispatch: false })
+  @Effect()
   public readonly uploadWorldSchema = this.actions
     .ofType<UploadWorldSchema>(SchemaActionTypes.UPLOAD_WORLD_TO_GAME)
     .pipe(
       withLatestFrom(this.store.select(selectWorld)),
       withLatestDirectory(this.store),
       switchMap(([[{ game }, world], directory]) =>
-        this.electron.call<IFullInteractiveVersion>(SchemaMethod.SetGameSchema, {
-          game,
-          directory,
-          world,
-        }),
+        this.electron
+          .call<IFullInteractiveVersion>(SchemaMethod.SetGameSchema, {
+            game,
+            directory,
+            world,
+          })
+          .return(new UploadWorldComplete())
+          .catch(RpcError, err => new UploadWorldFailed(err)),
       ),
-      tap(() => this.snacks.open('Control Schema Uploaded', undefined, { duration: 1000 })),
     );
 
   constructor(

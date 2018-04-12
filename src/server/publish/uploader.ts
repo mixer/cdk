@@ -1,30 +1,28 @@
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { createHash } from 'crypto';
 import * as FormData from 'form-data';
 import { createReadStream } from 'fs';
 import { list } from 'tar';
-import { BundleTooBigError } from './../errors';
 
-import { BundleNameTakenError, UploaderHttpError } from '../errors';
-import { Project } from '../project';
+import { BundleNameTakenError, BundleTooBigError, UploaderHttpError } from '../errors';
 import { IRequester } from '../util';
 
 /**
  * Uploader tosses a packaged bundle to the Mixer servers.
  */
 export class Uploader {
-  constructor(private readonly requester: IRequester, private readonly project: Project) {}
+  constructor(private readonly requester: IRequester) {}
 
   /**
    * Uploads the bundle output to
    */
-  public async upload(filename: string): Promise<void> {
-    const config = await this.project.packageConfig();
-    const checksum = await this.makeChecksum(filename);
+  public async upload(tarball: string, metadata: IPackageConfig): Promise<void> {
+    const checksum = await this.makeChecksum(tarball);
     const form = new FormData();
     form.append('checksum', checksum);
-    form.append('metadata', JSON.stringify(config));
-    form.append('tarball', createReadStream(filename));
-    const path = `/interactive/bundles/${config.name}/versions/${config.version}/tarball`;
+    form.append('metadata', JSON.stringify(metadata));
+    form.append('tarball', createReadStream(tarball));
+    const path = `/interactive/bundles/${metadata.name}/versions/${metadata.version}/tarball`;
 
     return this.requester
       .run(path, {
@@ -42,7 +40,7 @@ export class Uploader {
         if (res.status === 413) {
           let files;
           try {
-            files = await this.listTarballFiles(filename);
+            files = await this.listTarballFiles(tarball);
           } catch (e) {
             // ignored
           }

@@ -4,13 +4,17 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 const availableIcons = [
   'check-mark',
+  'checkbox-checked',
+  'checkbox-empty',
   'clear',
   'close',
+  'console',
   'editor',
   'filter',
   'fullscreen',
   'history',
   'link',
+  'reboot',
   'redo',
   'refresh',
   'rocket',
@@ -20,6 +24,7 @@ const availableIcons = [
   'tab-group',
   'tab-participant',
   'tab-scenes',
+  'tools',
   'trash-can',
   'undo',
   'upload',
@@ -37,10 +42,7 @@ const availableIcons = [
 export class BedrockComponent {
   constructor(icons: MatIconRegistry, sanitizer: DomSanitizer) {
     availableIcons.forEach(icon => {
-      icons.addSvgIcon(
-        icon,
-        sanitizer.bypassSecurityTrustResourceUrl(`/assets/images/${icon}.svg`),
-      );
+      icons.addSvgIcon(icon, sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${icon}.svg`));
     });
   }
 }

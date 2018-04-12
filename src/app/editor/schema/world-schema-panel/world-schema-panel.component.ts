@@ -1,7 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { isEqual } from 'lodash';
+import { combineLatest } from 'rxjs/observable/combineLatest';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { selectStateDump } from '../../remote-connect/remote-connect.reducer';
 import { IWorld, UpdateWorldSchema } from '../schema.actions';
 import { selectWorld } from '../schema.reducer';
 
@@ -15,9 +19,18 @@ import { selectWorld } from '../schema.reducer';
 })
 export class WorldSchemaPanelComponent {
   /**
+   * Emits whether there's a state dump currently installed.
+   */
+  public readonly hasStateDump = this.store.select(selectStateDump).pipe(map(d => !!d));
+
+  /**
    * Selects whether the editor screen is open.
    */
-  public readonly schema = this.store.select(selectWorld);
+  public readonly schema = combineLatest(
+    this.store.select(selectWorld),
+    this.store.select(selectStateDump),
+    (world, dump) => dump || world,
+  ).pipe(distinctUntilChanged(isEqual));
 
   constructor(private readonly store: Store<fromRoot.IState>) {}
 

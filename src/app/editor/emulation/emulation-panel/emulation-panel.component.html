@@ -14,6 +14,16 @@
   </mat-select>
 </mat-form-field>
 
+<h4>Language</h4>
+
+<mat-form-field>
+  <input
+    matInput
+    placeholder="Language"
+    [ngModel]="language | async"
+    (ngModelChange)="setLanguage($event)">
+</mat-form-field>
+
 <h4>Dimensions</h4>
 <div class="dimensions">
   <mat-input-container>

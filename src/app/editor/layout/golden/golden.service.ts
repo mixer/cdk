@@ -10,6 +10,7 @@ import * as GoldenLayout from 'golden-layout';
 import { filter, take } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
+import { ControlsControlsPanelComponent } from '../../controls-console/controls-console-panel/controls-console-panel.component';
 import { ControlsPanelComponent } from '../../controls/controls-panel/controls-panel.component';
 import { WebpackConsolePanelComponent } from '../../controls/webpack-console-panel/webpack-console-panel.component';
 import { EmulationPanelComponent } from '../../emulation/emulation-panel/emulation-panel.component';
@@ -61,6 +62,7 @@ export class GoldenService {
           [GoldenPanel.Controls]: ControlsPanelComponent,
           [GoldenPanel.WebpackConsole]: WebpackConsolePanelComponent,
           [GoldenPanel.DeviceEmulation]: EmulationPanelComponent,
+          [GoldenPanel.ControlsConsole]: ControlsControlsPanelComponent,
         });
 
         golden.init();

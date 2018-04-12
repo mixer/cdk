@@ -25,7 +25,7 @@ import {
 
 import * as fromRoot from '../../bedrock.reducers';
 import { LayoutActionTypes } from '../../layout/layout.actions';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { truthy, untilDestroyed } from '../../shared/operators';
 import { IBlock, IDevice } from '../devices';
 import { SetEffectiveDimensions, SetFittedVideoSize } from '../emulation.actions';
 import {
@@ -92,7 +92,7 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
   /**
    * Device "frame" to display.
    */
-  public state = this.store.select(selectEffectiveDimensions).pipe(filter(Boolean));
+  public state = this.store.select(selectEffectiveDimensions).pipe(truthy());
 
   /**
    * The currently selected device.
@@ -204,11 +204,11 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     // Normalize any bottom/right bounds to width/height to make things easier.
 
     if (!out.width) {
-      out.width = backdropRect.width - out.left - out.right;
+      out.width = Math.max(1, backdropRect.width - out.left - out.right);
       delete out.right;
     }
     if (!rect.height) {
-      out.height = backdropRect.height - out.top - out.bottom;
+      out.height = Math.max(1, backdropRect.height - out.top - out.bottom);
       delete out.bottom;
     }
 

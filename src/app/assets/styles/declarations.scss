@@ -54,40 +54,44 @@ $material-leave-duration: 275ms;
 $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
 
 @mixin apply-easing-to($attributes, $duration, $timing: 'linear') {
-    $values: ();
+  $values: ();
 
-    @each $attr in $attributes {
-        @if length($values) > 0 {
-            $values: append($values, unquote(', '));
-        }
-        $values: append($values, unquote('#{$attr} #{$duration} #{$timing}'));
+  @each $attr in $attributes {
+    @if length($values) > 0 {
+      $values: append($values, unquote(', '));
     }
+    $values: append($values, unquote('#{$attr} #{$duration} #{$timing}'));
+  }
 
-    transition: $values;
+  transition: $values;
 }
 
 @mixin swift-ease-out($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-out-duration, $swift-ease-out-timing-function);
+  @include apply-easing-to($attributes, $swift-ease-out-duration, $swift-ease-out-timing-function);
 }
 
 @mixin swift-ease-in($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-in-duration, $swift-ease-in-timing-function);
+  @include apply-easing-to($attributes, $swift-ease-in-duration, $swift-ease-in-timing-function);
 }
 
 @mixin swift-ease-in-out($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-in-out-duration, $swift-ease-in-out-timing-function);
+  @include apply-easing-to(
+    $attributes,
+    $swift-ease-in-out-duration,
+    $swift-ease-in-out-timing-function
+  );
 }
 
 @mixin swift-linear($attributes...) {
-    @include apply-easing-to($attributes, $swift-linear-duration, $swift-linear-timing-function);
+  @include apply-easing-to($attributes, $swift-linear-duration, $swift-linear-timing-function);
 }
 
 @mixin material-enter($attributes...) {
-    @include apply-easing-to($attributes, $material-enter-duration, $material-enter-timing-function);
+  @include apply-easing-to($attributes, $material-enter-duration, $material-enter-timing-function);
 }
 
 @mixin material-leave($attributes...) {
-    @include apply-easing-to($attributes, $material-leave-duration, $material-leave-timing-function);
+  @include apply-easing-to($attributes, $material-leave-duration, $material-leave-timing-function);
 }
 
 @function asset($name) {
@@ -110,4 +114,11 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
   overflow-y: $type;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+@mixin unstyled-input() {
+  background: none;
+  border: none;
+  outline: 0 !important;
+  color: currentColor;
 }

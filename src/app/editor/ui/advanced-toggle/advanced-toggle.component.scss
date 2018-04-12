@@ -1,0 +1,46 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  margin: $dimension-gutter-md;
+  display: block;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  font-size: 0.8em;
+  margin: $dimension-gutter-md 0;
+  cursor: pointer;
+
+  &:hover::after {
+    opacity: 0.2;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+  }
+
+  &.expanded::before {
+    transform: rotate(90deg);
+  }
+
+  &::before {
+    @include swift-ease-out('transform');
+
+    border: 0.35em solid transparent;
+    border-left-color: #fff;
+    width: 0px;
+    height: 0px;
+    margin-right: $dimension-gutter-sm;
+  }
+
+  &::after {
+    @include swift-ease-out('transform');
+    height: 1px;
+    flex-grow: 1;
+    background: #fff;
+    opacity: 0.1;
+    margin-left: $dimension-gutter-sm;
+  }
+}

@@ -1,1 +1,3 @@
-<local-controls></local-controls>
+<controls-controls></controls-controls>
+<local-controls *ngIf="!(isRemoteConnected | async)"></local-controls>
+<remote-controls *ngIf="isRemoteConnected | async"></remote-controls>
