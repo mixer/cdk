@@ -1,0 +1,44 @@
+<h4>Device</h4>
+
+<mat-form-field>
+  <mat-select
+    placeholder="Device"
+    [ngModel]="(isCustomDevice | async) ? 'custom' : (device | async)"
+    (ngModelChange)="chooseDevice($event)">
+    <mat-option *ngFor="let device of devices; let i = index" [value]="device">
+      {{ device.displayName }}
+    </mat-option>
+    <mat-option value="custom" *ngIf="isCustomDevice | async">
+      Custom...
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<h4>Language</h4>
+
+<mat-form-field>
+  <input
+    matInput
+    placeholder="Language"
+    [ngModel]="language | async"
+    (ngModelChange)="setLanguage($event)">
+</mat-form-field>
+
+<h4>Dimensions</h4>
+<div class="dimensions">
+  <mat-input-container>
+    <input matInput placeholder="Width" type="number" min="0"
+      [ngModel]="(dimensions | async)?.width"
+      (ngModelChange)="setWidth($event)">
+  </mat-input-container>
+  <div class="times">x</div>
+  <mat-input-container>
+    <input matInput placeholder="Height" type="number" min="0"
+      [ngModel]="(dimensions | async)?.height"
+      (ngModelChange)="setHeight($event)">
+  </mat-input-container>
+
+  <button mat-icon-button [disabled]="!(device | async)?.canRotate" (click)="rotate()">
+    <mat-icon svgIcon="screen-rotation"></mat-icon>
+  </button>
+</div>

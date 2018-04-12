@@ -19,6 +19,20 @@ export async function writeFile(file: string, contents: string | Buffer): Promis
 }
 
 /**
+ * Promisified fs.appendFile
+ */
+export async function appendFile(file: string, contents: string | Buffer): Promise<void> {
+  return promiseCallback(callback => fs.appendFile(file, contents, callback));
+}
+
+/**
+ * Promisified fs.mkdir
+ */
+export async function mkdir(file: string, mode?: number): Promise<void> {
+  return promiseCallback(callback => fs.mkdir(file, mode, callback));
+}
+
+/**
  * Copies a file from one place to another.
  */
 export async function copy(source: string, destination: string): Promise<void> {
@@ -52,7 +66,7 @@ export async function readDir(dir: string): Promise<string[]> {
  * is resolved upon or errored.
  */
 export async function promiseCallback<R = any>(
-  fn: (callback: (err?: Error, result?: R) => void) => void,
+  fn: (callback: (err?: Error | null, result?: R) => void) => void,
 ): Promise<R> {
   return new Promise<R>((resolve, reject) => {
     fn((err, result) => {

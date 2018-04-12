@@ -15,7 +15,7 @@ try {
   packageJson = require(packageDir);
 } catch (e) {}
 
-const hoistEnv = ['api', 'profile', 'project', 'connect_channel'];
+const hoistEnv = ['api', 'project', 'connect_channel'];
 
 function optionDefault(opt, defaultValue) {
   return process.env[`MIIX_${opt.toUpperCase()}`] || defaultValue;
@@ -28,7 +28,7 @@ const execute = argv => {
     }
   });
 
-  argv.project = new Project(process.env.MIIX_PROFILE, process.env.MIIX_PROJECT);
+  argv.project = new Project(process.env.MIIX_PROJECT);
 
   Promise.resolve(require(`../dist/src/cli/commands/${argv._[0]}`).default(argv))
     .then(() => process.exit(0))
@@ -46,10 +46,6 @@ const execute = argv => {
 
 const yargs = require('yargs')
   .version(pkg.version)
-  .option('profile', {
-    description: 'Profile to use, stores authentication and config credentials',
-    default: optionDefault('profile', path.join(os.homedir(), '.miixrc')),
-  })
   .option('project', {
     description: 'Path to your interactive project',
     default: optionDefault('project', path.dirname(packageDir)),
@@ -83,13 +79,7 @@ const yargs = require('yargs')
   .command(
     'upload',
     'Uploads your controls to Mixer so you can use them on your channel. Controls are private until you run `miix publish`.',
-    argv =>
-      argv.option('tarball', {
-        description:
-          'Control archive to upload as created with `miix pack`. ' +
-          'Will be created automatically if one is not specified.',
-        alias: 't',
-      }),
+    {},
     execute
   )
   .command(
@@ -113,23 +103,11 @@ const yargs = require('yargs')
     'publish',
     'Makes your control bundle accessible to everyone on Mixer.',
     argv =>
-      argv
-        .option('tarball', {
-          description:
-            'Control archive to upload as created with `miix pack`. ' +
-            'Will be created automatically if one is not specified.',
-          alias: 't',
-        })
-        .option('skip-bundle', {
-          description: 'Publishes an existing version without recreating the bundle',
-          alias: 's',
-          type: 'boolean',
-        })
-        .option('force', {
-          alias: 'f',
-          description: 'Skip confirmation prompt',
-          type: 'boolean',
-        }),
+      argv.option('force', {
+        alias: 'f',
+        description: 'Skip confirmation prompt',
+        type: 'boolean',
+      }),
     execute
   )
   .command(

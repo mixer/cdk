@@ -1,0 +1,27 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  display: flex;
+  align-items: center;
+  padding: $dimension-gutter-sm $dimension-gutter-md;
+  font-size: 0.9em;
+  cursor: pointer;
+  color: $color-text;
+
+  &:hover {
+    background: $color-light-gray;
+  }
+
+  &.disabled {
+    cursor: default;
+    color: $color-text-muted;
+
+    &:hover {
+      background: none;
+    }
+  }
+}
+
+.label {
+  flex-grow: 1;
+}

@@ -1,0 +1,43 @@
+@import '../../assets/styles/declarations';
+
+@keyframes loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+:host {
+  min-width: 300px;
+  display: block;
+}
+
+.loader {
+  width: $dimension-loader-size;
+  height: $dimension-loader-size;
+  border-radius: 50%;
+  border: $dimension-loader-border solid rgba(#fff, 0.3);
+  border-left-color: #fff;
+  margin: $dimension-gutter-xl auto;
+  animation: loader-spin 1s infinite linear;
+}
+
+.status {
+  font-weight: 300;
+  text-align: center;
+  font-size: 1.3em;
+
+  small {
+    display: block;
+    font-size: 0.7em;
+    margin-top: 0.5em;
+  }
+}
+
+.dots {
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+}
