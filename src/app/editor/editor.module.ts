@@ -12,6 +12,7 @@ import { metaReducers, reducers } from './bedrock.reducers';
 import { ElectronService } from './electron.service';
 import { IssueService } from './issue.service';
 import { LayoutModule } from './layout/layout.module';
+import { PreflightModule } from './preflight/preflight.module';
 import { RaygunModule } from './raygun/raygun.module';
 
 /**
@@ -25,6 +26,7 @@ import { RaygunModule } from './raygun/raygun.module';
     EffectsModule.forRoot([BedrockEffects]),
     LayoutModule,
     MatIconModule,
+    PreflightModule,
     RaygunModule,
     StoreModule.forRoot(reducers, { metaReducers }),
   ],

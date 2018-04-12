@@ -11,6 +11,15 @@
   &:hover {
     background: $color-light-gray;
   }
+
+  &.disabled {
+    cursor: default;
+    color: $color-text-muted;
+
+    &:hover {
+      background: none;
+    }
+  }
 }
 
 .label {

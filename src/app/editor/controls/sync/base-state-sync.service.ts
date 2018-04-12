@@ -3,10 +3,10 @@ import { MatSnackBar } from '@angular/material';
 import { IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { isEqual, once } from 'lodash';
-import { Observable } from 'rxjs/Observable';
-import { distinctUntilChanged, merge, takeUntil } from 'rxjs/operators';
+import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 
+import { fromEvent } from 'rxjs/observable/fromEvent';
 import * as fromRoot from '../../bedrock.reducers';
 import { MoveVideo } from '../../emulation/emulation.actions';
 import { selectedFittedVideo } from '../../emulation/emulation.reducer';
@@ -22,16 +22,25 @@ export class BaseStateSyncService {
    */
   public readonly refresh = new Subject<void>();
 
+  /**
+   * Last seen RPC instance.
+   */
+  private lastRpc: RPC | undefined;
+
   constructor(
     private readonly snackBar: MatSnackBar,
     private readonly store: Store<fromRoot.IState>,
   ) {}
 
-  public attachInternalMethods(rpc: RPC, closer: Observable<void>) {
-    closer = closer.pipe(merge(this.refresh));
+  public attachInternalMethods(rpc: RPC) {
+    this.lastRpc = rpc;
 
     rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.store.dispatch(new MoveVideo(data));
+    });
+
+    rpc.expose('getTime', () => {
+      return { time: Date.now() };
     });
 
     rpc.expose(
@@ -39,20 +48,20 @@ export class BaseStateSyncService {
       once(() => {
         this.snackBar.open(
           'Your controls called `getIdentityVerification`, but this is not supported' +
-            ' in the miix editor. A fake response will be returned.',
+            ' in the CDK. A fake response will be returned.',
           undefined,
           {
             duration: 5000,
           },
         );
 
-        return 'Fake challenge, verification not supported in the miix editor';
+        return 'Fake challenge, verification not supported in the CDK';
       }),
     );
 
     this.store
       .select(selectedFittedVideo)
-      .pipe(takeUntil(closer), distinctUntilChanged<ClientRect>(isEqual))
+      .pipe(takeUntilRpcClosed(rpc), distinctUntilChanged<ClientRect>(isEqual))
       .subscribe(rect => {
         rpc.call(
           'updateVideoPosition',
@@ -64,4 +73,20 @@ export class BaseStateSyncService {
         );
       });
   }
+
+  public send(method: string, params: any) {
+    if (this.lastRpc) {
+      this.lastRpc.call(method, params, false);
+    }
+  }
+}
+
+export function takeUntilRpcClosed<T>(rpc: RPC) {
+  return takeUntil<T>(fromEvent(<any>rpc, 'destroy'));
+}
+
+export function sendInteractive(rpc: RPC, ...packets: { method: string; params: object }[]): void {
+  packets.forEach(packet => {
+    rpc.call('recieveInteractivePacket', packet, false);
+  });
 }

@@ -4,14 +4,17 @@
     <menu-bar-item (click)="createNewProject()" text="New Project"></menu-bar-item>
     <menu-bar-item (click)="openProject()" text="Open Project"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
-    <menu-bar-item text="Save Project"></menu-bar-item>
+    <menu-bar-item (click)="closeProject()" [disabled]="!(isOnEditor | async)" text="Close Project"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#run" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>Run</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item text="On my Computer"></menu-bar-item>
-    <menu-bar-item text="On my Channel Page"></menu-bar-item>
+    <menu-bar-item [disabled]="true" text="On my Computer"></menu-bar-item>
+    <menu-bar-item [disabled]="true" text="On my Channel Page"></menu-bar-item>
+    <menu-bar-divider></menu-bar-divider>
+    <menu-bar-item (click)="restartWebpack()" text="Restart Webpack"></menu-bar-item>
+    <menu-bar-item (click)="setWebpackConfig()" text="Set Webpack Config"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#view" [disabled]="!(isOnEditor | async)">
@@ -39,8 +42,8 @@
   <menu-bar-items>
     <menu-bar-item openExternal="https://dev.mixer.com" text="Documentation"></menu-bar-item>
     <menu-bar-item openExternal="https://mixer.com/lab" text="Interactive Studio"></menu-bar-item>
-    <menu-bar-item openExternal="https://github.com/mixer/miix-cli/issues/new" text="Report Issue"></menu-bar-item>
-    <menu-bar-item text="About miix"></menu-bar-item>
+    <menu-bar-item (click)="openIssue()" text="Report Issue"></menu-bar-item>
+    <menu-bar-item text="About the CDK"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 

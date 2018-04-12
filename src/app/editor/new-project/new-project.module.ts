@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule, MatDialogModule, MatInputModule } from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
 import { ProjectModule } from '../project/project.module';
+import { AdvancedToggleModule } from '../ui/advanced-toggle/advanced-toggle.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { RadioIconsModule } from '../ui/radio-icons/radio-icons.module';
 import { AttributeSelectionComponent } from './attribute-selection/attribute-selection.component';
@@ -24,9 +25,11 @@ import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.componen
  */
 @NgModule({
   imports: [
+    AdvancedToggleModule,
     CommonModule,
     ConsoleModule,
     EffectsModule.forFeature([NewProjectEffects]),
+    FormsModule,
     MatButtonModule,
     MatDialogModule,
     MatInputModule,

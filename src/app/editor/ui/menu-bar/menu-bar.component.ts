@@ -144,19 +144,25 @@ export class MenuBarItemComponent {
   /**
    * Whether this item is disabled.
    */
-  @Input() public disabled: boolean;
+  @HostBinding('class.disabled')
+  @Input()
+  public disabled: boolean;
 
   /**
    * Icon to display in the menu bar item.
    */
-  @HostBinding('class.disabled')
-  @Input()
-  public icon: boolean;
+  @Input() public icon: boolean;
 
   constructor(private readonly parent: MenuBarComponent) {}
 
-  @HostListener('click')
-  public onClick() {
+  @HostListener('click', ['$event'])
+  public onClick(ev: PointerEvent) {
+    if (this.disabled) {
+      ev.stopPropagation();
+      ev.preventDefault();
+      return;
+    }
+
     this.parent.close();
   }
 }

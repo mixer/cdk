@@ -10,7 +10,7 @@
     <div class="message">
         Compiling your code...
     </div>
-    <button mat-button class="recompile" (click)="restart()">Force Restart</button>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
   </div>
   <div class="state" *ngSwitchCase="State.Stopping">
     <mat-spinner [diameter]="32"></mat-spinner>
@@ -24,7 +24,7 @@
         We ran into a problem compiling your code!
         <small>We'll watch your files for changes and automatically retry once you fix the error.</small>
     </div>
-    <button mat-button class="recompile" (click)="restart()">Force Restart</button>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
   </div>
   <div class="state" *ngSwitchCase="State.Failed">
     <mat-icon svgIcon="warning"></mat-icon>
@@ -40,7 +40,7 @@
         You're up to date!
         <small>We'll watch your files for changes to automatically recompile.</small>
     </div>
-    <button mat-button class="recompile" (click)="restart()">Force Restart</button>
+    <button mat-raised-button class="recompile" (click)="restart()">Force Restart</button>
   </div>
   <div class="state" *ngSwitchCase="State.Stopped">
     <mat-icon svgIcon="warning"></mat-icon>

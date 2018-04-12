@@ -1,9 +1,7 @@
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import * as path from 'path';
 
 import { FileDataStore, IDataStore } from './datastore';
 import { BadPackageJsonError } from './errors';
-import { createPackage } from './metadata/metadata';
 import { Profile } from './profile';
 import { readFile } from './util';
 
@@ -52,13 +50,6 @@ export class Project {
    */
   public async saveSetting<T>(file: string, value: T): Promise<void> {
     return this.datastore.saveProject(file, this.baseDir(), value);
-  }
-
-  /**
-   * Returns the resolved package config with metadata.
-   */
-  public async packageConfig(): Promise<IPackageConfig> {
-    return createPackage(await this.packageJson(), this.baseDir());
   }
 
   /**

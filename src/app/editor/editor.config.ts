@@ -6,20 +6,18 @@ import { CONF_PROD } from '../environments/environment.prod';
 const ENV: string = 'dev';
 const VERSION: string = '0.2.7';
 
-let conf: any;
+export let AppConfig: {
+  production: boolean;
+  environment: string;
+  version: string;
+} = <any>{
+  version: VERSION,
+};
 
 console.log('environment:', ENV);
 
 if (ENV === 'production') {
-  conf = CONF_PROD;
+  Object.assign(AppConfig, CONF_PROD);
 } else {
-  conf = CONF_DEV;
+  Object.assign(AppConfig, CONF_DEV);
 }
-
-conf.version = VERSION;
-
-export const AppConfig: {
-  production: boolean;
-  environment: string;
-  version: string;
-} = conf;

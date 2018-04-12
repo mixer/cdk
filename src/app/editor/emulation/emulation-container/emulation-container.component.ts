@@ -204,11 +204,11 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     // Normalize any bottom/right bounds to width/height to make things easier.
 
     if (!out.width) {
-      out.width = backdropRect.width - out.left - out.right;
+      out.width = Math.max(1, backdropRect.width - out.left - out.right);
       delete out.right;
     }
     if (!rect.height) {
-      out.height = backdropRect.height - out.top - out.bottom;
+      out.height = Math.max(1, backdropRect.height - out.top - out.bottom);
       delete out.bottom;
     }
 

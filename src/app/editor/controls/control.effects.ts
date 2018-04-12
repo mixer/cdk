@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { defer } from 'rxjs/observable/defer';
@@ -7,18 +8,18 @@ import { filter, map, startWith, switchMap, take, tap, withLatestFrom } from 'rx
 
 import { mapTo } from 'rxjs/operators/mapTo';
 import * as fromRoot from '../bedrock.reducers';
-import { ElectronService } from '../electron.service';
+import { ElectronService, RpcError } from '../electron.service';
 import {
   ClosePanel,
-  findGoldenPanel,
   focusGolden,
   GoldenPanel,
   OpenPanel,
+  stackedLocator,
 } from '../layout/layout.actions';
 import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
-import { ControlsConsoleService } from './controls-console.service';
+import { ControlsWebpackConsoleService } from './controls-webpack-console.service';
 import {
   AutoCloseConsole,
   AutoOpenConsole,
@@ -26,6 +27,8 @@ import {
   ControlsMethods,
   isRunning,
   IWebpackInstance,
+  PromptLocateWebpackConfig,
+  SendControlPacket,
   SetWebpackInstance,
   StartWebpack,
   StopWebpack,
@@ -35,6 +38,7 @@ import {
 } from './controls.actions';
 import { didAutoOpenWebpackConsole, webpackState } from './controls.reducer';
 import { BaseStateSyncService } from './sync/base-state-sync.service';
+import { WebpackConfigLocatorModalComponent } from './webpack-config-locator-modal/webpack-config-locator-modal.component';
 
 /**
  * Effects module for account actions.
@@ -51,9 +55,14 @@ export class ControlEffects {
       withLatestDirectory(this.store),
       tap(() => this.console.clear.next()),
       switchMap(([, directory]) =>
-        this.electron.call<IWebpackInstance>(ControlsMethods.StartWebpack, { directory }),
+        this.electron
+          .call<IWebpackInstance>(ControlsMethods.StartWebpack, { directory })
+          .then(instance => new SetWebpackInstance(instance))
+          .catch(
+            err => err instanceof RpcError && err.originalName === 'MissingWebpackConfig',
+            () => new PromptLocateWebpackConfig(),
+          ),
       ),
-      map(instance => new SetWebpackInstance(instance)),
     );
 
   /**
@@ -92,12 +101,28 @@ export class ControlEffects {
     .pipe(switchMap(() => this.electron.call(ControlsMethods.StopWebpack)));
 
   /**
+   * Halts webpack when the project is closed.
+   */
+  @Effect()
+  public readonly closeProject = this.actions
+    .ofType(ProjectActionTypes.CLOSE_PROJECT)
+    .pipe(mapTo(new StopWebpack()));
+
+  /**
    * Adds data to the webpack console.
    */
   @Effect({ dispatch: false })
   public readonly addConsoleData = this.actions
     .ofType<UpdateWebpackConsole>(ControlsActionTypes.UPDATE_WEBPACK_CONSOLE)
     .pipe(tap(({ data }) => this.console.write(data)));
+
+  /**
+   * Sends data to the controls
+   */
+  @Effect({ dispatch: false })
+  public readonly sendControlPacket = this.actions
+    .ofType<SendControlPacket>(ControlsActionTypes.SEND_CONTROL_PACKET)
+    .pipe(tap(({ method, params }) => this.baseSync.send(method, params)));
 
   /**
    * Pops open the webpack console while the project is building or when
@@ -136,14 +161,7 @@ export class ControlEffects {
   @Effect()
   public readonly autoOpenWebpackConsole = this.actions
     .ofType(ControlsActionTypes.AUTO_OPEN_CONSOLE)
-    .pipe(
-      mapTo(
-        new OpenPanel(GoldenPanel.WebpackConsole, l => {
-          const panel = findGoldenPanel([l.root], GoldenPanel.Controls);
-          return panel ? panel.parent : null; // parent to add to the containing stack
-        }),
-      ),
-    );
+    .pipe(mapTo(new OpenPanel(GoldenPanel.WebpackConsole, stackedLocator(GoldenPanel.Controls))));
 
   /**
    * Fired when we have run a successful compilation and should auto-close
@@ -168,11 +186,36 @@ export class ControlEffects {
     .ofType(ControlsActionTypes.REFRESH_CONTROLS)
     .pipe(tap(() => this.baseSync.refresh.next()));
 
+  /**
+   * Opens a dialog to ask them to point to the webpack config file.
+   */
+  @Effect({ dispatch: false })
+  public readonly promptLocateWebpackConfig = this.actions
+    .ofType(ControlsActionTypes.PROMPT_LOCATE_WEBPACK_CONFIG)
+    .pipe(tap(() => this.dialog.open(WebpackConfigLocatorModalComponent)));
+
+  /**
+   * Triggers a refresh of the controls when the relevant action is dispatched.
+   */
+  @Effect()
+  public readonly locateWebpackConfig = this.actions
+    .ofType(ControlsActionTypes.LOCATE_WEBPACK_CONFIG)
+    .pipe(
+      withLatestDirectory(this.store),
+      switchMap(([, directory]) =>
+        this.electron
+          .call(ControlsMethods.SetWebpackConfig, { directory })
+          .then(path => (path ? new StartWebpack() : null)),
+      ),
+      filter(Boolean),
+    );
+
   constructor(
     private readonly actions: Actions,
     private readonly electron: ElectronService,
-    private readonly console: ControlsConsoleService,
+    private readonly console: ControlsWebpackConsoleService,
     private readonly store: Store<fromRoot.IState>,
     private readonly baseSync: BaseStateSyncService,
+    private readonly dialog: MatDialog,
   ) {}
 }

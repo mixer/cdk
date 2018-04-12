@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { stringify } from 'querystring';
-import { switchMap, take } from 'rxjs/operators';
+import { combineLatest, switchMap, take } from 'rxjs/operators';
 
+import { currentUser } from './account/account.reducer';
 import { CommonMethods } from './bedrock.actions';
 import * as forRoot from './bedrock.reducers';
+import { AppConfig } from './editor.config';
 import { ElectronService, RpcError } from './electron.service';
 import { unindent } from './shared/ds';
 import { Electron } from './shared/electron';
@@ -33,15 +35,19 @@ export class IssueService {
             .call<string>(CommonMethods.EncryptString, { data: jsonifyPlain(state) })
             .catch(() => null),
         ),
+        combineLatest(this.store.select(currentUser)),
       )
-      .subscribe(state => {
+      .subscribe(([state, user]) => {
         body = unindent(body);
         if (state) {
           body +=
             // tslint:disable-next-line
             '\n\n' +
             unindent(`
-            ### Encrypted Editor State
+            ### Editor Details
+
+            **Version**: ${AppConfig.version}
+            **Mixer User ID**: ${user ? user.id : 'Anonymous'}
 
             <!-- This contains information about your editor's state. It is encrypted
               so that only Mixer can read it, but you can delete it if you want. -->
