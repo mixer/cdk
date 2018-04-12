@@ -94,8 +94,8 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   /**
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
-  [CommonMethods.ChooseDirectory]: async (options: { context: string }, server: ElectronServer) => {
-    return new OpenBuilder(server.window).directory().openInContext(options.context);
+  [CommonMethods.ChooseDirectory]: async (options: { context: string, title: string }, server: ElectronServer) => {
+    return new OpenBuilder(server.window).directory().title(options.title).openInContext(options.context);
   },
 
   /**

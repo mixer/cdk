@@ -50,7 +50,10 @@ export class NewProjectService {
    */
   public chooseDirectory() {
     this.electron
-      .call<string>(CommonMethods.ChooseDirectory, { context: 'newProject' })
+      .call<string>(CommonMethods.ChooseDirectory, {
+        title: 'Choose a folder where your project will be created.',
+        context: 'newProject'
+      })
       .then(dir => {
         if (!dir) {
           return;
