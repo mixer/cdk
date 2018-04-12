@@ -13,5 +13,3 @@ platformBrowserDynamic()
     preserveWhitespaces: false,
   })
   .catch(err => console.error(err));
-
-platformBrowserDynamic().bootstrapModule(AppModule); // tslint:disable-line

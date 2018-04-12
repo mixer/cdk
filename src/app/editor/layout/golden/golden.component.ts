@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewContainerRef } from '@angular/core';
 
 import { GoldenService } from './golden.service';
 
@@ -9,13 +9,18 @@ import { GoldenService } from './golden.service';
 @Component({
   selector: 'layout-golden',
   template: '',
+  styleUrls: ['./golden.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoldenComponent {
-  constructor(private readonly goldenService: GoldenService, private readonly el: ElementRef) {}
+  constructor(
+    private readonly goldenService: GoldenService,
+    private readonly viewRef: ViewContainerRef,
+    private readonly el: ElementRef,
+  ) {}
 
   public ngAfterViewInit() {
-    this.goldenService.create(this.el.nativeElement);
+    this.goldenService.create(this.el.nativeElement, this.viewRef);
   }
 
   public ngOnDestroy() {

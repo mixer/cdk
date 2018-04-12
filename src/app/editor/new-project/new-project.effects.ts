@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-
+import { Action, Store } from '@ngrx/store';
+import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of } from 'rxjs/observable/of';
-import { catchError, filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
-import { TryOpenProject } from '../project/project.actions';
+import { CloseProject, TryOpenProject } from '../project/project.actions';
+import { toLatestFrom, truthy } from '../shared/operators';
 import {
+  AppendCreateUpdate,
   ErrorCreating,
   FinishCreating,
   NewProjectActionTypes,
@@ -29,9 +31,18 @@ export class NewProjectEffects {
   public readonly startCreation = this.actions
     .ofType<StartCreating>(NewProjectActionTypes.CREATE_START)
     .pipe(
-      switchMap(action => this.electron.call(NewProjectMethods.StartCreate, action.options)),
-      mapTo(new FinishCreating()),
-      catchError(err => of(new ErrorCreating(err.stack))),
+      switchMap(action =>
+        fromPromise(
+          this.electron
+            .call(NewProjectMethods.StartCreate, action.options)
+            .return(new FinishCreating()),
+        ).pipe(
+          startWith(<Action>new CloseProject()),
+          catchError(err =>
+            of<Action>(new AppendCreateUpdate(err.stack), new ErrorCreating(err.stack)),
+          ),
+        ),
+      ),
     );
 
   /**
@@ -41,8 +52,8 @@ export class NewProjectEffects {
   public readonly finishCreation = this.actions
     .ofType<FinishCreating>(NewProjectActionTypes.CREATE_COMPLETE)
     .pipe(
-      withLatestFrom(this.store.select(targetDirectory).pipe(filter(Boolean))),
-      map(([, dir]) => new TryOpenProject(dir)),
+      toLatestFrom(this.store.select(targetDirectory).pipe(truthy())),
+      map(dir => new TryOpenProject(dir)),
     );
 
   constructor(
