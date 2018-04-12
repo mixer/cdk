@@ -1,7 +1,23 @@
 @import './layout.scss';
 @import './margins.scss';
 @import './paddings.scss';
+@import '../declarations.scss';
 
 .flex-fill {
   flex: 1;
+}
+
+.dialog-console {
+  width: 800px;
+  max-width: 80vw;
+  height: 400px;
+  max-height: 60vh;
+}
+
+.text-primary {
+  color: $color-primary !important;
+}
+
+.text-secondary {
+  color: $color-highlight !important;
 }

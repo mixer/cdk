@@ -39,7 +39,9 @@
   display: block;
   overflow-x: auto;
   padding: 0.5em;
-  background: #272825; color: #ddd;
+  background: #272825;
+  color: #ddd;
+  font-family: $font-family-mono;
 }
 
 .hljs-tag,

@@ -2,6 +2,7 @@ import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/s
 
 import * as fromRoot from '../bedrock.reducers';
 import { WebpackState } from '../controls/controls.actions';
+import { RpcError } from '../electron.service';
 import { UploaderActions, UploaderActionTypes, UploaderScreen } from './uploader.actions';
 
 export interface IUploaderState {
@@ -9,6 +10,7 @@ export interface IUploaderState {
   screen: UploaderScreen;
   uploadSchema: boolean;
   uploadControls: boolean;
+  error?: RpcError;
 }
 
 export interface IState extends fromRoot.IState {
@@ -35,8 +37,10 @@ export function uploaderReducer(
       return { ...state, uploadSchema: action.shouldUpload };
     case UploaderActionTypes.SET_SCREEN:
       return { ...state, screen: action.screen };
+    case UploaderActionTypes.SET_ERROR:
+      return { ...state, error: action.error };
     case UploaderActionTypes.UPLOADER_CLOSED:
-      return { ...state, screen: UploaderScreen.Confirming };
+      return { ...state, screen: UploaderScreen.Confirming, error: undefined };
     default:
       return state;
   }
@@ -45,26 +49,31 @@ export function uploaderReducer(
 /**
  * Selector for the uploader feature.
  */
-export const contentMaskState: MemoizedSelector<IState, IUploaderState> = createFeatureSelector<
+export const uploaderState: MemoizedSelector<IState, IUploaderState> = createFeatureSelector<
   IUploaderState
 >('uploader');
 
 /**
  * Selects the current screen.
  */
-export const selectScreen = createSelector(contentMaskState, s => s.screen);
+export const selectScreen = createSelector(uploaderState, s => s.screen);
 
 /**
  * Selects the current webpack state.
  */
-export const selectWebpack = createSelector(contentMaskState, s => s.webpackState);
+export const selectWebpack = createSelector(uploaderState, s => s.webpackState);
 
 /**
  * Selects whether to upload controls.
  */
-export const selectUploadControls = createSelector(contentMaskState, s => s.uploadControls);
+export const selectUploadControls = createSelector(uploaderState, s => s.uploadControls);
 
 /**
  * Selects whether to upload schema.
  */
-export const selectUploadSchema = createSelector(contentMaskState, s => s.uploadSchema);
+export const selectUploadSchema = createSelector(uploaderState, s => s.uploadSchema);
+
+/**
+ * Selects the rpc error that occurred during the process.
+ */
+export const selectError = createSelector(uploaderState, s => s.error);

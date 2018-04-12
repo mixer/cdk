@@ -66,7 +66,7 @@ export async function readDir(dir: string): Promise<string[]> {
  * is resolved upon or errored.
  */
 export async function promiseCallback<R = any>(
-  fn: (callback: (err?: Error, result?: R) => void) => void,
+  fn: (callback: (err?: Error | null, result?: R) => void) => void,
 ): Promise<R> {
   return new Promise<R>((resolve, reject) => {
     fn((err, result) => {

@@ -1,5 +1,6 @@
 import { IGroup, IParticipant, IScene } from '@mcph/miix-std/dist/internal';
 import { Action } from '@ngrx/store';
+import { RpcError } from '../electron.service';
 import { IInteractiveGame } from '../project/project.actions';
 
 export const enum SchemaActionTypes {
@@ -13,6 +14,8 @@ export const enum SchemaActionTypes {
   COPY_WORLD_FROM_GAME = '[Schema] Copy world schema from game',
   UPLOAD_WORLD_TO_GAME = '[Schema] Upload world schema to game',
   UPLOAD_WORLD_COMPLETE = '[Schema] World upload complete',
+  UPLOAD_WORLD_FAILED = '[Schema] World upload failed',
+  QUICK_UPLOAD_WORLD = '[Schema] Quick upload world',
 }
 
 export const enum SchemaMethod {
@@ -72,6 +75,13 @@ export const initialWorld: IWorld = <any>{
               x: 0,
               y: 0,
             },
+            {
+              width: 10,
+              height: 8,
+              size: 'medium',
+              x: 0,
+              y: 0,
+            },
           ],
         },
         {
@@ -85,6 +95,13 @@ export const initialWorld: IWorld = <any>{
               width: 7,
               height: 7,
               size: 'large',
+              x: 11,
+              y: 0,
+            },
+            {
+              width: 7,
+              height: 7,
+              size: 'medium',
               x: 11,
               y: 0,
             },
@@ -173,6 +190,16 @@ export class CopyWorldSchema implements Action {
 }
 
 /**
+ * Fired when we want to upload the world schema to a game from the UI.
+ * The effect handles display of content internally.
+ */
+export class QuickUploadWorldSchema implements Action {
+  public readonly type = SchemaActionTypes.QUICK_UPLOAD_WORLD;
+
+  constructor(public readonly game: IInteractiveGame) {}
+}
+
+/**
  * Fired when we want to upload the world schema to a game.
  */
 export class UploadWorldSchema implements Action {
@@ -188,6 +215,15 @@ export class UploadWorldComplete implements Action {
   public readonly type = SchemaActionTypes.UPLOAD_WORLD_COMPLETE;
 }
 
+/**
+ * Fired when the world upload fails
+ */
+export class UploadWorldFailed implements Action {
+  public readonly type = SchemaActionTypes.UPLOAD_WORLD_FAILED;
+
+  constructor(public readonly error: RpcError) {}
+}
+
 export type SchemaActions =
   | UpdateParticipants
   | UpdateWorldSchema
@@ -198,4 +234,5 @@ export type SchemaActions =
   | DeleteSnapshot
   | CopyWorldSchema
   | UploadWorldSchema
-  | UploadWorldComplete;
+  | UploadWorldComplete
+  | UploadWorldFailed;
