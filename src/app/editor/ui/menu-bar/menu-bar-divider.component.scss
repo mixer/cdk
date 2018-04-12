@@ -1,0 +1,8 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  display: block;
+  margin: $dimension-gutter-sm / 2;
+  border-top: 1px solid $color-light-gray;
+  cursor: auto;
+}

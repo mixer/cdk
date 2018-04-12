@@ -6,12 +6,16 @@ import { StoreModule } from '@ngrx/store';
 import {
   MenuBarComponent,
   MenuBarDividerComponent,
+  MenuBarIconComponent,
   MenuBarItemComponent,
   MenuBarItemsComponent,
   MenuBarTextComponent,
 } from './menu-bar.component';
 import { menuBarReducer } from './menu-bar.reducer';
 
+/**
+ * Module for simple, "File/Edit/etc" style menus.
+ */
 @NgModule({
   imports: [CommonModule, MatIconModule, StoreModule.forFeature('menuBar', menuBarReducer)],
   exports: [
@@ -19,6 +23,7 @@ import { menuBarReducer } from './menu-bar.reducer';
     MenuBarTextComponent,
     MenuBarComponent,
     MenuBarDividerComponent,
+    MenuBarIconComponent,
     MenuBarItemComponent,
   ],
   declarations: [
@@ -26,6 +31,7 @@ import { menuBarReducer } from './menu-bar.reducer';
     MenuBarTextComponent,
     MenuBarComponent,
     MenuBarDividerComponent,
+    MenuBarIconComponent,
     MenuBarItemComponent,
   ],
 })

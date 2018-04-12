@@ -1,11 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule, MatDialogModule, MatInputModule } from '@angular/material';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  ErrorStateMatcher,
+  MatButtonModule,
+  MatDialogModule,
+  MatInputModule,
+} from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { ProjectModule } from '../project/project.module';
+import { AdvancedToggleModule } from '../ui/advanced-toggle/advanced-toggle.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { RadioIconsModule } from '../ui/radio-icons/radio-icons.module';
 import { AttributeSelectionComponent } from './attribute-selection/attribute-selection.component';
@@ -19,21 +25,28 @@ import { NewProjectService } from './new-project.service';
 import { TemplateSelectionComponent } from './template-selection/template-selection.component';
 import { WelcomeScreenComponent } from './welcome-screen/welcome-screen.component';
 
+const errorStateMatcher = { isErrorState: (ctrl: FormControl) => ctrl.invalid };
+
+/**
+ * Module containing wizardry for creating a new project.
+ */
 @NgModule({
   imports: [
+    AdvancedToggleModule,
     CommonModule,
     ConsoleModule,
     EffectsModule.forFeature([NewProjectEffects]),
-    FlexLayoutModule,
+    FormsModule,
     MatButtonModule,
     MatDialogModule,
     MatInputModule,
     RadioIconsModule,
     ReactiveFormsModule,
+    ProjectModule,
     StoreModule.forFeature('newProject', newProjectReducer),
   ],
   entryComponents: [NewProjectDialogComponent],
-  providers: [NewProjectService],
+  providers: [NewProjectService, { provide: ErrorStateMatcher, useValue: errorStateMatcher }],
   declarations: [
     NewProjectDialogComponent,
     WelcomeScreenComponent,

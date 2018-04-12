@@ -12,7 +12,8 @@ import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { Subject } from 'rxjs/Subject';
 
 /**
- * The layout selection chooses which schema is initially seeded.
+ * The radio icon list contains many radio icons. It holds a value and
+ * emits when that value is changed.
  */
 @Component({
   selector: 'radio-icon-list',

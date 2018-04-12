@@ -55,8 +55,13 @@ export function newProjectReducer(
       return {
         ...state,
         isCreating: false,
-        creationError: action.error,
         screen: NewProjectScreen.Complete,
+      };
+    case NewProjectActionTypes.CREATE_ERROR:
+      return {
+        ...state,
+        isCreating: false,
+        creationError: action.error,
       };
     case NewProjectActionTypes.CANCEL:
       return initialState;
@@ -75,7 +80,7 @@ export const projectSelector: MemoizedSelector<IState, INewProjectState> = creat
 /**
  * Selector for the current screen.
  */
-export const screen = createSelector(projectSelector, s => s.screen);
+export const selectScreen = createSelector(projectSelector, s => s.screen);
 
 /**
  * Selector for the chosen layout.
@@ -97,7 +102,7 @@ export const template = createSelector(projectSelector, s => s.template);
  */
 export const targetDirectory = createSelector(
   projectSelector,
-  s => `${s.directory}/${s.details!.projectName}`,
+  s => (s.details ? `${s.directory}/${s.details!.projectName}` : null),
 );
 
 /**

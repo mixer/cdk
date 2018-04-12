@@ -1,16 +1,16 @@
 import chalk from 'chalk';
-import { spawn } from 'child_process';
-import { EventEmitter } from 'events';
 import nodeFetch, { Response } from 'node-fetch';
 import * as path from 'path';
 import { extract } from 'tar';
 
 import { UnexpectedHttpError } from './errors';
-import { awaitChildProcess, exists, mkdir, readFile, writeFile } from './util';
+import { NpmInstallTask } from './tasks/npm-install-task';
+import { Task } from './tasks/task';
+import { exists, mkdir, readFile, writeFile } from './util';
 
 const templateAliases: { [key: string]: string } = {
-  preact: 'interactive-launchpad_1.0.tar.gz',
-  html: 'interactive-html-starter_1.0.tar.gz',
+  preact: 'cdk-preact-starter_1.0.tar.gz',
+  html: 'cdk-html-starter_1.0.tar.gz',
 };
 
 /**
@@ -29,7 +29,7 @@ export interface IQuickstartOptions {
 /**
  * Quickstarter helps with creating and install projects.
  */
-export class Quickstarter extends EventEmitter {
+export class Quickstarter extends Task<void> {
   constructor(private readonly options: Readonly<IQuickstartOptions>) {
     super();
   }
@@ -39,22 +39,24 @@ export class Quickstarter extends EventEmitter {
    * the process runs.
    */
   public async start() {
-    const res = await this.getTarball();
-    await this.extractProject(res);
-    await this.installDependences();
-    await this.updateProjectJson();
-    this.emit('data', chalk.green('\nInstallation completed successfully.'));
+    await this.workflow(
+      async () => this.extractProject(await this.getTarball()),
+      async () => this.updateProjectJson(),
+      () => this.installDependences(),
+    );
+
+    this.data.next(chalk.green('\nInstallation completed successfully.\n'));
+    return this.stop();
   }
 
   /**
-   * Installs npm dependencies.
+   * Returns a task that installs npm dependencies.
    */
-  private async installDependences() {
+  private installDependences() {
     this.emitPrompt('npm install');
-    const proc = spawn('npm', ['install', '-d', '--color=always'], { cwd: this.targetPath() });
-    proc.stdout.on('data', data => this.emit('data', data.toString()));
-    proc.stderr.on('data', data => this.emit('data', data.toString()));
-    await awaitChildProcess(proc);
+    const task = new NpmInstallTask(this.targetPath());
+    task.data.subscribe(data => this.data.next(data));
+    return task;
   }
 
   /**
@@ -75,9 +77,35 @@ export class Quickstarter extends EventEmitter {
     };
 
     const packageJsonPath = path.join(this.targetPath(), 'package.json');
-    const source = await readFile(packageJsonPath);
-    const updated = JSON.stringify({ ...JSON.parse(source), ...partial }, null, 2);
+    const source = JSON.parse(await readFile(packageJsonPath));
+    await this.updateWebpackPlugin(source);
+    const updated = JSON.stringify({ ...source, ...partial }, null, 2);
     await writeFile(packageJsonPath, updated);
+  }
+
+  /**
+   * Looks in the given package.json and updates from the miix-cli to the
+   * dedicated webpack plugin if we find it, then also replaces usage in
+   * the webpack.config.js if it exists. For backwards compat with older
+   * consumers upon initial release.
+   */
+  private async updateWebpackPlugin(pkg: any) {
+    const oldPackage = '@mcph/miix-cli';
+    const newPackage = '@mcph/miix-webpack-plugin';
+    if (!pkg.devDependencies || newPackage in pkg.devDependencies) {
+      return;
+    }
+
+    delete pkg.devDependencies[oldPackage];
+    pkg.devDependencies[newPackage] = '^0.1.0';
+
+    const webpackConfig = path.join(this.targetPath(), 'webpack.config.js');
+    if (!await exists(webpackConfig)) {
+      return;
+    }
+
+    const source = await readFile(webpackConfig);
+    await writeFile(webpackConfig, source.replace(oldPackage, newPackage));
   }
 
   /**
@@ -116,7 +144,7 @@ export class Quickstarter extends EventEmitter {
    * Emits a prompt-style
    */
   private emitPrompt(...contents: string[]) {
-    this.emit('data', `> ${contents.join(' ')}\n`);
+    this.data.next(`> ${contents.join(' ')}\n`);
   }
 
   /**

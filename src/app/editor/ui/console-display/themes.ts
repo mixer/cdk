@@ -3,7 +3,7 @@ import { ITheme } from 'xterm';
 export const baseTheme: ITheme = {
   // based on earthsong, objectively the best
   foreground: '#ebd1b7',
-  background: '#36312b',
+  background: '#272825',
   cursor: '#f8f8f0',
   cursorAccent: '#f8f8f0',
   selection: '#161a1f',

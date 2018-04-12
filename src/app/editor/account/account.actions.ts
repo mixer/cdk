@@ -8,6 +8,7 @@ export const enum AccountActionTypes {
   SET_LOGGED_IN_ACCOUNT = '[Account] Set logged in account',
   LINK_SET_CODE = '[Account] Set linking code',
   LINK_CANCEL = '[Account] Cancel account linking',
+  REQUIRE_AUTH = '[Account] Require Authentication',
 }
 
 export const enum AccountMethods {
@@ -53,6 +54,16 @@ export class SetLinkCode implements Action {
  */
 export class CancelLinking implements Action {
   public readonly type = AccountActionTypes.LINK_CANCEL;
+}
+
+/**
+ * Requires authentication before dispatching the given action. Dispatches
+ * the failedAction, if provided, if authentication is cancelled.
+ */
+export class RequireAuth implements Action {
+  public readonly type = AccountActionTypes.REQUIRE_AUTH;
+
+  constructor(public readonly successAction: Action, public readonly failedAction?: Action) {}
 }
 
 export type AccountActions =

@@ -1,4 +1,4 @@
-import { merge } from 'lodash';
+import { isPlainObject, merge } from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
 import { appendFile, exists, mkdir, readFile, writeFile } from './util';
@@ -59,10 +59,15 @@ export class FileDataStore implements IDataStore {
     defaultValue?: T,
   ): Promise<T | null> {
     const globalContents = await this.loadGlobal(file);
-    const localContents = await this.readFileIfExists(this.filePath(projectPath, file));
+    const localData = await this.readFileIfExists(this.filePath(projectPath, file));
+    const localContents = localData ? JSON.parse(localData) : null;
+
+    if (!isPlainObject(globalContents) || !isPlainObject(localContents)) {
+      return localContents || globalContents || defaultValue || null;
+    }
 
     return globalContents || localContents
-      ? merge(globalContents, JSON.parse(localContents!))
+      ? merge(globalContents, localContents)
       : defaultValue !== undefined ? defaultValue : null;
   }
 

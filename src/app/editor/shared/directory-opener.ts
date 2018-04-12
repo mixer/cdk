@@ -47,9 +47,9 @@ export class DirectoryOpener {
    * Opens the directory in the requested program.
    */
   public open(directory: string, program: ILauncher) {
-    return this.electron.call(CommonMethods.LaunchProgram, {
+    return this.electron.call<null>(CommonMethods.LaunchProgram, {
       name: program.bin,
-      arguments: [directory],
+      args: [directory],
     });
   }
 }

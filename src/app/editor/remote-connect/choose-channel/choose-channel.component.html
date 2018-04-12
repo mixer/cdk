@@ -1,0 +1,19 @@
+<h1 mat-dialog-title>Connect Controls</h1>
+<div mat-dialog-content>
+  <p>You can connect the controls in your local editor to your Interactive game on Mixer.com. This allows you to test changes rapidly from your computer, without needing to upload them each time.</p>
+
+  <advanced-toggle>
+    <mat-input-container>
+      <input matInput placeholder="Target Connected Channel"
+        type="number"
+        class="flex-fill"
+        [ngModel]="targetChannel | async"
+        (ngModelChange)="setTargetChannel($event)">
+    </mat-input-container>
+  </advanced-toggle>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="dialog.close()">Cancel</button>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="connect()" cdkFocusInitial>Connect</button>
+</div>

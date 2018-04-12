@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, take } from 'rxjs/operators';
+import { switchMap, take, withLatestFrom } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
 import { ElectronService } from '../../electron.service';
@@ -46,10 +46,11 @@ export class CompleteComponent {
   public openLauncher() {
     this.store
       .select(fromNewProject.targetDirectory)
-      .pipe(take(1), combineLatest(this.openAction))
-      .subscribe(([dir, action]) => {
-        this.opener.open(dir, action!);
-        this.close();
-      });
+      .pipe(
+        take(1),
+        withLatestFrom(this.openAction),
+        switchMap(([dir, action]) => this.opener.open(dir!, action!)),
+      )
+      .subscribe(() => this.close());
   }
 }
