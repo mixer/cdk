@@ -1,0 +1,8 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  background: $color-medium-gray;
+  display: flex;
+  height: $dimension-toolbar-height;
+  flex-shrink: 0;
+}

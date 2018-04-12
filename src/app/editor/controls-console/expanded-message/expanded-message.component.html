@@ -1,0 +1,19 @@
+<ng-container *ngIf="wasSent">
+  Sent at {{ item.createdAt | amFromUnix | amDateFormat: 'hh:mm:sss.SSS'}} to the controls:
+</ng-container>
+<ng-container *ngIf="!wasSent">
+  Received at {{ item.createdAt | amFromUnix | amDateFormat: 'hh:mm:ss.SSS'}} from the controls:
+</ng-container>
+
+<span [innerHtml]="(item.message.expansion() | safe)"></span>
+
+<ng-container *ngIf="pair | async; let paired">
+  <ng-container *ngIf="isReply">
+    The above message was sent after {{ item.createdAt - paired.createdAt }}ms in reply to:
+  </ng-container>
+  <ng-container *ngIf="!isReply">
+    The above message received the following reply after {{ paired.createdAt - item.createdAt }}ms:
+  </ng-container>
+
+  <span [innerHtml]="amFromUnix.message.expansion() | safe"></span>
+</ng-container>

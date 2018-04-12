@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>Missing Node.js</h1>
+<div mat-dialog-content *ngIf="data.reason === Reason.NotPresent">
+    <p>We couldn't find Node.js on your machine. <span *ngIf="data.platform !== 'win32'">If you've installed Node.js, make sure <code>node</code> is in your PATH.</span> If you haven't installed Node.js yet, you can <a openExternal="https://nodejs.org/en/download/" class="body-link">get it here</a>.</p>
+
+    <ng-container *ngIf="data.platform === 'win32'">
+      <p>If you've installed Node.js already, it may be missing from your PATH. Here's how to add it:</p>
+      <ol>
+        <li>Open the Start Menu and search for "Environment Variables".</li>
+        <li>Click "Edit System Environment Variables" and then the "Environment Variables" button.</li>
+        <li>Look for the "Path" variable under "System Variables", and double-click it.</li>
+        <li>Click "New", and enter <code>C:\Program Files\nodejs</code>, or wherever your Node.js installation is located at.</li>
+        <li>Log out and in again, or reboot your machine.</li>
+      </ol>
+    </ng-container>
+
+    <p *ngIf="data.platform === 'darwin'">Alternately, if you use <a openExternal="https://brew.sh/" class="body-link">Homebrew</a>, you can run <code>brew install node</code> from the command line.</p>
+    <!-- Note: we don't recommend package management installation for Linux
+      because most managers have pretty outdated node versions. -->
+</div>
+<div mat-dialog-content *ngIf="data.reason === Reason.OldVersion">
+    <p>The version of Node.js you have installed is fairly old, we recommend upgrading to avoid running into errors with code written against an older version. You can download the latest version of Node.js <a openExternal="https://nodejs.org/en/download/" class="body-link">here</a>.</p>
+
+    <p *ngIf="data.platform === 'darwin'">Alternately, if you installed Node.js via Homebrew, you can run <code>brew upgrade node</code> from the command line.</p>
+</div>

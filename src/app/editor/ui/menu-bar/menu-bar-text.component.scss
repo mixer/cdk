@@ -1,0 +1,15 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  display: inline-block;
+  padding: 0 $dimension-gutter-sm;
+  line-height: $dimension-toolbar-height - 3px;
+  border-bottom: 3px solid rgba(#fff, 0.1);
+  font-size: 0.9em;
+
+  &.active {
+    background: $color-primary;
+    color: $color-primary-contrast;
+    border-bottom-color: rgba(#000, 0.1);
+  }
+}

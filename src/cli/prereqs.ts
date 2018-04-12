@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 import { ChildProcess, spawn } from 'child_process';
 import { isPackagedInstalled } from '../server/npm';
-import { Project } from '../server/project';
+import { IPackageJson, Project } from '../server/project';
 import { awaitChildProcess } from '../server/util';
 import writer from './writer';
 
@@ -11,7 +11,7 @@ async function ensurePackagesInstalled(project: Project, ...reqs: string[]): Pro
     return;
   }
 
-  let config: any;
+  let config: IPackageJson;
   try {
     config = await project.packageJson();
   } catch (e) {

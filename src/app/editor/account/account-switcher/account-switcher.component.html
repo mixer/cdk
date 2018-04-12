@@ -1,0 +1,18 @@
+<menu-bar menuId="account#switcher" class="account-switcher not-logged-in" *ngIf="!(currentUser | async)" (click)="openLogin()">
+  <menu-bar-text>
+    <img src="https://mixer.com/_latest/assets/images/main/avatars/default.png" class="profile-image" alt="Anonymous User">
+    Not Logged In
+  </menu-bar-text>
+</menu-bar>
+
+<menu-bar menuId="account#switcher" class="account-switcher logged-in" *ngIf="currentUser | async">
+  <menu-bar-text>
+    <img src="https://mixer.com/api/v1/users/{{ (currentUser | async)?.id }}/avatar?w=32&h=32" class="profile-image" [alt]="(currentUser | async)?.username">
+    {{ (currentUser | async)?.username }}
+  </menu-bar-text>
+
+  <menu-bar-items>
+    <menu-bar-item openExternal="https://mixer.com/me/account/security" text="My Account"></menu-bar-item>
+    <menu-bar-item (click)="logout()" text="Sign Out"></menu-bar-item>
+  </menu-bar-items>
+</menu-bar>

@@ -1,17 +1,20 @@
 import { expect } from 'chai';
 import * as fs from 'fs';
-import { tmpdir } from 'os';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
+import { FileDataStore } from '../src/server/datastore';
 import { NoAuthenticationError, ShortCodeExpireError } from '../src/server/errors';
 import { GrantCancelledError, Profile } from '../src/server/profile';
 import { OAuthClient } from '../src/server/shortcode';
 import { api } from '../src/server/util';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
 
+// tslint:disable-next-line
+const rimraf = require('rimraf');
+
 describe('profile', () => {
-  let file: string;
+  let profileDir: string;
   let profile: Profile;
   let requester: MockRequester;
   let mockOAuth: { [k in keyof OAuthClient]: sinon.SinonStub };
@@ -40,27 +43,23 @@ describe('profile', () => {
       }),
     });
 
-    file = path.resolve(tmpdir(), 'miix-test-profile.yaml');
-    profile = new Profile(file, <any>mockOAuth, requester);
+    profileDir = path.join(__dirname, 'fixture');
+    profile = new Profile(new FileDataStore(profileDir), <any>mockOAuth, requester);
   });
 
   afterEach(() => {
-    try {
-      fs.unlinkSync(file);
-    } catch (e) {
-      /* ignored */
-    }
+    rimraf.sync(path.join(profileDir, '.miix'));
   });
 
   function expectProfileFile() {
-    return expect(fs.readFileSync(file, 'utf-8'));
+    return expect(fs.readFileSync(path.join(profileDir, '.miix', 'profile.json'), 'utf-8'));
   }
 
   describe('granting', () => {
     it("creates and grants a file if it doesn't exist", async () => {
       const tokens = await profile.grant(mockPrompter);
 
-      expectProfileFile().to.contain(`accessToken: ${tokens.data.accessToken}`);
+      expectProfileFile().to.contain(`"accessToken": "${tokens.data.accessToken}"`);
       expect(await profile.user()).to.containSubset({
         id: 1,
         username: 'connor',
@@ -73,7 +72,7 @@ describe('profile', () => {
 
     it('loads existing tokens', async () => {
       const originalTokens = await profile.grant(mockPrompter);
-      const savedTokens = await new Profile(file, <any>null).tokens();
+      const savedTokens = await new Profile(new FileDataStore(profileDir), <any>null).tokens();
       expect(savedTokens).to.deep.equal(originalTokens);
     });
 
@@ -109,9 +108,13 @@ describe('profile', () => {
 
       mockOAuth.refresh.resolves(createValidOAuthTokens());
 
-      const newTokens = await new Profile(file, <any>mockOAuth, requester).tokens();
+      const newTokens = await new Profile(
+        new FileDataStore(profileDir),
+        <any>mockOAuth,
+        requester,
+      ).tokens();
       expect(newTokens.data.accessToken).to.equal('access_token'); // not expired_access_token
-      const savedTokens = await new Profile(file, <any>null).tokens();
+      const savedTokens = await new Profile(new FileDataStore(profileDir), <any>null).tokens();
       expect(savedTokens).to.deep.equal(newTokens);
     });
   });

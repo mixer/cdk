@@ -1,0 +1,22 @@
+@import '../../assets/styles/declarations';
+
+.text {
+  flex-grow: 1;
+
+  p {
+    margin-top: 0.5em;
+  }
+
+  h4 {
+    margin-bottom: 0;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+
+  > * {
+    margin-left: $dimension-gutter-md;
+  }
+}

@@ -13,6 +13,11 @@ export interface IGlobalOptions {
   api: string;
 }
 
+export function printError(err: Error) {
+  console.error(isHumanError(err) ? err.getHumanMessage() : err.message);
+  process.exit(1);
+}
+
 export function failSpiner(spinner: { fail(message: string): void }) {
   return (err: Error): never => {
     if (isHumanError(err)) {

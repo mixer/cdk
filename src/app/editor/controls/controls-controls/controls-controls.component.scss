@@ -1,0 +1,52 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  position: absolute;
+  top: $dimension-gutter-sm;
+  left: $dimension-gutter-sm;
+  right: $dimension-gutter-sm;
+  z-index: 5;
+  display: flex;
+  pointer-events: none;
+}
+
+button {
+  @include unstyled-input();
+
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  margin-right: $dimension-gutter-md;
+  color: $color-text-muted;
+  cursor: pointer;
+  border: 1px solid transparent;
+  position: relative;
+  pointer-events: auto;
+
+  mat-icon {
+    width: 1.2em;
+    margin-right: 0.2em;
+  }
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &:active {
+    border-color: $color-primary;
+  }
+
+  &.hasAlert::before {
+    $alert-size: 8px;
+
+    content: '';
+    position: absolute;
+    top: 0;
+    left: $alert-size / -2;
+    width: $alert-size;
+    height: $alert-size;
+    background: $color-danger;
+    border-radius: 50%;
+    border: 2px solid $color-medium-gray;
+  }
+}

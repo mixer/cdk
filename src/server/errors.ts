@@ -11,6 +11,13 @@ export interface IHumanError extends Error {
 }
 
 /**
+ * IMetadataError is an error that contains additional metadata.
+ */
+export interface IMetadataError extends Error {
+  metadata(): any;
+}
+
+/**
  * IHttpableError is an error that can be handled as an HTTP response. Exposes
  * a method to return the status code of the error.
  */
@@ -25,6 +32,10 @@ export function isHttpableError(err: Error): err is IHttpableError {
 
 export function isHumanError(err: Error): err is IHumanError {
   return err instanceof Error && typeof (<any>err).getHumanMessage === 'function';
+}
+
+export function hasMetadata(err: Error): err is IMetadataError {
+  return err instanceof Error && typeof (<any>err).metadata === 'function';
 }
 
 /**
@@ -56,8 +67,7 @@ export class UnexpectedHttpError extends Error implements IHumanError {
       inspect(json || this.text, false, null, true),
       '',
       chalk.dim(
-        this.stack!
-          .split('\n')
+        this.stack!.split('\n')
           .slice(1)
           .join('\n'),
       ),
@@ -325,5 +335,32 @@ export class SaveNotFoundError extends Error implements IHttpableError, IHumanEr
    */
   public statusCode(): number {
     return 404;
+  }
+}
+
+/**
+ * Thrown when invalid package.json is encountered.
+ */
+export class BadPackageJsonError extends Error implements IHumanError {
+  constructor(originalMessage: string) {
+    super(
+      `A package.json could not be found in that directory, or was invalid: ${originalMessage}`,
+    );
+  }
+
+  /**
+   * @override
+   */
+  public getHumanMessage(): string {
+    return this.message;
+  }
+}
+
+/**
+ * Thrown when the project's webpack.config.js file is missing.
+ */
+export class MissingWebpackConfig extends Error {
+  constructor() {
+    super('Webpack config not found.');
   }
 }

@@ -1,0 +1,34 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  padding-bottom: 0;
+  display: inline-block;
+  position: relative;
+  margin-right: 1px;
+  z-index: $z-index-base;
+  cursor: pointer;
+
+  &.active {
+    z-index: $z-index-active;
+  }
+
+  &.disabled {
+    cursor: default;
+    color: $color-text-muted;
+  }
+}
+
+.items {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 300px;
+  border: 1px solid $color-light-gray;
+  box-shadow: 0 2px 5px rgba(#000, 0.3);
+  background: $color-medium-gray;
+
+  :host.active & {
+    display: block;
+  }
+}

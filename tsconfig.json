@@ -2,7 +2,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": true,
+    "declaration": false,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -10,6 +10,7 @@
     "noUnusedParameters": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "module": "commonjs",
     "target": "es6",
     "outDir": "dist",
@@ -28,17 +29,11 @@
       "chai-subset",
       "chai-as-promised",
       "sinon-chai"
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "*": [
-        "src/types/*"
-      ]
-    }
+    ]
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "*.d.ts"
+  "include": [
+    "src",
+    "types",
+    "test"
   ]
 }

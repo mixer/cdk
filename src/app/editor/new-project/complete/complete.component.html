@@ -1,0 +1,15 @@
+<p>Awesome, you're all set! To get started, start editing the files we've created and see the results here.</p>
+
+<p>Here are some other links that might be helpful:</p>
+
+<ul>
+  <li><a openExternal="" class="body-link">Getting Started</a></li>
+  <li><a openExternal="" class="body-link">Documentation</a></li>
+  <li><a openExternal="" class="body-link">SDKs</a></li>
+</ul>
+
+<div mat-dialog-actions>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="close()">Close</button>
+  <button mat-button *ngIf="openAction | async" (click)="openLauncher()" cdkFocusInitial>{{ (openAction | async)?.text }}</button>
+</div>

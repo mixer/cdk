@@ -1,0 +1,6 @@
+<h1 mat-dialog-title>Creating...</h1>
+<div mat-dialog-content>
+  <p *ngIf="!(creationError | async)">We're setting up your project. It'll be just a moment.</p>
+  <p *ngIf="creationError | async">An error occurred while setting up your project. Please <a (click)="submitIssue()" class="body-link">submit an issue</a>!</p>
+  <console-display class="dialog-console" [data]="consoleData" [theme]="{ background: '#424242' }"></console-display>
+</div>

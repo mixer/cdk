@@ -1,0 +1,21 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 300px;
+  border: 1px solid $color-light-gray;
+  box-shadow: 0 2px 5px rgba(#000, 0.3);
+  background: $color-medium-gray;
+
+  &.active {
+    display: block;
+  }
+
+  &[data-direction='1'] {
+    left: auto;
+    right: 0;
+  }
+}

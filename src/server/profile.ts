@@ -1,9 +1,7 @@
-import * as fs from 'fs';
-import * as yaml from 'js-yaml';
-
+import { FileDataStore, IDataStore } from './datastore';
 import { NoAuthenticationError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
-import { api, exists, Fetcher, IRequester, readFile, wrapErr } from './util';
+import { api, Fetcher, IRequester } from './util';
 
 interface IHostProfile {
   tokens: IOAuthTokenData;
@@ -30,7 +28,7 @@ export interface IGrantNotifier {
   /**
    * Tells the user to enter the code on mixer.com/go
    */
-  prompt(code: string): void;
+  prompt(code: string, expiresAt: Date): void;
 
   /**
    * Whether we should cancel lookup up the code.
@@ -64,7 +62,7 @@ export class Profile {
   }
 
   constructor(
-    public readonly file: string,
+    private readonly store: IDataStore = new FileDataStore(),
     private readonly oauthClient: OAuthClient = new OAuthClient({
       clientId: '9789aae60656644524be9530889ba8884c0095834ae75f50',
       scopes: Profile.necessaryScopes,
@@ -72,6 +70,13 @@ export class Profile {
     private readonly requester: IRequester = new Fetcher(),
     private readonly host = api(),
   ) {}
+
+  /**
+   * Requester interface for making authenticated calls for this profile.
+   */
+  public async getRequester(): Promise<IRequester> {
+    return this.requester.with(await this.tokens());
+  }
 
   /**
    * Returns valid OAuth tokens for the session. It will prompt the user to
@@ -130,7 +135,7 @@ export class Profile {
       }
 
       const code = await this.oauthClient.getCode();
-      notifier.prompt(code.code);
+      notifier.prompt(code.code, code.expiresAt);
 
       try {
         tokens = await code.waitForAccept();
@@ -193,15 +198,7 @@ export class Profile {
    * Persists the saved tokens to disk.
    */
   private async save(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      fs.writeFile(this.file, yaml.safeDump(this.profile), err => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
+    return this.store.saveGlobal('profile', this.profile);
   }
 
   /**
@@ -222,29 +219,21 @@ export class Profile {
    * it was able to do so successfully.
    */
   private async tryLoadFile(): Promise<boolean> {
-    return exists(this.file).then(ok => {
-      if (!ok) {
-        return false;
-      }
+    const contents = await this.store.loadGlobal<IProfile>('profile');
+    if (contents === null) {
+      return false;
+    }
 
-      return readFile(this.file).then(contents => {
-        try {
-          this.profile = yaml.safeLoad(contents);
-        } catch (err) {
-          throw wrapErr(err, `Error parsing profile from ${this.file}`);
-        }
+    this.profile = contents;
+    if (!this.hostProfile) {
+      return false;
+    }
 
-        if (!this.hostProfile) {
-          return false;
-        }
-
-        this.tokensObj = new OAuthTokens({
-          ...this.hostProfile.tokens,
-          expiresAt: new Date(this.hostProfile.tokens.expiresAt),
-        });
-
-        return true;
-      });
+    this.tokensObj = new OAuthTokens({
+      ...this.hostProfile.tokens,
+      expiresAt: new Date(this.hostProfile.tokens.expiresAt),
     });
+
+    return true;
   }
 }
