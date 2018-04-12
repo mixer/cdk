@@ -80,3 +80,13 @@ export const selectParticipant = createSelector(contentMaskState, s => s.partici
  * Selects the current world.
  */
 export const selectWorld = createSelector(contentMaskState, s => s.worldSchema);
+
+/**
+ * Selects all snapshots persisted to the server.
+ */
+export const selectAllSnapshots = createSelector(contentMaskState, s => s.snapshots);
+
+/**
+ * Selects the currently loaded snapshot, if any.
+ */
+export const selectLoadedSnapshot = createSelector(contentMaskState, s => s.loadedSnapshot);

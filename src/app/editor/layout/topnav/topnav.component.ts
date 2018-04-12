@@ -3,9 +3,13 @@ import { MatDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 
+import { RequireAuth } from '../../account/account.actions';
 import * as fromRoot from '../../bedrock.reducers';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
-import { StartOpenProject } from '../../project/project.actions';
+import { RequireLink, StartOpenProject } from '../../project/project.actions';
+import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
+import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
+import { CopyWorldSchema, UploadWorldSchema } from '../../schema/schema.actions';
 import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
 
@@ -42,6 +46,34 @@ export class TopNavComponent {
    */
   public createNewProject() {
     this.dialog.open(NewProjectDialogComponent);
+  }
+
+  /**
+   * Opens the dialog to load control schema.
+   */
+  public loadControlSchema() {
+    this.dialog.open(OpenSnapshotDialogComponent);
+  }
+
+  /**
+   * Opens the dialog to save the current control schema.
+   */
+  public saveControlSchema() {
+    this.dialog.open(SaveSnapshotDialogComponent);
+  }
+
+  /**
+   * Uploads the control schema.
+   */
+  public uploadControlSchema() {
+    this.store.dispatch(new RequireAuth(new RequireLink(UploadWorldSchema)));
+  }
+
+  /**
+   * Copies the control schema from the linked project.
+   */
+  public copyControlSchema() {
+    this.store.dispatch(new RequireAuth(new RequireLink(CopyWorldSchema)));
   }
 
   /**

@@ -1,0 +1,27 @@
+<menu-bar menuId="project#link" *ngIf="isOpen | async">
+  <menu-bar-text>
+    {{ (project | async)?.packageJson.name }}
+    <small>{{ (project | async)?.packageJson.version }}</small>
+  </menu-bar-text>
+
+  <menu-bar-items>
+    <menu-bar-item
+      (click)="openDir()"
+      text="Open Folder">
+    </menu-bar-item>
+    <menu-bar-item
+      (click)="upload()"
+      text="Build and Upload Controls">
+    </menu-bar-item>
+    <menu-bar-item
+      (click)="changeLink()"
+      *ngIf="linkedProject | async"
+      text="Linked to {{ (linkedProject | async)?.name }}">
+    </menu-bar-item>
+    <menu-bar-item
+      (click)="changeLink()"
+      *ngIf="!(linkedProject | async)"
+      text="Link Interactive Project">
+    </menu-bar-item>
+  </menu-bar-items>
+</menu-bar>
