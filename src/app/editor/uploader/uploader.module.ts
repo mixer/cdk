@@ -17,6 +17,7 @@ import { UploaderCompletedComponent } from './uploader-completed/uploader-comple
 import { UploaderConfirmingComponent } from './uploader-confirming/uploader-confirming.component';
 import { UploaderConsoleService } from './uploader-console.service';
 import { UploaderDialogComponent } from './uploader-dialog/uploader-dialog.component';
+import { UploaderLinkingGameComponent } from './uploader-linking-game/uploader-linking-game.component';
 import { UploaderUploadingControls } from './uploader-uploading-controls/uploader-uploading-controls.component';
 import { UploaderUploadingSchema } from './uploader-uploading-schema/uploader-uploading-schema.component';
 import { UploaderEffects } from './uploader.effects';
@@ -42,11 +43,12 @@ import { uploaderReducer } from './uploader.reducer';
   entryComponents: [UploaderDialogComponent],
   providers: [UploaderConsoleService],
   declarations: [
-    UploaderDialogComponent,
-    UploaderConfirmingComponent,
-    UploaderUploadingControls,
-    UploaderUploadingControls,
     UploaderCompletedComponent,
+    UploaderConfirmingComponent,
+    UploaderDialogComponent,
+    UploaderLinkingGameComponent,
+    UploaderUploadingControls,
+    UploaderUploadingControls,
     UploaderUploadingSchema,
   ],
 })

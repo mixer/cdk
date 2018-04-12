@@ -7,6 +7,7 @@ import {
   CommonMethods,
   ReportGenericError,
   ReportRpcError,
+  ToggleDevTools,
 } from './bedrock.actions';
 import { ElectronService } from './electron.service';
 import { IssueService } from './issue.service';
@@ -36,8 +37,8 @@ export class BedrockEffects {
    */
   @Effect({ dispatch: false })
   public readonly toggleDevtools = this.actions
-    .ofType(BedrockActions.ToggleDevTools)
-    .pipe(tap(() => this.electron.call(CommonMethods.ToggleDevTools)));
+    .ofType<ToggleDevTools>(BedrockActions.ToggleDevTools)
+    .pipe(tap(action => this.electron.call(CommonMethods.ToggleDevTools, action.inspectCoords)));
 
   constructor(
     private readonly actions: Actions,

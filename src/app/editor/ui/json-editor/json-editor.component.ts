@@ -28,7 +28,7 @@ import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { LayoutActionTypes } from '../../layout/layout.actions';
 import { captureDrag } from '../../shared/drag';
-import { untilDestroyed } from '../../shared/untilDestroyed';
+import { untilDestroyed } from '../../shared/operators';
 import { ContentMaskService } from '../content-mask/content-mask.service';
 
 CodeMirror.registerHelper('lint', 'javascript', (contents: string) => {

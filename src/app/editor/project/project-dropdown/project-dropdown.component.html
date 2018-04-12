@@ -16,7 +16,7 @@
     <menu-bar-item
       (click)="changeLink()"
       *ngIf="linkedProject | async"
-      text="Linked to {{ (linkedProject | async)?.name }}">
+      text="Unlink from {{ (linkedProject | async)?.name }}">
     </menu-bar-item>
     <menu-bar-item
       (click)="changeLink()"

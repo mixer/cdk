@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
+import { map, takeUntil } from 'rxjs/operators';
 
 import { CommonMethods, UnhandledError } from '../bedrock.actions';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import * as forNewProject from './new-project.actions';
+import { selectScreen } from './new-project.reducer';
 
 /**
  * The NewProjectService holds common state while the project wizard is open.
@@ -24,6 +26,14 @@ export class NewProjectService {
    */
   public setDialog(ref: MatDialogRef<any>) {
     this.dialog = ref;
+
+    this.store
+      .select(selectScreen)
+      .pipe(
+        takeUntil(ref.afterClosed()),
+        map(screen => screen === forNewProject.NewProjectScreen.Creating),
+      )
+      .subscribe(disableClose => (ref.disableClose = disableClose));
 
     ref.afterClosed().subscribe(() => this.store.dispatch(new forNewProject.Cancel()));
   }

@@ -19,7 +19,7 @@ export class NewProjectDialogComponent {
   /**
    * Current screen we're on.
    */
-  public readonly screen = this.store.select(fromNewProject.screen);
+  public readonly screen = this.store.select(fromNewProject.selectScreen);
 
   /**
    * Template hoise.

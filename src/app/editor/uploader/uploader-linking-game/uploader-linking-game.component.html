@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>Linking game...</h1>
+<div mat-dialog-content>
+    <div class="layout-row layout-align-center-center margin-vertical-6x" *ngIf="!(error | async)">
+      <mat-spinner [diameter]="64"></mat-spinner>
+    </div>
+    <p *ngIf="(error | async)">
+      An error occurred while uploading your schema. <a (click)="openIssue()" class="body-link">Open an issue</a> with us and we'll get it looked at!
+    </p>
+</div>

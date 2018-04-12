@@ -10,8 +10,9 @@
 <menu-bar menuId="layout#run" [disabled]="!(isOnEditor | async)">
   <menu-bar-text>Run</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item [disabled]="true" text="On my Computer"></menu-bar-item>
-    <menu-bar-item [disabled]="true" text="On my Channel Page"></menu-bar-item>
+    <menu-bar-item (click)="linkAndUpload()" text="On my Channel Page"></menu-bar-item>
+    <menu-bar-item (click)="startRemoteConnection()" *ngIf="!(hasRemoteConnection | async)" text="On my Computer"></menu-bar-item>
+    <menu-bar-item (click)="stopRemoteConnection()" *ngIf="hasRemoteConnection | async" text="Disconnect my Controls"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
     <menu-bar-item (click)="restartWebpack()" text="Restart Webpack"></menu-bar-item>
     <menu-bar-item (click)="setWebpackConfig()" text="Set Webpack Config"></menu-bar-item>
