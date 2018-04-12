@@ -39,22 +39,7 @@ export class WebpackConsolePanelComponent implements OnDestroy {
   ) {}
 
   public openIssue(title: string) {
-    this.store.dispatch(
-      new ReportGenericError(
-        title,
-        `
-      ### Steps to Reproduce
-
-      <!-- Add your reproduction steps here! -->
-
-      ### Console Data
-
-      \`\`\`
-      ${this.controlsConsole.contents}
-      \`\`\`
-    `,
-      ),
-    );
+    this.store.dispatch(new ReportGenericError(title, this.controlsConsole.contents));
   }
 
   public restart() {

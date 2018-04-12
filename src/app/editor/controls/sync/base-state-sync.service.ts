@@ -1,15 +1,26 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
-import { IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
+import { ISettings, IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { isEqual, once } from 'lodash';
-import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import { merge as mergeObs } from 'rxjs/observable/merge';
+import { distinctUntilChanged, filter, map, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
 
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import * as fromRoot from '../../bedrock.reducers';
+import { bindToRPC } from '../../controls-console/controls-remote-console.service';
 import { MoveVideo } from '../../emulation/emulation.actions';
-import { selectedFittedVideo } from '../../emulation/emulation.reducer';
+import { selectedFittedVideo, selectISettings } from '../../emulation/emulation.reducer';
+import { WebpackState } from '../controls.actions';
+import * as fromControls from '../controls.reducer';
+
+/**
+ * A ControlEffect is invoked when we have an RPC connection. It should
+ * return a stream of methods to call on the controls.
+ */
+export type ControlEffect = () => Observable<{ method: string; params: any }>;
 
 /**
  * Foundation class that the state sync services compose for local and remote
@@ -23,20 +34,56 @@ export class BaseStateSyncService {
   public readonly refresh = new Subject<void>();
 
   /**
+   * Emits the address upon which locally-connected controls can be found.
+   */
+  public readonly controlsAddress = this.store.select(fromControls.controlState).pipe(
+    // Wait until we get past the "starting" stage, before this point the
+    // server may not exist and loading the iframe will result in an error.
+    filter(
+      state =>
+        [WebpackState.Compiled, WebpackState.HadError].includes(state.webpackState) &&
+        !!state.instance,
+    ),
+    map(({ instance }) => instance!.address),
+    distinctUntilChanged(),
+    map(address => `${address}?${Date.now()}`),
+  );
+
+  /**
    * Last seen RPC instance.
    */
   private lastRpc: RPC | undefined;
+
+  /**
+   * Default effects to attach to the controls.
+   */
+  private defaultEffects: ControlEffect[] = [
+    () =>
+      this.store
+        .select(selectISettings)
+        .pipe(
+          distinctUntilChanged<ISettings>(isEqual),
+          map(settings => ({ method: 'updateSettings', params: settings })),
+        ),
+  ];
 
   constructor(
     private readonly snackBar: MatSnackBar,
     private readonly store: Store<fromRoot.IState>,
   ) {}
 
-  public attachInternalMethods(rpc: RPC) {
+  public attachInternalMethods(rpc: RPC, effects: ControlEffect[] = []) {
     this.lastRpc = rpc;
+    bindToRPC(this.store, rpc);
 
     rpc.expose<IVideoPositionOptions>('moveVideo', data => {
       this.store.dispatch(new MoveVideo(data));
+    });
+
+    rpc.expose('controlsReady', () => {
+      mergeObs(...effects.concat(this.defaultEffects).map(fn => fn()))
+        .pipe(takeUntilRpcClosed(rpc))
+        .subscribe(data => rpc.call(data.method, data.params, false));
     });
 
     rpc.expose('getTime', () => {

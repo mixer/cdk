@@ -21,6 +21,8 @@ function createWindow() {
   });
 
   if (isDebug) {
+    // tslint:disable-next-line
+    require('devtron').install();
     window.webContents.openDevTools();
     // tslint:disable-next-line
     window.loadURL(`http://localhost:4200`);
@@ -44,8 +46,8 @@ function createWindow() {
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-  server.tasks
-    .stopAll()
+  server
+    .stop()
     .catch(() => undefined)
     .then(() => {
       app.quit();

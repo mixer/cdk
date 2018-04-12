@@ -4,14 +4,16 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { merge } from 'rxjs/observable/merge';
-import { filter, map, mapTo, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { of } from 'rxjs/observable/of';
+import { filter, map, mapTo, switchMap, take, tap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService, RpcError } from '../electron.service';
-import { RequireLink } from '../project/project.actions';
-import { withLatestDirectory } from '../project/project.reducer';
+import { ProjectMethods, RequireLink } from '../project/project.actions';
+import { selectLinkedGame, withLatestDirectory } from '../project/project.reducer';
 import { SchemaActionTypes, UploadWorldFailed, UploadWorldSchema } from '../schema/schema.actions';
 import { catchErrorType } from '../shared/catchErrorType';
+import { toLatestFrom } from '../shared/operators';
 import { UploaderConsoleService } from './uploader-console.service';
 import { UploaderDialogComponent } from './uploader-dialog/uploader-dialog.component';
 import {
@@ -41,11 +43,11 @@ export class UploaderEffects {
       withLatestDirectory(this.store),
       switchMap(([, directory]) =>
         fromPromise(this.electron.call(UploaderMethods.StartUpload, { directory })).pipe(
-          withLatestFrom(this.store.select(selectUploadSchema)),
+          toLatestFrom(this.store.select(selectUploadSchema)),
           map(
-            ([, uploadSchema]) =>
+            uploadSchema =>
               new SetScreen(
-                uploadSchema ? UploaderScreen.UploadingSchema : UploaderScreen.Completed,
+                uploadSchema ? UploaderScreen.UploadingSchema : UploaderScreen.LinkingGame,
               ),
           ),
           catchErrorType(RpcError, err => new SetError(err)),
@@ -69,9 +71,33 @@ export class UploaderEffects {
             .pipe(map(({ error }) => new SetError(error))),
           this.actions
             .ofType(SchemaActionTypes.UPLOAD_WORLD_COMPLETE)
-            .pipe(mapTo(new SetScreen(UploaderScreen.Completed))),
+            .pipe(mapTo(new SetScreen(UploaderScreen.LinkingGame))),
         ).pipe(take(1)),
       ),
+    );
+
+  /**
+   * If they have a linked game, try to link it once more. If they made the
+   * link previously before their first upload, we would not have been able
+   * to link it to their bundle then.
+   */
+  @Effect()
+  public readonly ensureGameLink = this.actions
+    .ofType<SetScreen>(UploaderActionTypes.SET_SCREEN)
+    .pipe(
+      filter(({ screen }) => screen === UploaderScreen.LinkingGame),
+      toLatestFrom(this.store.select(selectLinkedGame)),
+      withLatestDirectory(this.store),
+      switchMap(([game, directory]) => {
+        if (!game) {
+          return of(new SetScreen(UploaderScreen.Completed));
+        }
+
+        return this.electron
+          .call(ProjectMethods.LinkGameToControls, { game, directory })
+          .return(new SetScreen(UploaderScreen.Completed))
+          .catch(RpcError, err => new SetError(err));
+      }),
     );
 
   /**
@@ -102,9 +128,9 @@ export class UploaderEffects {
   public readonly startUploading = this.actions
     .ofType(UploaderActionTypes.START_UPLOADING)
     .pipe(
-      withLatestFrom(this.store.select(selectUploadControls)),
+      toLatestFrom(this.store.select(selectUploadControls)),
       map(
-        ([, uploadControls]) =>
+        uploadControls =>
           new SetScreen(
             uploadControls ? UploaderScreen.UploadingControls : UploaderScreen.UploadingSchema,
           ),

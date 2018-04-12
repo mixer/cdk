@@ -5,9 +5,8 @@ import * as GoldenLayout from 'golden-layout';
 import { Observable } from 'rxjs/Observable';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
-import { debounceTime, filter, map, mapTo, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, filter, map, mapTo, switchMap, takeUntil, tap } from 'rxjs/operators';
 
-import { combineLatest } from 'rxjs/operators/combineLatest';
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
@@ -70,7 +69,7 @@ export class LayoutEffects {
     .ofType<SavePanels>(LayoutActionTypes.PANELS_SAVE)
     .pipe(
       filter(action => action.propogateToServer),
-      combineLatest(this.store.select(fromProject.directory).pipe(filter(Boolean), take(1))),
+      fromProject.withLatestDirectory(this.store),
       switchMap(([action, project]) =>
         this.electron.call(LayoutMethod.SavePanels, { panels: action.panels, project }),
       ),

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material';
 
-import { INodeData, InstallReason } from '../preflight.actions';
+import { InstallReason, PromptInstallNode } from '../preflight.actions';
 
 /**
  * The InstallNodeModalComponent is shown instructing the user to install
@@ -20,5 +20,5 @@ export class InstallNodeModalComponent {
   // tslint:disable-next-line
   public readonly Reason = InstallReason;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public readonly data: INodeData) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public readonly data: PromptInstallNode) {}
 }

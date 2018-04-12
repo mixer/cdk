@@ -12,6 +12,7 @@ import { StoreModule } from '@ngrx/store';
 
 import { ControlsConsoleModule } from '../controls-console/controls-console.module';
 import { EmulationModule } from '../emulation/emulation.module';
+import { RemoteConnectModule } from '../remote-connect/remote-connect.module';
 import { SharedModule } from '../shared/shared.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { ControlEffects } from './control.effects';
@@ -20,6 +21,7 @@ import { ControlsPanelComponent } from './controls-panel/controls-panel.componen
 import { ControlsWebpackConsoleService } from './controls-webpack-console.service';
 import { controlReducer } from './controls.reducer';
 import { LocalControlsComponent } from './local-controls/local-controls.component';
+import { RemoteControlsComponent } from './remote-controls/remote-controls.component';
 import { BaseStateSyncService } from './sync/base-state-sync.service';
 import { WebpackConfigLocatorModalComponent } from './webpack-config-locator-modal/webpack-config-locator-modal.component';
 import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-console-panel.component';
@@ -39,6 +41,7 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
     MatDialogModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    RemoteConnectModule,
     SharedModule,
     StoreModule.forFeature('controls', controlReducer),
   ],
@@ -46,15 +49,16 @@ import { WebpackConsolePanelComponent } from './webpack-console-panel/webpack-co
   declarations: [
     ControlsControlsComponent,
     ControlsPanelComponent,
-    WebpackConsolePanelComponent,
     LocalControlsComponent,
+    RemoteControlsComponent,
     WebpackConfigLocatorModalComponent,
+    WebpackConsolePanelComponent,
   ],
   exports: [ControlsPanelComponent, WebpackConsolePanelComponent],
   entryComponents: [
     ControlsPanelComponent,
-    WebpackConsolePanelComponent,
     WebpackConfigLocatorModalComponent,
+    WebpackConsolePanelComponent,
   ],
 })
 export class ControlsModule {}
