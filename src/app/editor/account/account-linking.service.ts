@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import * as fromRoot from '../bedrock.reducers';
 import { IUser } from '../../../server/profile';
-import { SetLoggedInAccount, CancelLinking, AccountMethods } from './account.actions';
+import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
+import { AccountMethods, SetLoggedInAccount } from './account.actions';
 
 /**
  * The AccountLinkingService handles
@@ -13,7 +13,7 @@ import { ElectronService } from '../electron.service';
 @Injectable()
 export class AccountLinkingService {
   constructor(
-    private readonly store: Store<fromRoot.State>,
+    private readonly store: Store<fromRoot.IState>,
     private readonly electron: ElectronService,
   ) {}
 
@@ -36,11 +36,7 @@ export class AccountLinkingService {
         });
       };
 
-      getLink();
-
-      return () => {
-        this.store.dispatch(new CancelLinking());
-      };
+      getLink().catch(err => subscriber.error(err));
     });
   }
 }

@@ -3,13 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
+import { FileDataStore } from '../src/server/datastore';
 import { NoAuthenticationError, ShortCodeExpireError } from '../src/server/errors';
 import { GrantCancelledError, Profile } from '../src/server/profile';
 import { OAuthClient } from '../src/server/shortcode';
 import { api } from '../src/server/util';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
-import { FileDataStore } from '../src/server/datastore';
 
+// tslint:disable-next-line
 const rimraf = require('rimraf');
 
 describe('profile', () => {

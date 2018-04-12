@@ -1,10 +1,10 @@
-import { createFeatureSelector, MemoizedSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import * as fromRoot from '../bedrock.reducers';
 import { IUser } from '../../../server/profile';
+import * as fromRoot from '../bedrock.reducers';
 import { AccountActions, AccountActionTypes } from './account.actions';
 
-export interface AccountState {
+export interface IAccountState {
   user?: IUser;
   linkCode?: {
     code: string;
@@ -12,16 +12,16 @@ export interface AccountState {
   };
 }
 
-export interface State extends fromRoot.State {
-  layout: AccountState;
+export interface IState extends fromRoot.IState {
+  layout: IAccountState;
 }
 
-const initialState: AccountState = {};
+const initialState: IAccountState = {};
 
 export function accountReducer(
-  state: AccountState = initialState,
+  state: IAccountState = initialState,
   action: AccountActions,
-): AccountState {
+): IAccountState {
   switch (action.type) {
     case AccountActionTypes.LINK_SET_CODE:
       return { ...state, linkCode: { code: action.code, expiresAt: new Date(action.expiresAt) } };
@@ -39,8 +39,8 @@ export function accountReducer(
 /**
  * Selector for the account feature.
  */
-export const accountState: MemoizedSelector<State, AccountState> = createFeatureSelector<
-  AccountState
+export const accountState: MemoizedSelector<IState, IAccountState> = createFeatureSelector<
+  IAccountState
 >('account');
 
 /**

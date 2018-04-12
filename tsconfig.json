@@ -10,6 +10,7 @@
     "noUnusedParameters": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "module": "commonjs",
     "target": "es6",
     "outDir": "dist",
@@ -30,9 +31,9 @@
       "sinon-chai"
     ]
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "*.d.ts"
+  "include": [
+    "src",
+    "types",
+    "test"
   ]
 }

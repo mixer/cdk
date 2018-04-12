@@ -1,5 +1,5 @@
 $font-family-sans-serif: 'Lato', sans-serif;
-$font-family-mono: 'Roboto Mono', monospace;
+$font-family-mono: 'Source Code Pro', monospace;
 
 $color-primary: #ffcc31;
 $color-primary-contrast: #000;
@@ -13,9 +13,10 @@ $color-white: #fff;
 $color-tainted-white: #e4eef2;
 
 $color-dark-gray: #191916;
-$color-medium-gray: #272822;
-$color-light-gray: #373831;
+$color-medium-gray: #272825;
+$color-light-gray: #353534;
 $color-text: $color-tainted-white;
+$color-text-muted: rgba($color-tainted-white, 0.5);
 
 $color-editor-background: $color-medium-gray;
 $color-editor-active-line: $color-light-gray;
@@ -35,6 +36,10 @@ $dimension-loader-border: 3px;
 $dimension-resizer-width: 10px;
 $dimension-toolbar-height: 30px;
 
+$z-index-active: 100 !default;
+$z-index-content-overlay: 50;
+$z-index-base: 0;
+
 $swift-ease-out-duration: 300ms !default;
 $swift-ease-out-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1) !default;
 $swift-ease-in-duration: 300ms !default;
@@ -49,40 +54,44 @@ $material-leave-duration: 275ms;
 $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
 
 @mixin apply-easing-to($attributes, $duration, $timing: 'linear') {
-    $values: ();
+  $values: ();
 
-    @each $attr in $attributes {
-        @if length($values) > 0 {
-            $values: append($values, unquote(', '));
-        }
-        $values: append($values, unquote('#{$attr} #{$duration} #{$timing}'));
+  @each $attr in $attributes {
+    @if length($values) > 0 {
+      $values: append($values, unquote(', '));
     }
+    $values: append($values, unquote('#{$attr} #{$duration} #{$timing}'));
+  }
 
-    transition: $values;
+  transition: $values;
 }
 
 @mixin swift-ease-out($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-out-duration, $swift-ease-out-timing-function);
+  @include apply-easing-to($attributes, $swift-ease-out-duration, $swift-ease-out-timing-function);
 }
 
 @mixin swift-ease-in($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-in-duration, $swift-ease-in-timing-function);
+  @include apply-easing-to($attributes, $swift-ease-in-duration, $swift-ease-in-timing-function);
 }
 
 @mixin swift-ease-in-out($attributes...) {
-    @include apply-easing-to($attributes, $swift-ease-in-out-duration, $swift-ease-in-out-timing-function);
+  @include apply-easing-to(
+    $attributes,
+    $swift-ease-in-out-duration,
+    $swift-ease-in-out-timing-function
+  );
 }
 
 @mixin swift-linear($attributes...) {
-    @include apply-easing-to($attributes, $swift-linear-duration, $swift-linear-timing-function);
+  @include apply-easing-to($attributes, $swift-linear-duration, $swift-linear-timing-function);
 }
 
 @mixin material-enter($attributes...) {
-    @include apply-easing-to($attributes, $material-enter-duration, $material-enter-timing-function);
+  @include apply-easing-to($attributes, $material-enter-duration, $material-enter-timing-function);
 }
 
 @mixin material-leave($attributes...) {
-    @include apply-easing-to($attributes, $material-leave-duration, $material-leave-timing-function);
+  @include apply-easing-to($attributes, $material-leave-duration, $material-leave-timing-function);
 }
 
 @function asset($name) {
@@ -105,4 +114,11 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
   overflow-y: $type;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+@mixin unstyled-input() {
+  background: none;
+  border: none;
+  outline: 0 !important;
+  color: currentColor;
 }

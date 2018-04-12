@@ -1,10 +1,6 @@
-import * as marked from 'marked';
-import * as path from 'path';
-
+import { IPackageConfig } from '@mcph/miix-std/dist/internal';
 import { PublishHttpError, PublishPrivateError } from '../errors';
-import { findReadme } from '../npm';
-import { Project } from '../project';
-import { IRequester, readFile } from '../util';
+import { IRequester } from '../util';
 
 /**
  * The publisher handle changing visility (public/private) of interactive controls.
@@ -28,13 +24,11 @@ export class Publisher {
   /**
    * Publishes a package, making it accessible to everyone.
    */
-  public async publish(project: Project): Promise<void> {
-    const config = await project.packageConfig();
+  public async publish(config: IPackageConfig, readme: string | null): Promise<void> {
     if (config.private) {
       throw new PublishPrivateError();
     }
 
-    const readme = await this.renderReadme(project.baseDir());
     return this.requester
       .json('post', `${this.getPath(config.name, config.version)}/publish`, {
         readme,
@@ -49,15 +43,6 @@ export class Publisher {
 
         throw new PublishHttpError(res, await res.text());
       });
-  }
-
-  private async renderReadme(dir: string): Promise<string> {
-    const fname = await findReadme(dir);
-    if (!fname) {
-      return 'This project is missing a readme';
-    }
-
-    return marked(await readFile(path.join(dir, fname)));
   }
 
   private getPath(name: string, version: string): string {

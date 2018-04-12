@@ -1,0 +1,6 @@
+<ng-container [ngSwitch]="state | async">
+  <remote-connection-choose-channel *ngSwitchCase="State.Disconnected"></remote-connection-choose-channel>
+  <remote-connection-waiting-client *ngSwitchCase="State.AwaitingGameClient"></remote-connection-waiting-client>
+  <remote-connection-error *ngSwitchCase="State.HasError"></remote-connection-error>
+  <remote-connection-version-conflict *ngSwitchCase="State.VersionConflict"></remote-connection-version-conflict>
+</ng-container>

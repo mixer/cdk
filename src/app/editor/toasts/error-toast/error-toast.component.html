@@ -1,0 +1,10 @@
+<span class="flex-fill">
+  {{ data.message }}
+</span>
+
+<button mat-button (click)="ref.dismiss()">
+  Close
+</button>
+<button mat-button color="primary" *ngIf="data.retry" (click)="retry()">
+  Retry
+</button>

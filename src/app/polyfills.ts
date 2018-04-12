@@ -1,3 +1,5 @@
+// tslint:disable
+
 // ES6 ponyfills:
 import 'core-js/es6/array';
 import 'core-js/es6/object';

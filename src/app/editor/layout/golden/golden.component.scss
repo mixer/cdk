@@ -1,0 +1,9 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  position: absolute;
+  left: $dimension-gutter-md;
+  right: $dimension-gutter-md;
+  bottom: $dimension-gutter-md;
+  top: $dimension-toolbar-height + $dimension-gutter-md;
+}

@@ -1,0 +1,33 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.state {
+  max-width: 600px;
+  margin: $dimension-gutter-lg auto;
+  display: flex;
+  align-items: center;
+
+  .message {
+    margin: 0 $dimension-gutter-md;
+  }
+
+  mat-icon {
+    color: $color-highlight;
+    width: 32px;
+    height: 32px;
+  }
+
+  small {
+    display: block;
+    color: $color-text-muted;
+  }
+}
+
+console-display {
+  flex-grow: 1;
+}

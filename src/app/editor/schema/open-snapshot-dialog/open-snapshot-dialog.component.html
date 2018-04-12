@@ -1,0 +1,30 @@
+<h1 mat-dialog-title>Open Control Schema</h1>
+<div mat-dialog-content>
+  <p>Opening a saved snapshot will overwrite your current Control Schema.</p>
+
+  <mat-list>
+    <mat-list-item *ngFor="let snapshot of (snapshots | async)">
+      <ng-container *ngIf="snapshot.name === workingName">
+        <div class="text">
+          <h4 mat-line>Working Copy</h4>
+        </div>
+        <div class="actions">
+          <button mat-icon-button disabled><mat-icon svgIcon="trash-can"></mat-icon></button>
+          <button mat-raised-button color="primary" disabled>Open</button>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="snapshot.name !== workingName">
+        <div class="text">
+          <h4 mat-line>{{ snapshot.name }}</h4>
+          <p mat-line>Updated: {{ snapshot.savedAt | amTimeAgo }}</p>
+        </div>
+        <div class="actions">
+          <button mat-icon-button (click)="deleteSnapshot(snapshot)">
+            <mat-icon svgIcon="trash-can"></mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="openSnapshot(snapshot)">Open</button>
+        </div>
+      </ng-container>
+    </mat-list-item>
+  </mat-list>
+</div>

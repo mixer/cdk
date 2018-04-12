@@ -1,7 +1,7 @@
+import { FileDataStore, IDataStore } from './datastore';
 import { NoAuthenticationError, ShortCodeExpireError, UnexpectedHttpError } from './errors';
 import { IOAuthTokenData, OAuthClient, OAuthTokens } from './shortcode';
 import { api, Fetcher, IRequester } from './util';
-import { IDataStore, FileDataStore } from './datastore';
 
 interface IHostProfile {
   tokens: IOAuthTokenData;
@@ -70,6 +70,13 @@ export class Profile {
     private readonly requester: IRequester = new Fetcher(),
     private readonly host = api(),
   ) {}
+
+  /**
+   * Requester interface for making authenticated calls for this profile.
+   */
+  public async getRequester(): Promise<IRequester> {
+    return this.requester.with(await this.tokens());
+  }
 
   /**
    * Returns valid OAuth tokens for the session. It will prompt the user to

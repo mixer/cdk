@@ -1,11 +1,17 @@
 @import '../../node_modules/normalize.css/normalize';
+@import '../../node_modules/xterm/dist/xterm';
+@import '../../node_modules/golden-layout/src/css/goldenlayout-base';
 
 @import './assets/styles/declarations';
 @import './assets/styles/codemirror';
 @import './assets/styles/ng-material';
+@import './assets/styles/content-mask';
+@import './assets/styles/golden';
+@import './assets/styles/fonts';
+@import './assets/styles/layout/index';
 
 body {
-  background: url('./assets/images/background.png') #2e2e2e;
+  background: url('assets/images/background.png') #2e2e2e;
   font-family: $font-family-sans-serif;
   color: $color-text;
   -webkit-text-size-adjust: 100%;
@@ -45,7 +51,7 @@ $scrollbars-track-bg: transparent;
 
 ::-webkit-scrollbar-thumb {
   background: rgba($scrollbars-thumb-bg, $scrollbars-opacity);
-  transition: all .3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:vertical {

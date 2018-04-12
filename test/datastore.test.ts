@@ -1,10 +1,11 @@
 import { expect } from 'chai';
-import * as path from 'path';
 import { mkdirSync, unlinkSync } from 'fs';
+import * as path from 'path';
 
 import { FileDataStore } from '../src/server/datastore';
-import { readFile, exists } from '../src/server/util';
+import { exists, readFile } from '../src/server/util';
 
+// tslint:disable-next-line
 const rimraf = require('rimraf');
 
 describe('FileDataStore', () => {
