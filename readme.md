@@ -1,1 +1,3 @@
-# miix-cli
+# Control Development Kit (CDK)
+
+
