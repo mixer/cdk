@@ -18,7 +18,7 @@
       because most managers have pretty outdated node versions. -->
 </div>
 <div mat-dialog-content *ngIf="data.reason === Reason.OldVersion">
-    <p>The version of Node.js you have installed is fairly old, we recommend upgrading to avoid running into errors with code written against an older version. You can download the latest version of Node.js <a openExternal="https://nodejs.org/en/download/" class="body-link">here</a>.</p>
+    <p>The version of Node.js you have installed is fairly old. The CDK requires Node.js version 8.0.0 or above. You can download the latest version of Node.js <a openExternal="https://nodejs.org/en/download/" class="body-link">here</a>.</p>
 
     <p *ngIf="data.platform === 'darwin'">Alternately, if you installed Node.js via Homebrew, you can run <code>brew upgrade node</code> from the command line.</p>
 </div>

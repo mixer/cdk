@@ -65,6 +65,14 @@ export class OpenBuilder<R = string | null> {
   }
 
   /**
+   * Set the title of this dialog.
+   */
+  public title(title: string): this {
+    this.options.title = title;
+    return this;
+  }
+
+  /**
    * Opens a file or directory from a saved context.
    */
   public async openInContext(

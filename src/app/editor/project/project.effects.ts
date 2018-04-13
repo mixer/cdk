@@ -40,7 +40,10 @@ export class ProjectEffects {
     .ofType(ProjectActionTypes.START_OPEN_PROJECT)
     .pipe(
       switchMap(() =>
-        this.electron.call<string>(CommonMethods.ChooseDirectory, { context: 'openProject' }),
+        this.electron.call<string>(CommonMethods.ChooseDirectory, {
+          context: 'openProject',
+          title: `Choose your project's folder.`,
+        }),
       ),
       filter(dir => !!dir),
       switchMap(dir => of<Action>(new CloseProject(), new TryOpenProject(dir))),
