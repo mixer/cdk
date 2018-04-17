@@ -6,6 +6,9 @@ export interface IRecentProject {
   url: string;
 }
 
+/**
+ * Loads and updates the recent projects used in CDK.
+ */
 export class RecentProjects {
   constructor(private readonly store: IDataStore = new FileDataStore()) {}
 

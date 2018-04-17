@@ -59,15 +59,17 @@ export class SchemaEffects {
     .ofType<SetOpenProject>(ProjectActionTypes.SET_OPEN_PROJECT)
     .pipe(
       switchMap(({ project }) => {
-        this.electron
+        return this.electron
           .call<string>(LayoutMethod.UpdateRecentProjects, {
             project: project.directory,
           })
           .then(() => this.electron.call<IRecentProject[]>(LayoutMethod.GetRecentProjects))
-          .then(projects => this.store.dispatch(new GetRecentProjects(projects)));
-        return this.electron.call<ISnapshot[]>(SchemaMethod.ListSnapshots, {
-          directory: project.directory,
-        });
+          .then(projects => this.store.dispatch(new GetRecentProjects(projects)))
+          .then(() =>
+            this.electron.call<ISnapshot[]>(SchemaMethod.ListSnapshots, {
+              directory: project.directory,
+            }),
+          );
       }),
       switchMap(snapshots => {
         let mostRecent = snapshots.find(s => s.name === workingSnapshoptName);
