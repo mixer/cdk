@@ -3,6 +3,7 @@ import { Actions, Effect } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import * as GoldenLayout from 'golden-layout';
 import { Observable } from 'rxjs/Observable';
+import { defer } from 'rxjs/observable/defer';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { of } from 'rxjs/observable/of';
 import { debounceTime, filter, map, mapTo, switchMap, takeUntil, tap } from 'rxjs/operators';
@@ -11,10 +12,14 @@ import * as fromRoot from '../bedrock.reducers';
 import { ElectronService } from '../electron.service';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import * as fromProject from '../project/project.reducer';
+import { truthy } from '../shared/operators';
+import { IRecentProject } from './../../../server/recent-projects';
+
 import {
   ClosePanel,
   findGoldenPanel,
   focus,
+  GetRecentProjects,
   LayoutActionTypes,
   LayoutMethod,
   LayoutScreen,
@@ -138,6 +143,14 @@ export class LayoutEffects {
   public readonly resizeGolden = this.withLayout(layout =>
     fromEvent(window, 'resize').pipe(tap(() => layout.updateSize())),
   );
+
+  /**
+   * Loads the recents projects on window load.
+   */
+  @Effect()
+  public readonly getRecentProjects = defer(async () =>
+    this.electron.call<IRecentProject[]>(LayoutMethod.GetRecentProjects),
+  ).pipe(truthy(), map(projects => new GetRecentProjects(projects)));
 
   constructor(
     private readonly actions: Actions,

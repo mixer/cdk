@@ -15,6 +15,7 @@ import { NewProjectService } from '../new-project.service';
 @Component({
   selector: 'new-project-creating',
   templateUrl: './creating.component.html',
+  styleUrls: ['./creating.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreatingComponent {

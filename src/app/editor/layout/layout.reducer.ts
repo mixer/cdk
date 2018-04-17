@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
 import * as GoldenLayout from 'golden-layout';
+import { IRecentProject } from '../../../server/recent-projects';
 import * as fromRoot from '../bedrock.reducers';
 import {
   GoldenPanel,
@@ -14,6 +15,7 @@ export interface ILayoutState {
   screen: LayoutScreen;
   panels: GoldenLayout.ItemConfigType[];
   goldenLayout: null | GoldenLayout;
+  recent: null | IRecentProject[];
 }
 
 export interface IState extends fromRoot.IState {
@@ -42,6 +44,7 @@ const initialState: ILayoutState = {
       ],
     },
   ],
+  recent: [],
 };
 
 export function layoutReducer(
@@ -57,6 +60,8 @@ export function layoutReducer(
       return { ...state, goldenLayout: action.layout };
     case LayoutActionTypes.CLEAR_GOLDEN_LAYOUT:
       return { ...state, goldenLayout: null };
+    case LayoutActionTypes.GET_RECENT_PROJECTS:
+      return { ...state, recent: action.projects || null };
     default:
       return state;
   }
@@ -88,6 +93,11 @@ export const goldenPanels = createSelector(layoutState, s => s.panels);
  * Selects the golden layout.
  */
 export const goldenLayout = createSelector(layoutState, s => s.goldenLayout);
+
+/**
+ * Selects the recent projects.
+ */
+export const getRecentProjects = createSelector(layoutState, s => s.recent);
 
 /**
  * Selects whether the given panel is open in the current layout.

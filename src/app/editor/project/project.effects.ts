@@ -36,18 +36,16 @@ export class ProjectEffects {
    * Fired when we want to pick a project directory to open.
    */
   @Effect()
-  public readonly startOpen = this.actions
-    .ofType(ProjectActionTypes.START_OPEN_PROJECT)
-    .pipe(
-      switchMap(() =>
-        this.electron.call<string>(CommonMethods.ChooseDirectory, {
-          context: 'openProject',
-          title: `Choose your project's folder.`,
-        }),
-      ),
-      filter(dir => !!dir),
-      switchMap(dir => of<Action>(new CloseProject(), new TryOpenProject(dir))),
-    );
+  public readonly startOpen = this.actions.ofType(ProjectActionTypes.START_OPEN_PROJECT).pipe(
+    switchMap(() =>
+      this.electron.call<string>(CommonMethods.ChooseDirectory, {
+        context: 'openProject',
+        title: `Choose your project's folder.`,
+      }),
+    ),
+    filter(dir => !!dir),
+    switchMap(dir => of<Action>(new CloseProject(), new TryOpenProject(dir))),
+  );
 
   /**
    * Fired when we want to try to open a project directory, by name.

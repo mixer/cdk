@@ -26,6 +26,7 @@ import { GrantCancelledError, Profile } from './profile';
 import { Project } from './project';
 import { ProjectLinker } from './project-linker';
 import { Quickstarter } from './quickstart';
+import { RecentProjects } from './recent-projects';
 import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
 import { Fetcher } from './util';
@@ -94,8 +95,14 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   /**
    * Opens a prompt to choose a directory, and returns the chosen one.
    */
-  [CommonMethods.ChooseDirectory]: async (options: { context: string, title: string }, server: ElectronServer) => {
-    return new OpenBuilder(server.window).directory().title(options.title).openInContext(options.context);
+  [CommonMethods.ChooseDirectory]: async (
+    options: { context: string; title: string },
+    server: ElectronServer,
+  ) => {
+    return new OpenBuilder(server.window)
+      .directory()
+      .title(options.title)
+      .openInContext(options.context);
   },
 
   /**
@@ -142,6 +149,14 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
    */
   [CommonMethods.EncryptString]: async data => {
     return await new IssueTracker().save(data);
+  },
+
+  [forLayout.LayoutMethod.UpdateRecentProjects]: async (options: { project: string }) => {
+    return await new RecentProjects().updateProjects(options.project);
+  },
+
+  [forLayout.LayoutMethod.GetRecentProjects]: async () => {
+    return await new RecentProjects().loadProjects();
   },
 
   /**

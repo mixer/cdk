@@ -19,6 +19,7 @@ import { GoldenService } from './golden/golden.service';
 import { LayoutEffects } from './layout.effects';
 import { layoutReducer } from './layout.reducer';
 import { TopNavComponent } from './topnav/topnav.component';
+import { WelcomeComponent } from './welcome/welcome.component';
 import { WorkspaceComponent } from './workspace/workspace.component';
 
 /**
@@ -42,7 +43,13 @@ import { WorkspaceComponent } from './workspace/workspace.component';
   ],
   exports: [WorkspaceComponent],
   providers: [GoldenService],
-  declarations: [TopNavComponent, WorkspaceComponent, GoldenComponent, ControlSchemaComponent],
+  declarations: [
+    TopNavComponent,
+    WelcomeComponent,
+    WorkspaceComponent,
+    GoldenComponent,
+    ControlSchemaComponent,
+  ],
   entryComponents: [ControlSchemaComponent],
 })
 export class LayoutModule {}

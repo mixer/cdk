@@ -1,5 +1,6 @@
 import { Action } from '@ngrx/store';
 import * as GoldenLayout from 'golden-layout';
+import { IRecentProject } from '../../../server/recent-projects';
 
 export const enum LayoutScreen {
   Welcome,
@@ -29,11 +30,14 @@ export const enum LayoutActionTypes {
   CLOSE_PANEL = '[Layout] Close a Panel',
   SET_GOLDEN_LAYOUT = '[Layout] Set the golden layout instance',
   CLEAR_GOLDEN_LAYOUT = '[Layout] Unsets the golden layout component',
+  GET_RECENT_PROJECTS = '[Layout] Gets the recent projects',
 }
 
 export const enum LayoutMethod {
   SavePanels = '[Layout] Save panels',
   LoadPanels = '[Layout] Load panels',
+  GetRecentProjects = '[Layout] Get recent projects',
+  UpdateRecentProjects = '[Layout] Update recent projects',
 }
 
 /**
@@ -182,10 +186,20 @@ export class ClearGoldenLayout implements Action {
   public readonly type = LayoutActionTypes.CLEAR_GOLDEN_LAYOUT;
 }
 
+/**
+ * Fired to get the recent projects.
+ */
+export class GetRecentProjects implements Action {
+  public readonly type = LayoutActionTypes.GET_RECENT_PROJECTS;
+
+  constructor(public readonly projects?: IRecentProject[]) {}
+}
+
 export type LayoutActions =
   | OpenScreen
   | SavePanels
   | OpenPanel
   | ClosePanel
   | SetGoldenLayout
-  | ClearGoldenLayout;
+  | ClearGoldenLayout
+  | GetRecentProjects;
