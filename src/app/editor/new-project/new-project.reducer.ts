@@ -10,6 +10,7 @@ import {
 
 export interface INewProjectState {
   screen: NewProjectScreen;
+  history: NewProjectScreen[];
   details?: Readonly<IPackageDetails>;
   directory?: string;
   template: string;
@@ -24,7 +25,8 @@ export interface IState extends fromRoot.IState {
 
 const initialState: INewProjectState = {
   screen: NewProjectScreen.Welcome,
-  template: 'preact',
+  history: [],
+  template: 'html',
   layout: 'fullscreen',
   isCreating: false,
 };
@@ -37,7 +39,23 @@ export function newProjectReducer(
     case NewProjectActionTypes.SET_TARGET_DIRECTORY:
       return { ...state, directory: action.directory };
     case NewProjectActionTypes.CHANGE_SCREEN:
-      return { ...state, screen: action.screen };
+      state.history.push(state.screen);
+      let nextScreen = NewProjectScreen.Welcome;
+      if (state.screen === NewProjectScreen.Welcome) {
+        nextScreen = NewProjectScreen.Template;
+      } else if (state.screen === NewProjectScreen.Layout) {
+        nextScreen = NewProjectScreen.PackageDetails;
+      } else if (state.screen === NewProjectScreen.Template) {
+        if (state.template === 'html') {
+          nextScreen = NewProjectScreen.PackageDetails;
+        } else {
+          nextScreen = NewProjectScreen.Layout;
+        }
+      }
+      return { ...state, screen: nextScreen };
+    case NewProjectActionTypes.GO_BACK:
+      const previousScreen = state.history.pop() || NewProjectScreen.Welcome;
+      return { ...state, screen: previousScreen };
     case NewProjectActionTypes.SET_LAYOUT:
       return { ...state, layout: action.layout };
     case NewProjectActionTypes.SET_PACKAGE_DETAILS:
