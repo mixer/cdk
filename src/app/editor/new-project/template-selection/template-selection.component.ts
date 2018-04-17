@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { ChangeScreen, SetTemplate, GoBack } from '../new-project.actions';
+import { ChangeScreen, GoBack, SetTemplate,  } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**

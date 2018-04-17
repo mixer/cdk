@@ -10,7 +10,7 @@ import * as fromRoot from '../../bedrock.reducers';
 import { ElectronService } from '../../electron.service';
 import { createRandomProjectName } from '../../shared/name-generator';
 import { projectNameValidator } from '../../shared/validators';
-import { SetDetails, StartCreating, GoBack } from '../new-project.actions';
+import { GoBack, SetDetails, StartCreating,  } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**

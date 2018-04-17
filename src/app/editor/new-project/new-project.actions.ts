@@ -41,8 +41,6 @@ export const enum NewProjectMethods {
  */
 export class ChangeScreen implements Action {
   public readonly type = NewProjectActionTypes.CHANGE_SCREEN;
-
-  constructor() {}
 }
 
 /**
@@ -50,8 +48,6 @@ export class ChangeScreen implements Action {
  */
 export class GoBack implements Action {
   public readonly type = NewProjectActionTypes.GO_BACK;
-
-  constructor() {}
 }
 
 /**

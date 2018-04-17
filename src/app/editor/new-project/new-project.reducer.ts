@@ -10,7 +10,7 @@ import {
 
 export interface INewProjectState {
   screen: NewProjectScreen;
-  history: Array<NewProjectScreen>;
+  history: NewProjectScreen[];
   details?: Readonly<IPackageDetails>;
   directory?: string;
   template: string;
@@ -54,7 +54,7 @@ export function newProjectReducer(
       }
       return { ...state, screen: nextScreen };
     case NewProjectActionTypes.GO_BACK:
-      let previousScreen = state.history.pop() || NewProjectScreen.Welcome;
+      const previousScreen = state.history.pop() || NewProjectScreen.Welcome;
       return { ...state, screen: previousScreen };
     case NewProjectActionTypes.SET_LAYOUT:
       return { ...state, layout: action.layout };
