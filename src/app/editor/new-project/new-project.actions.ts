@@ -20,6 +20,7 @@ export enum NewProjectScreen {
 
 export const enum NewProjectActionTypes {
   CHANGE_SCREEN = '[NewProject] Set Displayed Screen',
+  GO_BACK = '[NewProject] Navigate To The Previous Screen',
   SET_TARGET_DIRECTORY = '[NewProject] Set Target Directory',
   SET_LAYOUT = '[NewProject] Set Starter Layout',
   SET_TEMPLATE = '[NewProject] Set Quickstart File Template',
@@ -41,7 +42,16 @@ export const enum NewProjectMethods {
 export class ChangeScreen implements Action {
   public readonly type = NewProjectActionTypes.CHANGE_SCREEN;
 
-  constructor(public readonly screen: NewProjectScreen) {}
+  constructor() {}
+}
+
+/**
+ * Fired to navigate to the previous screen displayed in the modal.
+ */
+export class GoBack implements Action {
+  public readonly type = NewProjectActionTypes.GO_BACK;
+
+  constructor() {}
 }
 
 /**
@@ -124,6 +134,7 @@ export class ErrorCreating implements Action {
 
 export type NewProjectActions =
   | ChangeScreen
+  | GoBack
   | Cancel
   | SetTargetDirectory
   | SetLayout

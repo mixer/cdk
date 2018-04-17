@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { take } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { ChangeScreen, NewProjectScreen, SetTemplate, StartCreating } from '../new-project.actions';
+import { ChangeScreen, SetTemplate, GoBack } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**
@@ -27,21 +26,10 @@ export class TemplateSelectionComponent {
   }
 
   public next() {
-    this.store
-      .select(fromNewProject.projectSelector)
-      .pipe(take(1))
-      .subscribe(state => {
-        this.store.dispatch(
-          new StartCreating({
-            ...state.details!,
-            template: state.template,
-            dir: state.directory!,
-          }),
-        );
-      });
+    this.store.dispatch(new ChangeScreen());
   }
 
   public back() {
-    this.store.dispatch(new ChangeScreen(NewProjectScreen.PackageDetails));
+    this.store.dispatch(new GoBack());
   }
 }

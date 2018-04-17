@@ -10,7 +10,7 @@ import * as fromRoot from '../../bedrock.reducers';
 import { ElectronService } from '../../electron.service';
 import { createRandomProjectName } from '../../shared/name-generator';
 import { projectNameValidator } from '../../shared/validators';
-import { ChangeScreen, NewProjectScreen, SetDetails } from '../new-project.actions';
+import { SetDetails, StartCreating, GoBack } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**
@@ -65,11 +65,23 @@ export class AttributeSelectionComponent {
     data.license = data.license || 'Unlicensed'; // if they left license blank
 
     this.store.dispatch(new SetDetails(data));
-    this.store.dispatch(new ChangeScreen(NewProjectScreen.Template));
+
+    this.store
+      .select(fromNewProject.projectSelector)
+      .pipe(take(1))
+      .subscribe(state => {
+        this.store.dispatch(
+          new StartCreating({
+            ...state.details!,
+            template: state.template,
+            dir: state.directory!,
+          }),
+        );
+      });
   }
 
   public back() {
-    this.store.dispatch(new ChangeScreen(NewProjectScreen.Layout));
+    this.store.dispatch(new GoBack());
   }
 
   private checkProjectNameAvailable: AsyncValidatorFn = control => {

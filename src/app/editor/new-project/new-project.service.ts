@@ -60,7 +60,7 @@ export class NewProjectService {
         }
 
         this.store.dispatch(new forNewProject.SetTargetDirectory(dir));
-        this.store.dispatch(new forNewProject.ChangeScreen(forNewProject.NewProjectScreen.Layout));
+        this.store.dispatch(new forNewProject.ChangeScreen());
       })
       .catch(err => this.store.dispatch(new UnhandledError(err)));
   }

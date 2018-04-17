@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { ChangeScreen, NewProjectScreen, SetLayout } from '../new-project.actions';
+import { GoBack, SetLayout, ChangeScreen } from '../new-project.actions';
 import * as fromNewProject from '../new-project.reducer';
 
 /**
@@ -26,10 +26,10 @@ export class LayoutSelectionComponent {
   }
 
   public next() {
-    this.store.dispatch(new ChangeScreen(NewProjectScreen.PackageDetails));
+    this.store.dispatch(new ChangeScreen());
   }
 
   public back() {
-    this.store.dispatch(new ChangeScreen(NewProjectScreen.Welcome));
+    this.store.dispatch(new GoBack());
   }
 }
