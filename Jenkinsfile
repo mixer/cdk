@@ -7,7 +7,7 @@ node {
               checkout scm
           }
           stage("Install") {
-              sh 'npm install --no-package-lock'
+              sh 'npm install'
           }
           stage("Test") {
               sh 'npm run test:ci'
