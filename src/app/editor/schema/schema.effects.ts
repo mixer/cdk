@@ -17,6 +17,7 @@ import {
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService, RpcError } from '../electron.service';
+import { GetRecentProjects, LayoutMethod } from '../layout/layout.actions';
 import {
   IFullInteractiveVersion,
   ProjectActionTypes,
@@ -25,6 +26,7 @@ import {
 import { withLatestDirectory } from '../project/project.reducer';
 import { RpcToastComponent } from '../toasts/rpc-toast/rpc-toast.component';
 import { OpenToast } from '../toasts/toasts.actions';
+import { IRecentProject } from './../../../server/recent-projects';
 import {
   CopyWorldSchema,
   DeleteSnapshot,
@@ -56,11 +58,17 @@ export class SchemaEffects {
   public readonly loadOnProjectOpen = this.actions
     .ofType<SetOpenProject>(ProjectActionTypes.SET_OPEN_PROJECT)
     .pipe(
-      switchMap(({ project }) =>
-        this.electron.call<ISnapshot[]>(SchemaMethod.ListSnapshots, {
+      switchMap(({ project }) => {
+        this.electron
+          .call<string>(LayoutMethod.UpdateRecentProjects, {
+            project: project.directory,
+          })
+          .then(() => this.electron.call<IRecentProject[]>(LayoutMethod.GetRecentProjects))
+          .then(projects => this.store.dispatch(new GetRecentProjects(projects)));
+        return this.electron.call<ISnapshot[]>(SchemaMethod.ListSnapshots, {
           directory: project.directory,
-        }),
-      ),
+        });
+      }),
       switchMap(snapshots => {
         let mostRecent = snapshots.find(s => s.name === workingSnapshoptName);
         if (!mostRecent) {

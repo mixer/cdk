@@ -7,7 +7,7 @@
   <menu-bar-items>
     <menu-bar-item
       (click)="openDir()"
-      text="Open Folder">
+      [text]="(openAction | async)?.text || 'Open Folder'">
     </menu-bar-item>
     <menu-bar-item
       (click)="upload()"

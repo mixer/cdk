@@ -1,2 +1,3 @@
 <layout-topnav></layout-topnav>
+<layout-welcome *ngIf="!(showProjectScreen | async)"></layout-welcome>
 <layout-golden *ngIf="showProjectScreen | async"></layout-golden>

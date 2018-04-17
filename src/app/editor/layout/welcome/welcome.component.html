@@ -1,0 +1,26 @@
+<div class="welcome-header">
+  <h1>Control Development Kit</h1>
+</div>
+<div class="sections">
+  <div class="quick-links-section">
+    <div class="quick-links-header">Start</div>
+    <div class="quick-links-item" (click)="createNewProject()">New Project</div>
+    <div class="quick-links-item" (click)="openProject()">Open Project</div>
+  </div>
+  <div class="quick-links-section">
+    <div class="quick-links-header">Recent</div>
+    <ng-container *ngFor="let recent of (projects | async)">
+      <div
+        class="quick-links-item"
+        (click)="openRecentProject(recent.url)">
+        {{recent.name}}
+      </div>
+    </ng-container>
+  </div>
+  <div class="quick-links-section">
+    <div class="quick-links-header">Help</div>
+    <div class="quick-links-item" openExternal="https://dev.mixer.com">Documentation</div>
+    <div class="quick-links-item" openExternal="https://mixer.com/lab">Interactive Studio</div>
+    <div class="quick-links-item">About CDK</div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+:host {
+  user-select: none;
+  cursor: default;
+
+  .welcome-header {
+    margin: 30px 20px;
+  }
+
+  .sections {
+    display: flex;
+    flex: 1;
+    margin: 20px;
+
+    .quick-links-section {
+      flex: 1;
+      justify-content: center;
+
+      .quick-links-header {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+      }
+
+      .quick-links-item {
+        font-size: 0.9em;
+        margin: 5px 0;
+        color: rgb(85, 128, 248);
+        cursor: pointer;
+      }
+    }
+  }
+}

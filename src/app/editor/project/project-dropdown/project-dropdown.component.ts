@@ -3,6 +3,8 @@ import { Store } from '@ngrx/store';
 
 import { RequireAuth } from '../../account/account.actions';
 import * as fromRoot from '../../bedrock.reducers';
+import { ElectronService } from '../../electron.service';
+import { DirectoryOpener } from '../../shared/directory-opener';
 import { OpenUploader } from '../../uploader/uploader.actions';
 import { OpenDirectory, StartChangeLink } from '../project.actions';
 import * as fromProject from '../project.reducer';
@@ -32,7 +34,20 @@ export class ProjectDropdownComponent {
    */
   public project = fromProject.readOpen(this.store);
 
-  constructor(private readonly store: Store<fromRoot.IState>) {}
+  /**
+   * Directory opener helper.
+   */
+  public readonly opener = new DirectoryOpener(this.electron);
+
+  /**
+   * Program to use for opening the directory.
+   */
+  public openAction = this.opener.findProgram();
+
+  constructor(
+    private readonly store: Store<fromRoot.IState>,
+    private readonly electron: ElectronService,
+  ) {}
 
   /**
    * Opens the project directory.
