@@ -37,7 +37,7 @@ export class MemorizingSubject<T> extends Subject<T> {
   }
 
   // tslint:disable-next-line
-  protected _subscribe(subscriber: Subscriber<T>): Subscription {
+  _subscribe(subscriber: Subscriber<T>): Subscription {
     const subscription = super._subscribe(subscriber);
     if (subscription && this.hasSet && !(<ISubscription>subscription).closed) {
       subscriber.next(this.value);
