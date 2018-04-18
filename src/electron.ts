@@ -1,9 +1,12 @@
 import { app, BrowserWindow, Menu, MenuItem } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import * as fixPath from 'fix-path';
 import * as path from 'path';
 import * as url from 'url';
 
 import { ElectronServer } from './server/electron-server';
+
+autoUpdater.checkForUpdatesAndNotify().catch(err => err);
 
 let window: BrowserWindow | null = null;
 let server: ElectronServer;
