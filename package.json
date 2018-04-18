@@ -17,7 +17,7 @@
     "fmt:ts": "prettier --write \"{src,test,types}/**/*.{scss,js,ts}\"",
     "build:cli": "rimraf dist && tsc",
     "build:editor:pack": "npm run -s build:editor:base && electron-builder --dir",
-    "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --x64",
+    "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
