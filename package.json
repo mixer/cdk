@@ -35,6 +35,12 @@
       "output": "app",
       "buildResources": "."
     },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "include": "./installer.nsh"
+    },
     "files": [
       "./dist"
     ],
