@@ -6,7 +6,7 @@ import * as url from 'url';
 
 import { ElectronServer } from './server/electron-server';
 
-autoUpdater.checkForUpdatesAndNotify();
+autoUpdater.checkForUpdatesAndNotify().catch(err => err);
 
 let window: BrowserWindow | null = null;
 let server: ElectronServer;
