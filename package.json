@@ -1,6 +1,6 @@
 {
   "name": "@mixer/cdk",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "./dist/src/electron.js",
   "bin": {
@@ -17,6 +17,8 @@
     "fmt:ts": "prettier --write \"{src,test,types}/**/*.{scss,js,ts}\"",
     "build:cli": "rimraf dist && tsc",
     "build:editor:pack": "npm run -s build:editor:base && electron-builder --dir",
+    "build:editor:dist:win": "npm run -s build:editor:base && electron-builder --win --x64",
+    "build:editor:dist:mac": "npm run -s build:editor:base && electron-builder --mac --x64",
     "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
@@ -157,6 +159,7 @@
     "@mcph/miix-webpack-plugin": "^0.1.2",
     "chalk": "^2.3.0",
     "command-exists": "^1.2.2",
+    "electron-updater": "^2.21.4",
     "fix-path": "^2.1.0",
     "form-data": "^2.3.1",
     "json5": "^0.5.1",
