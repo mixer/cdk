@@ -19,7 +19,7 @@ export default async function(options: IUnpublishOptions): Promise<void> {
   const confirmation =
     `You about to unpublish version ${version} of your interactive` +
     `controls. This WILL BREAK the experience of anyone who is using this version.`;
-  if (!options.force && !await writer.confirm(confirmation, false)) {
+  if (!options.force && !(await writer.confirm(confirmation, false))) {
     writer.write('Aborted.');
     return;
   }

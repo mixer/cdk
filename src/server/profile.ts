@@ -175,7 +175,7 @@ export class Profile {
       return hostProfile;
     }
 
-    if (!await this.tryLoadFile()) {
+    if (!(await this.tryLoadFile())) {
       throw new NoAuthenticationError();
     } else if (!this.tokensObj!.granted(Profile.necessaryScopes)) {
       throw new NoAuthenticationError();

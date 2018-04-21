@@ -57,7 +57,7 @@ $color10: #ffffff; // Appears 2 time
   opacity: 0.001;
   transition: opacity 200ms ease;
 
-  &:hover, // When hovered by mouse...
+  &:hover, /* When hovered by mouse...*/
   &.lm_dragging {
     opacity: 1;
   }
@@ -117,7 +117,7 @@ $color10: #ffffff; // Appears 2 time
 }
 
 .lm_tab {
-  &:hover, // If Tab is hovered
+  &:hover, /* If Tab is hovered*/
   &.lm_active // If Tab is active, so if it's in foreground
  {
     background: $color-primary;

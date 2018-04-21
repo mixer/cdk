@@ -15,7 +15,7 @@ export default async function(options: IPublishOptions): Promise<void> {
   const confirmation =
     `You about to publish your interactive ` +
     `controls. This will make them accessible to everyone on Mixer.`;
-  if (!options.force && !await writer.confirm(confirmation)) {
+  if (!options.force && !(await writer.confirm(confirmation))) {
     writer.write('Aborted.');
     return;
   }

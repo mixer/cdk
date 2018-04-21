@@ -1,0 +1,33 @@
+@import '../../../assets/styles/declarations';
+
+:host {
+  width: 500px;
+  display: block;
+}
+
+.header {
+  img {
+    width: 64px;
+    margin-right: $dimension-gutter-md * (3 / 2);
+  }
+
+  h1 {
+    font-weight: normal;
+
+    small {
+      display: block;
+      font-size: 0.4em;
+    }
+  }
+}
+
+changelog {
+  max-height: 50vh;
+}
+
+footer {
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  color: $color-text-muted;
+}

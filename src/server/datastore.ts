@@ -68,7 +68,9 @@ export class FileDataStore implements IDataStore {
 
     return globalContents || localContents
       ? merge(globalContents, localContents)
-      : defaultValue !== undefined ? defaultValue : null;
+      : defaultValue !== undefined
+        ? defaultValue
+        : null;
   }
 
   public async saveGlobal<T>(file: string, value: T): Promise<void> {
