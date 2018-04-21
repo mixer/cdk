@@ -100,7 +100,7 @@ export class Quickstarter extends Task<void> {
     pkg.devDependencies[newPackage] = '^0.1.0';
 
     const webpackConfig = path.join(this.targetPath(), 'webpack.config.js');
-    if (!await exists(webpackConfig)) {
+    if (!(await exists(webpackConfig))) {
       return;
     }
 
@@ -113,7 +113,7 @@ export class Quickstarter extends Task<void> {
    */
   private async extractProject(res: Response) {
     this.emitPrompt('mkdir', this.targetPath());
-    if (!await exists(this.targetPath())) {
+    if (!(await exists(this.targetPath()))) {
       await mkdir(this.targetPath());
     }
 

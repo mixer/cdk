@@ -176,7 +176,8 @@ export class PublishHttpError extends UnexpectedHttpError {
         );
 
       case 'string.regex.base':
-        switch (invalid.path) { // quite possible we'll have more paths later
+        // quite possible we'll have more paths later
+        switch (invalid.path) {
           case 'id':
             return 'Your package name can only contain numbers, letters, and dashes.';
           default:

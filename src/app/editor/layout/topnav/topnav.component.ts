@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { map, take } from 'rxjs/operators';
 
+import { AboutModalComponent } from '../../about/about-modal/about-modal.component';
 import { RequireAuth } from '../../account/account.actions';
 import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
@@ -148,6 +149,13 @@ export class TopNavComponent {
    */
   public stopRemoteConnection() {
     this.store.dispatch(new SetRemoteState(RemoteState.Disconnected));
+  }
+
+  /**
+   * Opens the about modal.
+   */
+  public openAbout() {
+    this.dialog.open(AboutModalComponent);
   }
 
   /**

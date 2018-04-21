@@ -57,7 +57,7 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
    */
   protected async spawnChildProcess(): Promise<[T, ChildProcess]> {
     const config = await this.project.loadSetting('webpackConfigFile', 'webpack.config.js');
-    if (!await exists(this.project.baseDir(config))) {
+    if (!(await exists(this.project.baseDir(config)))) {
       throw new MissingWebpackConfig();
     }
 

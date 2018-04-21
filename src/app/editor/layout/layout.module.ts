@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
+import { AboutModule } from '../about/about.module';
 import { AccountModule } from '../account/account.module';
 import { ControlsConsoleModule } from '../controls-console/controls-console.module';
 import { ControlsModule } from '../controls/controls.module';
@@ -27,6 +28,7 @@ import { WorkspaceComponent } from './workspace/workspace.component';
  */
 @NgModule({
   imports: [
+    AboutModule,
     AccountModule,
     CommonModule,
     ControlsConsoleModule,

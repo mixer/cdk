@@ -10,8 +10,10 @@ export let AppConfig: {
   production: boolean;
   environment: string;
   version: string;
+  builtAt: Date;
 } = <any>{
   version: VERSION,
+  builtAt: new Date(1524270905074),
 };
 
 console.log('environment:', ENV);

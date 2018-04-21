@@ -1,0 +1,18 @@
+<div mat-dialog-content>
+  <div class="header layout-row layout-align-start-center">
+    <img src="assets/images/icon.svg" class="CDK">
+    <h1>
+      Control Development Kit
+      <small>Version {{ version }} built on {{ builtAt | amDateFormat: 'YYYY-MM-DD' }} in Redmond, WA.</small>
+    </h1>
+  </div>
+  <about-changelog></about-changelog>
+</div>
+
+<div mat-dialog-actions>
+  <footer>
+    <span>Copyright Microsoft. <a class="body-link" (click)="openLicenses()">Show Licenses</a>.</span>
+  </footer>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="dialog.close()">Close</button>
+</div>
