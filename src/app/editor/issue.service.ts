@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { cloneDeep } from 'lodash';
 import { stringify } from 'querystring';
-import { switchMap, take, withLatestFrom } from 'rxjs/operators';
+import { switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 
+import { MatSnackBar } from '@angular/material';
 import { currentUser } from './account/account.reducer';
 import { CommonMethods } from './bedrock.actions';
 import * as forRoot from './bedrock.reducers';
@@ -44,6 +45,7 @@ export class IssueService {
   constructor(
     private readonly electron: ElectronService,
     private readonly store: Store<forRoot.IState>,
+    private readonly snack: MatSnackBar,
   ) {}
 
   /**
@@ -61,6 +63,8 @@ export class IssueService {
   }
 
   private sendReport(title: string, body: string, metadata?: any) {
+    const snack = this.snack.open('Recording error details...');
+
     this.store
       .pipe(
         take(1),
@@ -72,6 +76,7 @@ export class IssueService {
             })
             .catch(() => null),
         ),
+        tap(() => snack.dismiss()),
         withLatestFrom(this.store.select(currentUser)),
       )
       .subscribe(([encrypted, user]) => {
