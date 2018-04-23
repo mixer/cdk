@@ -1,31 +1,35 @@
+@import '../../../assets/styles/declarations';
+
 :host {
   user-select: none;
   cursor: default;
+}
 
-  .welcome-header {
-    margin: 30px 20px;
-  }
+.welcome-header {
+  margin: $dimension-gutter-lg;
+}
 
-  .sections {
-    display: flex;
-    flex: 1;
-    margin: 20px;
+.sections {
+  margin: $dimension-gutter-md;
 
-    .quick-links-section {
-      flex: 1;
-      justify-content: center;
+  .quick-links-section {
+    justify-content: center;
 
-      .quick-links-header {
-        font-size: 1.2em;
-        margin-bottom: 10px;
-      }
+    .quick-links-header {
+      font-size: 1.2em;
+      margin-bottom: 0.9em;
+    }
 
-      .quick-links-item {
-        font-size: 0.9em;
-        margin: 5px 0;
-        color: rgb(85, 128, 248);
-        cursor: pointer;
-      }
+    .quick-links-item {
+      font-size: 0.9em;
+      margin: $dimension-gutter-sm 0;
+      color: rgb(85, 128, 248);
+      cursor: pointer;
     }
   }
+}
+
+.placeholder {
+  font-size: 0.9em;
+  color: $color-text-muted;
 }
