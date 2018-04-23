@@ -107,3 +107,8 @@
 .hljs-selector-id {
   color: #f92672;
 }
+
+// @see https://github.com/xtermjs/xterm.js/issues/692
+.xterm-selection-layer {
+  mix-blend-mode: exclusion;
+}
