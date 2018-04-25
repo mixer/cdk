@@ -1,6 +1,5 @@
 # Changelog
 
-<a name="v0.3.0"></a>
-### v0.3.0 (TBA)
+### v1.0.0
 
- - Everything is rewritten
+ - Initial public release
