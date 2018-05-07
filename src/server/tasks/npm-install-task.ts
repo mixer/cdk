@@ -14,6 +14,7 @@ export class NpmInstallTask extends ConsoleTask<void> {
    * Boots the webpack dev server. Returns
    */
   protected async spawnChildProcess(): Promise<[void, ChildProcess]> {
+    process.env.NODE_ENV = 'development';
     const childProcess = spawn('npm', ['install', '-d', '--color=always'], {
       cwd: this.directory,
       env: process.env,
