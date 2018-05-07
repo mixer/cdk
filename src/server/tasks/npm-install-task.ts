@@ -16,7 +16,10 @@ export class NpmInstallTask extends ConsoleTask<void> {
   protected async spawnChildProcess(): Promise<[void, ChildProcess]> {
     const childProcess = spawn('npm', ['install', '-d', '--color=always'], {
       cwd: this.directory,
-      env: process.env,
+      env: {
+        ...process.env,
+        NODE_ENV: 'development',
+      },
       shell: true,
     });
 
