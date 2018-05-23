@@ -52,7 +52,12 @@ export interface IDevice {
   /**
    * Display returns blocks for the device.
    */
-  display(availableWidth: number, availableHeight: number, orientation: Orientation): IBlock[];
+  display(
+    availableWidth: number,
+    availableHeight: number,
+    fit: boolean,
+    orientation: Orientation,
+  ): IBlock[];
 }
 
 function fitRatio(ratio: number, width: number, height: number): [number, number] {
@@ -78,10 +83,17 @@ class DesktopDevice implements IDevice {
   public readonly displayName = 'Web View (16:9)';
   public readonly canRotate = false;
 
-  public display(availableWidth: number, availableHeight: number): IBlock[] {
+  public display(availableWidth: number, availableHeight: number, exact: boolean): IBlock[] {
     // The goal here is to pretend the scene is 1080p, then scale the 350px
     // default chat sidebar to its scaled size.
-    const [width, height] = fitRatio(16 / 9, availableWidth, availableHeight);
+    let width: number;
+    let height: number;
+    if (!exact) {
+      [width, height] = fitRatio(16 / 9, availableWidth, availableHeight);
+    } else {
+      [width, height] = [availableWidth, availableHeight];
+    }
+
     const chatWidth = 350 / 1920 * availableWidth;
 
     return [
@@ -89,7 +101,7 @@ class DesktopDevice implements IDevice {
         x: displayPadding,
         y: displayPadding,
         width: width - chatWidth - displayPadding * 2,
-        height: height - displayPadding,
+        height: height - displayPadding * 2,
         type: 'controls',
       },
       {
@@ -113,10 +125,16 @@ class FullscreenDevice implements IDevice {
   public readonly displayName = 'Full Screen (16:9)';
   public readonly canRotate = false;
 
-  public display(availableWidth: number, availableHeight: number): IBlock[] {
+  public display(availableWidth: number, availableHeight: number, exact: boolean): IBlock[] {
     // The goal here is to pretend the scene is 1080p, then scale the 350px
     // default chat sidebar to its scaled size.
-    const [width, height] = fitRatio(16 / 9, availableWidth, availableHeight);
+    let width: number;
+    let height: number;
+    if (!exact) {
+      [width, height] = fitRatio(16 / 9, availableWidth, availableHeight);
+    } else {
+      [width, height] = [availableWidth, availableHeight];
+    }
 
     return [
       {
@@ -145,34 +163,41 @@ class MobileDevice implements IDevice {
     private readonly width: number,
   ) {}
 
-  public display(_w: number, _h: number, orientation: Orientation): IBlock[] {
+  public display(
+    availableWidth: number,
+    availableHeight: number,
+    exact: boolean,
+    orientation: Orientation,
+  ): IBlock[] {
+    const height = exact ? availableHeight : this.height;
+    const width = exact ? availableWidth : this.width;
     if (orientation === Orientation.Landscape) {
       return [
         {
           x: 0,
           y: 0,
-          width: this.width,
-          height: this.height,
+          width,
+          height,
           type: 'controls',
         },
       ];
     }
 
-    const videoHeight = this.height * 9 / 16;
+    const videoHeight = height * 9 / 16;
 
     return [
       {
         x: 0,
         y: 0,
-        width: this.height,
+        width: height,
         height: videoHeight,
         type: 'video',
       },
       {
         x: 0,
         y: videoHeight,
-        width: this.height,
-        height: this.width - videoHeight,
+        width: height,
+        height: width - videoHeight,
         type: 'controls',
       },
     ];

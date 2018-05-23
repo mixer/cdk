@@ -1,4 +1,4 @@
-import { IScene } from '@mcph/miix-std/dist/internal';
+import { IScene } from '@mixer/cdk-std/dist/internal';
 import { Action } from '@ngrx/store';
 
 import { IPackageJson } from '../../../server/project';

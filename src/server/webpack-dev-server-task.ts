@@ -1,4 +1,4 @@
-import { notificationEnv } from '@mcph/miix-webpack-plugin/dist/src/notifier';
+import { notificationEnv } from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import * as portfinder from 'portfinder';
 import { filter } from 'rxjs/operators';

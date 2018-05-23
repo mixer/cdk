@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { ISettings, IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
+import { ISettings, IVideoPositionOptions } from '@mixer/cdk-std/dist/internal';
 import * as fromRoot from '../bedrock.reducers';
 import { devices, IDevice } from './devices';
 import {

@@ -3,7 +3,7 @@ import {
   Notification,
   NotificationType,
   readNotification,
-} from '@mcph/miix-webpack-plugin/dist/src/notifier';
+} from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 

@@ -20,12 +20,7 @@
     [style.left.px]="controlsBlock?.x"
     [style.width.px]="controlsBlock?.width"
     [style.height.px]="controlsBlock?.height">
-    <div class="block block-video"
-      *ngIf="!hasStubbedVideo"
-      [style.top.px]="(videoFilledSize | async)?.top"
-      [style.left.px]="(videoFilledSize | async)?.left"
-      [style.width.px]="(videoFilledSize | async)?.width"
-      [style.height.px]="(videoFilledSize | async)?.height">
+    <div class="block block-video" *ngIf="!hasStubbedVideo" #videoBlock>
       <div></div>
     </div>
     <ng-content></ng-content>

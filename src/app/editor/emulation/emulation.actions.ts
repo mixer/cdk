@@ -1,4 +1,4 @@
-import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
+import { IVideoPositionOptions } from '@mixer/cdk-std/dist/internal';
 import { Action } from '@ngrx/store';
 import { IDevice } from './devices';
 

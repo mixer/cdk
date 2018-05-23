@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RPC } from '@mcph/miix-std/dist/internal';
+import { RPC } from '@mixer/cdk-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 

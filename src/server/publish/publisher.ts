@@ -1,4 +1,4 @@
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
+import { IPackageConfig } from '@mixer/cdk-std/dist/internal';
 import { PublishHttpError, PublishPrivateError } from '../errors';
 import { IRequester } from '../util';
 

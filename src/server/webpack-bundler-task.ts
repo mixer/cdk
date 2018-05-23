@@ -1,11 +1,11 @@
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
-import { bundleEnv } from '@mcph/miix-webpack-plugin/dist/src/bundle-emitter';
+import { IPackageConfig } from '@mixer/cdk-std/dist/internal';
+import { bundleEnv } from '@mixer/cdk-webpack-plugin/dist/src/bundle-emitter';
 import {
   IBundleCreated,
   Notification,
   notificationEnv,
   NotificationType,
-} from '@mcph/miix-webpack-plugin/dist/src/notifier';
+} from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { switchMap, take } from 'rxjs/operators';
