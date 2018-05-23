@@ -4,6 +4,7 @@ import { IUser } from '../../../server/profile';
 export const enum AccountActionTypes {
   START_LOGOUT = '[Account] Start Logout',
   FINISH_LOGOUT = '[Account] Finish Logout',
+  SWITCH_ACCOUNTS = '[Account] Log out and in again',
   OPEN_LOGIN_FLOW = '[Account] Open Login Flow',
   SET_LOGGED_IN_ACCOUNT = '[Account] Set logged in account',
   LINK_SET_CODE = '[Account] Set linking code',
@@ -66,9 +67,19 @@ export class RequireAuth implements Action {
   constructor(public readonly successAction: Action, public readonly failedAction?: Action) {}
 }
 
+/**
+ * Changes the account the user is logged into.
+ */
+export class SwitchAccounts implements Action {
+  public readonly type = AccountActionTypes.SWITCH_ACCOUNTS;
+
+  constructor(public readonly successAction?: Action, public readonly failedAction?: Action) {}
+}
+
 export type AccountActions =
   | StartLogout
   | FinishLogout
   | SetLoggedInAccount
   | SetLinkCode
-  | CancelLinking;
+  | CancelLinking
+  | SwitchAccounts;

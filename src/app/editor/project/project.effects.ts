@@ -19,6 +19,7 @@ import {
   LoadOwnedGames,
   ProjectActionTypes,
   ProjectMethods,
+  RenameProject,
   RequireLink,
   SetInteractiveGame,
   SetOpenProject,
@@ -60,7 +61,7 @@ export class ProjectEffects {
             directory: action.directory,
           })
           .then(results => new SetOpenProject(results))
-          .catch(RpcError, (err: RpcError) => new forToast.OpenToast(ErrorToastComponent, err)),
+          .catch(RpcError, err => new forToast.OpenToast(ErrorToastComponent, err)),
       ),
     );
 
@@ -93,6 +94,23 @@ export class ProjectEffects {
           .call(ProjectMethods.LinkGameToControls, { game, directory })
           .catch(RpcError, () => undefined),
       ),
+    );
+
+  /**
+   * Updates the name of the project package.json.
+   */
+  @Effect()
+  public readonly renameProejct = this.actions
+    .ofType<RenameProject>(ProjectActionTypes.RENAME_PROJECT)
+    .pipe(
+      withLatestDirectory(this.store),
+      switchMap(([{ newName }, directory]) =>
+        this.electron
+          .call(ProjectMethods.RenameProject, { directory, name: newName })
+          .return()
+          .catch(RpcError, err => new forToast.OpenToast(ErrorToastComponent, err)),
+      ),
+      filter(action => !!action),
     );
 
   /**

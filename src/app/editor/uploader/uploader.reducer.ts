@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
+import { BundleNameTakenError } from '../../../server/errors';
 
 import * as fromRoot from '../bedrock.reducers';
 import { WebpackState } from '../controls/controls.actions';
@@ -38,7 +39,9 @@ export function uploaderReducer(
     case UploaderActionTypes.SET_SCREEN:
       return { ...state, screen: action.screen };
     case UploaderActionTypes.SET_ERROR:
-      return { ...state, error: action.error };
+      return action.error.originalName === BundleNameTakenError.name
+        ? { ...state, screen: UploaderScreen.Rename }
+        : { ...state, error: action.error };
     case UploaderActionTypes.UPLOADER_CLOSED:
       return { ...state, screen: UploaderScreen.Confirming, error: undefined };
     default:

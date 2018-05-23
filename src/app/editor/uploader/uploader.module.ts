@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
+  ErrorStateMatcher,
   MatButtonModule,
   MatCheckboxModule,
   MatDialogModule,
+  MatFormFieldModule,
+  MatInputModule,
   MatProgressSpinnerModule,
 } from '@angular/material';
 import { EffectsModule } from '@ngrx/effects';
@@ -18,10 +21,13 @@ import { UploaderConfirmingComponent } from './uploader-confirming/uploader-conf
 import { UploaderConsoleService } from './uploader-console.service';
 import { UploaderDialogComponent } from './uploader-dialog/uploader-dialog.component';
 import { UploaderLinkingGameComponent } from './uploader-linking-game/uploader-linking-game.component';
+import { UploaderRenameComponent } from './uploader-rename/uploader-rename.component';
 import { UploaderUploadingControls } from './uploader-uploading-controls/uploader-uploading-controls.component';
 import { UploaderUploadingSchema } from './uploader-uploading-schema/uploader-uploading-schema.component';
 import { UploaderEffects } from './uploader.effects';
 import { uploaderReducer } from './uploader.reducer';
+
+const errorStateMatcher = { isErrorState: (ctrl: FormControl) => ctrl.invalid };
 
 /**
  * Module containing the flow to upload a control bundle to Mixer.
@@ -36,17 +42,21 @@ import { uploaderReducer } from './uploader.reducer';
     MatButtonModule,
     MatCheckboxModule,
     MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatProgressSpinnerModule,
+    ReactiveFormsModule,
     SharedModule,
     StoreModule.forFeature('uploader', uploaderReducer),
   ],
   entryComponents: [UploaderDialogComponent],
-  providers: [UploaderConsoleService],
+  providers: [UploaderConsoleService, { provide: ErrorStateMatcher, useValue: errorStateMatcher }],
   declarations: [
     UploaderCompletedComponent,
     UploaderConfirmingComponent,
     UploaderDialogComponent,
     UploaderLinkingGameComponent,
+    UploaderRenameComponent,
     UploaderUploadingControls,
     UploaderUploadingControls,
     UploaderUploadingSchema,

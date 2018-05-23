@@ -22,6 +22,7 @@ export const enum UploaderMethods {
 
 export enum UploaderScreen {
   Confirming,
+  Rename,
   UploadingSchema,
   UploadingControls,
   LinkingGame,

@@ -72,12 +72,14 @@ export const enum ProjectActionTypes {
   LOAD_OWNED_GAMES = '[Project] Load games the user owns',
   SET_OWNED_GAMES = '[Project] Set games the user owns',
   REQUIRE_LINK = '[Project] Require project link',
+  RENAME_PROJECT = '[Project] Rename project',
 }
 
 export const enum ProjectMethods {
   OpenDirectory = '[Project] Open directory',
   LinkGameToControls = '[Project] Link game to controls',
   GetOwnedGames = '[Project] Get owned games',
+  RenameProject = '[Project] Rename',
 }
 
 /**
@@ -176,6 +178,15 @@ export class RequireLink implements Action {
   ) {}
 }
 
+/**
+ * Renames the currently open project.
+ */
+export class RenameProject implements Action {
+  public readonly type = ProjectActionTypes.RENAME_PROJECT;
+
+  constructor(public readonly newName: string) {}
+}
+
 export type ProjectActions =
   | CloseProject
   | StartOpenProject
@@ -185,4 +196,5 @@ export type ProjectActions =
   | OpenDirectory
   | LoadOwnedGames
   | SetOwnedGames
-  | RequireLink;
+  | RequireLink
+  | RenameProject;

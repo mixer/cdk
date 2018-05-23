@@ -222,6 +222,17 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   },
 
   /**
+   * Links the Interactive game to the set of controls.
+   */
+  [forProject.ProjectMethods.RenameProject]: async (options: {
+    name: string;
+    directory: string;
+  }) => {
+    const project = new Project(options.directory);
+    await project.putPackageJson({ ...(await project.packageJson()), name: options.name });
+  },
+
+  /**
    * Boots a webpack server, which asynchronously sends updates down to the
    * renderer. It'll run until it crashes or StopWebpack is called.
    */

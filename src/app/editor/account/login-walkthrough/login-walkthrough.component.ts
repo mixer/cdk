@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, Output } from '@angular/
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { filter, map } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, skip } from 'rxjs/operators';
 
 import { IUser } from '../../../../server/profile';
 import * as fromRoot from '../../bedrock.reducers';
@@ -23,12 +23,15 @@ import * as fromAccount from '../account.reducer';
 })
 export class LoginWalkthroughComponent implements OnDestroy {
   /**
-   * Emits once the user logs in.
+   * Emits once the user logs in. We skip the first emission because we want
+   * to wait for the account to truthy and _changed_, e.g. if someone is
+   * switching accounts they'll already be logged in but we want to
+   * close when they change accoutns.
    */
   @Output()
   public loggedIn: Observable<IUser> = this.store
     .select(fromAccount.currentUser)
-    .pipe(filter<IUser>(user => !!user));
+    .pipe(distinctUntilChanged(), skip(1), filter<IUser>(user => !!user));
 
   /**
    * code is the shortcode to display to the user that they need to enter
