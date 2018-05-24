@@ -12,6 +12,7 @@ import { MissingWebpackConfig } from './errors';
 import { Project } from './project';
 import { ConsoleTask } from './tasks/console-task';
 import { exists } from './util';
+import { NpmInstallTask } from './tasks/npm-install-task';
 
 /**
  * Just making a note of some investigations here. *Ideally* I wanted to embed
@@ -61,8 +62,14 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
       throw new MissingWebpackConfig();
     }
 
-    const [out, process] = await this.startWebpack(config);
     this.state.next(WebpackState.Starting);
+
+    if (!(await exists(this.project.baseDir('node_modules')))) {
+      this.data.next('Node modules not found, starting installation. This may take a minute.\n');
+      await this.installNodeModules();
+    }
+
+    const [out, process] = await this.startWebpack(config);
 
     process.on('exit', code => {
       if (code === 0) {
@@ -80,6 +87,16 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
    */
   protected beforeStop() {
     this.state.next(WebpackState.Stopping);
+  }
+
+  /**
+   * Runs npm install. This is called when starting webpack if we detect
+   * that the user doesn't have their modules installed.
+   */
+  protected async installNodeModules() {
+    const task = new NpmInstallTask(this.project.baseDir());
+    task.data.subscribe(data => this.data.next(data));
+    await this.awaitSubtask(task);
   }
 
   /**
