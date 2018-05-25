@@ -4,24 +4,42 @@ import * as fixPath from 'fix-path';
 import * as path from 'path';
 import * as url from 'url';
 
+import { ElectronWindowState } from './electron-window-state';
 import { ElectronServer } from './server/electron-server';
 
 autoUpdater.checkForUpdatesAndNotify().catch(err => err);
 
-let window: BrowserWindow | null = null;
+let hasOpenWindow = false;
 let server: ElectronServer;
 
+const windowState = new ElectronWindowState();
 const isDebug = process.argv.includes('--debug');
+
 fixPath();
 
-function createWindow() {
-  window = new BrowserWindow({
-    width: 1280,
-    height: 720,
-    webPreferences: {
-      webSecurity: false,
-    },
-  });
+/**
+ * Creates a new BrowserWindow, seeding config from the stored state.
+ */
+async function createBrowserWindow() {
+  return windowState
+    .restore()
+    .catch(() => ({}))
+    .then(
+      windowOptions =>
+        new BrowserWindow({
+          width: 1280,
+          height: 720,
+          ...windowOptions,
+          webPreferences: {
+            webSecurity: false,
+          },
+        }),
+    );
+}
+
+function setupWindow(window: BrowserWindow) {
+  hasOpenWindow = true;
+  windowState.watch(window).catch(() => undefined);
 
   if (isDebug) {
     // tslint:disable-next-line
@@ -59,16 +77,26 @@ function createWindow() {
     );
   }
 
-  window.on('closed', () => (window = null));
+  window.on('closed', () => (hasOpenWindow = false));
   window.setMenu(null);
 
   server = new ElectronServer(window);
   server.start();
 }
 
-app.on('ready', createWindow);
+function boot() {
+  createBrowserWindow()
+    .then(setupWindow)
+    .catch(() => undefined);
+}
+
+app.on('ready', boot);
 
 app.on('window-all-closed', () => {
+  if (!server) {
+    return;
+  }
+
   server
     .stop()
     .catch(() => undefined)
@@ -79,7 +107,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (window === null) {
-    createWindow();
+  if (!hasOpenWindow) {
+    boot();
   }
 });
