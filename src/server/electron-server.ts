@@ -17,7 +17,7 @@ import * as forUploader from '../app/editor/uploader/uploader.actions';
 import { spawn } from 'child_process';
 import { IRemoteError } from '../app/editor/electron.service';
 import { FileDataStore } from './datastore';
-import { hasMetadata, NoAuthenticationError } from './errors';
+import { hasMetadata, NoAuthenticationError, ProjectNotFoundError } from './errors';
 import { OpenBuilder } from './file-selector';
 import { IssueTracker } from './issue-tracker';
 import { NodeChecker } from './node-checker';
@@ -29,7 +29,7 @@ import { Quickstarter } from './quickstart';
 import { RecentProjects } from './recent-projects';
 import { SnapshotStore } from './snapshot-store';
 import { TaskList } from './tasks/task';
-import { Fetcher } from './util';
+import { exists, Fetcher } from './util';
 import { WebpackBundleTask } from './webpack-bundler-task';
 import { WebpackDevServer } from './webpack-dev-server-task';
 
@@ -155,6 +155,10 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     return await new RecentProjects().updateProjects(options.project);
   },
 
+  [forLayout.LayoutMethod.RemoveRecentProject]: async (options: { directory: string }) => {
+    return await new RecentProjects().removeProject(options.directory);
+  },
+
   [forLayout.LayoutMethod.GetRecentProjects]: async () => {
     return await new RecentProjects().loadProjects();
   },
@@ -192,8 +196,11 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
    */
   [forProject.ProjectMethods.OpenDirectory]: async (options: { directory: string }) => {
     const store = new FileDataStore();
-    const project = new Project(options.directory);
+    if (!(await exists(options.directory))) {
+      throw new ProjectNotFoundError();
+    }
 
+    const project = new Project(options.directory);
     const json = await project.packageJson(); // validate the package is there, throws if not
 
     return <forProject.IProject>{

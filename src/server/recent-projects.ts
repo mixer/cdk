@@ -10,40 +10,40 @@ export interface IRecentProject {
  * Loads and updates the recent projects used in CDK.
  */
 export class RecentProjects {
+  /**
+   * Maximum number of recent projects to store.
+   */
+  public static readonly maxRecentProject = 8;
+
   constructor(private readonly store: IDataStore = new FileDataStore()) {}
 
-  public async loadProjects(): Promise<IRecentProject[] | null> {
-    return await this.store.loadGlobal<IRecentProject[]>('recent');
+  public async loadProjects(): Promise<IRecentProject[]> {
+    return (await this.store.loadGlobal<IRecentProject[]>('recent')) || [];
   }
 
-  public async updateProjects(url: string): Promise<void> {
-    let projects = await this.loadProjects();
-    if (!projects) {
-      projects = [];
-    }
-    const project = new Project(url);
-    const pkg = await project.packageJson();
-    const name = pkg.name;
+  /**
+   * Removes a project from the list of recent projects.
+   */
+  public async removeProject(directory: string) {
+    const projects = (await this.loadProjects()) || [];
+    await this.store.saveGlobal('recent', projects.filter(p => p.url !== directory));
+  }
 
-    const index = projects.findIndex(e => e.url === url);
+  /**
+   * Adds a project to the list of recent projects.
+   */
+  public async updateProjects(directory: string): Promise<void> {
+    const projects = (await this.loadProjects()).filter(p => p.url !== directory);
+    const pkg = await new Project(directory).packageJson();
 
-    if (index >= 0) {
-      projects.splice(index, 1);
-    }
+    projects.unshift({
+      name: pkg.name,
+      url: directory,
+    });
 
-    const newProjects: IRecentProject[] = [
-      {
-        name,
-        url,
-      },
-    ];
-
-    for (let i = 0; i < 4; i++) {
-      if (projects[i]) {
-        newProjects.push(projects[i]);
-      }
-    }
-
-    return await this.store.saveGlobal('recent', newProjects);
+    return await this.store.saveGlobal(
+      'recent',
+      projects.slice(0, RecentProjects.maxRecentProject),
+    );
   }
 }

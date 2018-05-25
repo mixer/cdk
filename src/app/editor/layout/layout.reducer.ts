@@ -62,6 +62,11 @@ export function layoutReducer(
       return { ...state, goldenLayout: null };
     case LayoutActionTypes.GET_RECENT_PROJECTS:
       return { ...state, recent: action.projects || null };
+    case LayoutActionTypes.REMOVE_RECENT_PROJECT:
+      return {
+        ...state,
+        recent: state.recent ? state.recent.filter(s => s.url !== action.directory) : null,
+      };
     default:
       return state;
   }

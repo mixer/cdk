@@ -11,8 +11,8 @@ import { WebpackState } from '../app/editor/controls/controls.actions';
 import { MissingWebpackConfig } from './errors';
 import { Project } from './project';
 import { ConsoleTask } from './tasks/console-task';
-import { exists } from './util';
 import { NpmInstallTask } from './tasks/npm-install-task';
+import { exists } from './util';
 
 /**
  * Just making a note of some investigations here. *Ideally* I wanted to embed
