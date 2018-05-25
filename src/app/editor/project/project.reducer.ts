@@ -34,6 +34,14 @@ export function projectReducer(state: IProjectState = {}, action: ProjectActions
   switch (action.type) {
     case ProjectActionTypes.SET_GAME_LINK:
       return { ...state, project: { ...state.project, interactiveGame: action.game } };
+    case ProjectActionTypes.UNSET_GAME_LINK:
+      return {
+        ...state,
+        project: {
+          ...state.project,
+          interactiveGame: null,
+        },
+      };
     case ProjectActionTypes.SET_CONFIRM_SCHEMA:
       return { ...state, project: { ...state.project, confirmSchemaUpload: action.confirm } };
     case ProjectActionTypes.RENAME_PROJECT:

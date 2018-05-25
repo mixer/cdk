@@ -3,7 +3,7 @@ import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { IInteractiveGame, SetInteractiveGame } from '../project.actions';
+import { IInteractiveGame, SetInteractiveGame, UnlinkInteractiveGame } from '../project.actions';
 import * as fromProject from '../project.reducer';
 
 /**
@@ -31,10 +31,18 @@ export class LinkProjectDialogComponent {
   ) {}
 
   /**
-   * Deletes a snapshot from the store.
+   * Unlink a game from the project.
    */
   public link(project: IInteractiveGame) {
     this.store.dispatch(new SetInteractiveGame(project));
     this.dialog.close(project);
+  }
+
+  /**
+   * Unlinks the linked game from the control.
+   */
+  public unlink() {
+    this.store.dispatch(new UnlinkInteractiveGame());
+    this.dialog.close(undefined);
   }
 }

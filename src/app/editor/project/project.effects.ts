@@ -106,6 +106,21 @@ export class ProjectEffects {
     );
 
   /**
+   * Persists a link to an interactive project to the server.
+   */
+  @Effect({ dispatch: false })
+  public readonly unsetLinkedVersion = this.actions
+    .ofType<SetInteractiveGame>(ProjectActionTypes.UNSET_GAME_LINK)
+    .pipe(
+      withLatestDirectory(this.store),
+      switchMap(([, directory]) =>
+        this.electron
+          .call(ProjectMethods.UnlinkGameFromControls, { directory })
+          .catch(RpcError, () => undefined),
+      ),
+    );
+
+  /**
    * Updates the name of the project package.json.
    */
   @Effect()

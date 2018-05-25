@@ -42,6 +42,8 @@ describe('FileDataStore', () => {
     expect(await exists(path.join(homedir(), '.miix', 'foo.json'))).to.be.false;
     await store.saveGlobal('foo', true);
     expect(await readFile(path.join(homedir(), '.miix', 'foo.json'))).to.equal('true');
+    await store.saveGlobal('foo', undefined);
+    expect(await exists(path.join(homedir(), '.miix', 'foo.json'))).to.be.false;
   });
 
   it('saves project data correctly', async () => {
@@ -50,6 +52,8 @@ describe('FileDataStore', () => {
     await store.saveProject('foo', projdir(), true);
     expect(await readFile(path.join(projdir(), '.miix', 'foo.json'))).to.equal('true');
     expect(await readFile(path.join(projdir(), '.gitignore'))).to.equal('\n/.miix\n');
+    await store.saveProject('foo', projdir(), undefined);
+    expect(await exists(path.join(projdir(), '.miix', 'foo.json'))).to.be.false;
   });
 
   it('saves project data correctly', async () => {

@@ -12,6 +12,13 @@ export async function readFile(file: string): Promise<string> {
 }
 
 /**
+ * Promisified fs.unlink
+ */
+export async function unlink(file: string): Promise<void> {
+  return promiseCallback(callback => fs.unlink(file, callback));
+}
+
+/**
  * Promisified fs.writeFile
  */
 export async function writeFile(file: string, contents: string | Buffer): Promise<void> {

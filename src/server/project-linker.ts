@@ -52,6 +52,13 @@ export class ProjectLinker {
   }
 
   /**
+   * Gets rid of any previous game link.
+   */
+  public async unlinkGame() {
+    await this.project.saveSetting(storageKey, undefined);
+  }
+
+  /**
    * Returns the linked Interactive game if any.
    */
   public async getLinked(): Promise<IInteractiveGame | null> {

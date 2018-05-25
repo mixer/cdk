@@ -1,7 +1,7 @@
 import { isPlainObject, merge } from 'lodash';
 import * as os from 'os';
 import * as path from 'path';
-import { appendFile, exists, mkdir, readFile, writeFile } from './util';
+import { appendFile, exists, mkdir, readFile, unlink, writeFile } from './util';
 
 /**
  * IDataStore is a system-aware store for project files and settings.
@@ -74,13 +74,25 @@ export class FileDataStore implements IDataStore {
   }
 
   public async saveGlobal<T>(file: string, value: T): Promise<void> {
+    const filePath = this.filePath(this.homedir, file);
     await this.ensureMiixFolderInDir(this.homedir, false);
-    await writeFile(this.filePath(this.homedir, file), JSON.stringify(value, null, 2));
+
+    if (value === undefined) {
+      await unlink(filePath);
+    } else {
+      await writeFile(filePath, JSON.stringify(value, null, 2));
+    }
   }
 
   public async saveProject<T>(file: string, projectPath: string, value: T): Promise<void> {
+    const filePath = this.filePath(projectPath, file);
     await this.ensureMiixFolderInDir(projectPath, true);
-    await writeFile(this.filePath(projectPath, file), JSON.stringify(value, null, 2));
+
+    if (value === undefined) {
+      await unlink(filePath);
+    } else {
+      await writeFile(filePath, JSON.stringify(value, null, 2));
+    }
   }
 
   private filePath(base: string, file: string) {

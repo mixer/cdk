@@ -66,6 +66,7 @@ export const enum ProjectActionTypes {
   TRY_OPEN_PROJECT = '[Project] Attempt to open a directory',
   SET_OPEN_PROJECT = '[Project] Set the currently open project',
   SET_GAME_LINK = '[Project] Set the linked Interactive version',
+  UNSET_GAME_LINK = '[Project] Unset the linked Interactive version',
   SET_CONFIRM_SCHEMA = '[Project] Set whether to confirm schema upload',
   OPEN_DIRECTORY = '[Project] Open directory',
   START_CHANGE_LINK = '[Project] Start changing the linked project',
@@ -78,6 +79,7 @@ export const enum ProjectActionTypes {
 export const enum ProjectMethods {
   OpenDirectory = '[Project] Open directory',
   LinkGameToControls = '[Project] Link game to controls',
+  UnlinkGameFromControls = '[Project] Unlink game to controls',
   GetOwnedGames = '[Project] Get owned games',
   RenameProject = '[Project] Rename',
 }
@@ -149,6 +151,14 @@ export class StartChangeLink implements Action {
 }
 
 /**
+ * Fired to start the process of changing which project the
+ * controls are linked to.
+ */
+export class UnlinkInteractiveGame implements Action {
+  public readonly type = ProjectActionTypes.UNSET_GAME_LINK;
+}
+
+/**
  * Fired when the user starts the linking process, loads Interactive games
  * that they own.
  */
@@ -197,4 +207,5 @@ export type ProjectActions =
   | LoadOwnedGames
   | SetOwnedGames
   | RequireLink
-  | RenameProject;
+  | RenameProject
+  | UnlinkInteractiveGame;

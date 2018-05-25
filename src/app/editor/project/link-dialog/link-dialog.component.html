@@ -12,7 +12,7 @@
       <p matLine>Updated: {{ game.updatedAt | amTimeAgo }}</p>
       <button mat-raised-button color="primary" *ngIf="(linkedGame | async)?.id !== game.id "
         (click)="link(game)">Link</button>
-      <button mat-raised-button disabled *ngIf="(linkedGame | async)?.id === game.id">Linked</button>
+      <button mat-raised-button (click)="unlink()" *ngIf="(linkedGame | async)?.id === game.id">Unlink</button>
     </mat-list-item>
   </mat-list>
 </div>

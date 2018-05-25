@@ -231,6 +231,13 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   /**
    * Links the Interactive game to the set of controls.
    */
+  [forProject.ProjectMethods.UnlinkGameFromControls]: async (options: { directory: string }) => {
+    return new ProjectLinker(new Project(options.directory)).unlinkGame();
+  },
+
+  /**
+   * Links the Interactive game to the set of controls.
+   */
   [forProject.ProjectMethods.RenameProject]: async (options: {
     name: string;
     directory: string;
