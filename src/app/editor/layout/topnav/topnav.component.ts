@@ -5,7 +5,6 @@ import { map, take } from 'rxjs/operators';
 
 import { AboutModalComponent } from '../../about/about-modal/about-modal.component';
 import { RequireAuth } from '../../account/account.actions';
-import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
 import { LocateWebpackConfig, RestartWebpack } from '../../controls/controls.actions';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
@@ -13,6 +12,7 @@ import { CloseProject, RequireLink, StartOpenProject } from '../../project/proje
 import { RemoteConnectionDialogComponent } from '../../remote-connect/dialog/dialog.component';
 import { RemoteState, SetRemoteState } from '../../remote-connect/remote-connect.actions';
 import { isRemoteConnected } from '../../remote-connect/remote-connect.reducer';
+import { ReportIssueModalComponent } from '../../report-issue/report-issue-modal/report-issue-modal.component';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
 import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
@@ -106,7 +106,7 @@ export class TopNavComponent {
    * Pops a window to submit an issue to the project.
    */
   public openIssue() {
-    this.store.dispatch(new ReportGenericError('My Error Report', 'Enter your details here'));
+    this.dialog.open(ReportIssueModalComponent);
   }
 
   /**
