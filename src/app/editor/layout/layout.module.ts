@@ -11,6 +11,7 @@ import { ControlsConsoleModule } from '../controls-console/controls-console.modu
 import { ControlsModule } from '../controls/controls.module';
 import { NewProjectModule } from '../new-project/new-project.module';
 import { ProjectModule } from '../project/project.module';
+import { ReportIssueModule } from '../report-issue/report-issue.module';
 import { SchemaModule } from '../schema/schema.module';
 import { SharedModule } from '../shared/shared.module';
 import { MenuBarModule } from '../ui/menu-bar/menu-bar.module';
@@ -39,6 +40,7 @@ import { WorkspaceComponent } from './workspace/workspace.component';
     MenuBarModule,
     NewProjectModule,
     ProjectModule,
+    ReportIssueModule,
     SchemaModule,
     SharedModule,
     StoreModule.forFeature('layout', layoutReducer),

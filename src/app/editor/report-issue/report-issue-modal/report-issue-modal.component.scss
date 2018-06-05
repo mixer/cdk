@@ -1,0 +1,12 @@
+@import '../../../assets/styles/declarations';
+
+.header {
+  h1 {
+    font-weight: normal;
+
+    small {
+      display: block;
+      font-size: 0.4em;
+    }
+  }
+}
