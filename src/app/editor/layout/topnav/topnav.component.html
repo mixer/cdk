@@ -16,6 +16,7 @@
     <menu-bar-divider></menu-bar-divider>
     <menu-bar-item (click)="restartWebpack()" text="Restart Webpack"></menu-bar-item>
     <menu-bar-item (click)="setWebpackConfig()" text="Set Webpack Config"></menu-bar-item>
+    <menu-bar-item (click)="openWebpackConfig()" text="Open Webpack Config"></menu-bar-item>
   </menu-bar-items>
 </menu-bar>
 <menu-bar menuId="layout#view" [disabled]="!(isOnEditor | async)">

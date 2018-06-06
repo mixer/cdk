@@ -7,7 +7,11 @@ import { AboutModalComponent } from '../../about/about-modal/about-modal.compone
 import { RequireAuth } from '../../account/account.actions';
 import { ReportGenericError } from '../../bedrock.actions';
 import * as fromRoot from '../../bedrock.reducers';
-import { LocateWebpackConfig, RestartWebpack } from '../../controls/controls.actions';
+import {
+  LocateWebpackConfig,
+  OpenWebpackConfig,
+  RestartWebpack,
+} from '../../controls/controls.actions';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
 import { CloseProject, RequireLink, StartOpenProject } from '../../project/project.actions';
 import { RemoteConnectionDialogComponent } from '../../remote-connect/dialog/dialog.component';
@@ -128,6 +132,13 @@ export class TopNavComponent {
    */
   public setWebpackConfig() {
     this.store.dispatch(new LocateWebpackConfig());
+  }
+
+  /**
+   * Asks the user to point to the webpack config.
+   */
+  public openWebpackConfig() {
+    this.store.dispatch(new OpenWebpackConfig());
   }
 
   /**

@@ -32,6 +32,7 @@ import { TaskList } from './tasks/task';
 import { exists, Fetcher } from './util';
 import { WebpackBundleTask } from './webpack-bundler-task';
 import { WebpackDevServer } from './webpack-dev-server-task';
+import { WebpackTask } from './webpack-task';
 
 const methods: { [methodName: string]: (data: any, server: ElectronServer) => Promise<any> } = {
   /**
@@ -247,6 +248,13 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
   },
 
   /**
+   * Gets the location of the webpack config.
+   */
+  [forControls.ControlsMethods.GetWebpackConfig]: async (options: { directory: string }) => {
+    return WebpackTask.getWebpackConfig(new Project(options.directory));
+  },
+
+  /**
    * Boots a webpack server, which asynchronously sends updates down to the
    * renderer. It'll run until it crashes or StopWebpack is called.
    */
@@ -280,18 +288,19 @@ const methods: { [methodName: string]: (data: any, server: ElectronServer) => Pr
     },
     server: ElectronServer,
   ) => {
+    const project = new Project(options.directory);
     const file = await new OpenBuilder(server.window)
       .file()
       .allowJs()
       .allowAll()
-      .openFromFolder(options.directory);
+      .openFromFolder(await WebpackTask.getWebpackConfig(project));
 
     if (!file) {
       return null;
     }
 
     const relative = path.relative(options.directory, file);
-    await new WebpackDevServer(new Project(options.directory)).setConfigFilename(relative);
+    await new WebpackDevServer(project).setConfigFilename(relative);
     return relative;
   },
 

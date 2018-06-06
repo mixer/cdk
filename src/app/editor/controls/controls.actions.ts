@@ -44,6 +44,7 @@ export const enum ControlsActionTypes {
   SET_IS_READY = '[Controls] Set ready',
   PROMPT_LOCATE_WEBPACK_CONFIG = '[Controls] Prompt to locate webpack config',
   LOCATE_WEBPACK_CONFIG = '[Controls] Locate webpack config',
+  OPEN_WEBPACK_CONFIG = '[Controls] Open webpack config',
 }
 
 export const enum ControlsMethods {
@@ -51,6 +52,7 @@ export const enum ControlsMethods {
   StopWebpack = '[Controls] Stop webpack',
   SetWebpackConfig = '[Controls] Set webpack config',
   LocateWebpackConfig = '[Controls] Locate webpack config',
+  GetWebpackConfig = '[Controls] Get webpack config',
 }
 
 /**
@@ -157,6 +159,13 @@ export class LocateWebpackConfig implements Action {
   public readonly type = ControlsActionTypes.LOCATE_WEBPACK_CONFIG;
 }
 
+/**
+ * Opens the webpack config in the user's preferred editor.
+ */
+export class OpenWebpackConfig implements Action {
+  public readonly type = ControlsActionTypes.OPEN_WEBPACK_CONFIG;
+}
+
 export type ControlActions =
   | StartWebpack
   | UpdateWebpackState
@@ -168,4 +177,5 @@ export type ControlActions =
   | AutoOpenConsole
   | SetReady
   | PromptLocateWebpackConfig
-  | LocateWebpackConfig;
+  | LocateWebpackConfig
+  | OpenWebpackConfig;

@@ -42,6 +42,13 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
   }
 
   /**
+   * Returns the location of the webpack config for the given project.
+   */
+  public static async getWebpackConfig(project: Project): Promise<string> {
+    return project.baseDir(await project.loadSetting('webpackConfigFile', 'webpack.config.js'));
+  }
+
+  /**
    * Updates the webpack config file name to use.
    */
   public async setConfigFilename(name: string) {
@@ -57,8 +64,8 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
    * Boots the webpack dev server. Returns
    */
   protected async spawnChildProcess(): Promise<[T, ChildProcess]> {
-    const config = await this.project.loadSetting('webpackConfigFile', 'webpack.config.js');
-    if (!(await exists(this.project.baseDir(config)))) {
+    const config = await WebpackTask.getWebpackConfig(this.project);
+    if (!(await exists(config))) {
       throw new MissingWebpackConfig();
     }
 
