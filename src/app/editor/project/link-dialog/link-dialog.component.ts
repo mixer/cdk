@@ -3,7 +3,12 @@ import { MatDialogRef } from '@angular/material';
 import { Store } from '@ngrx/store';
 
 import * as fromRoot from '../../bedrock.reducers';
-import { IInteractiveGame, SetInteractiveGame, UnlinkInteractiveGame } from '../project.actions';
+import {
+  IInteractiveGame,
+  LoadOwnedGames,
+  SetInteractiveGame,
+  UnlinkInteractiveGame,
+} from '../project.actions';
 import * as fromProject from '../project.reducer';
 
 /**
@@ -44,5 +49,12 @@ export class LinkProjectDialogComponent {
   public unlink() {
     this.store.dispatch(new UnlinkInteractiveGame());
     this.dialog.close(undefined);
+  }
+
+  /**
+   * Reloads the games the user owns.
+   */
+  public reload() {
+    this.store.dispatch(new LoadOwnedGames());
   }
 }

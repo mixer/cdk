@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>Link your Project</h1>
 <div mat-dialog-content>
-  <p style="max-width:500px">Linking your controls to an Interactive project will allow people who watch the game to see them. You can also upload your working control schema, or download it to the CDK.</p>
+  <p style="max-width:500px">Linking your controls to an Interactive project will allow people who watch the game to see them. You can also upload your working control schema, or download it to the CDK. Missing something? <a class="body-link" (click)="reload()">Refresh this list</a>.</p>
 
   <div class="layout-row layout-align-center-center margin-vertical-4x" *ngIf="!(games | async)">
     <mat-spinner [diameter]="32"></mat-spinner>
