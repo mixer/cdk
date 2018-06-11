@@ -33,6 +33,8 @@ export function controlReducer(
   action: ControlActions,
 ): IControlState {
   switch (action.type) {
+    case ControlsActionTypes.RESTART_WEBPACK:
+      return { ...state, webpackState: WebpackState.Stopping };
     case ControlsActionTypes.UPDATE_WEBPACK_STATE:
       const next = { ...state, webpackState: action.state };
       if (!isRunning(action.state)) {
