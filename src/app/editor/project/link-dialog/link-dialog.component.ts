@@ -32,7 +32,7 @@ export class LinkProjectDialogComponent {
 
   constructor(
     private readonly store: Store<fromRoot.IState>,
-    private readonly dialog: MatDialogRef<IInteractiveGame>,
+    public readonly dialog: MatDialogRef<IInteractiveGame>,
   ) {}
 
   /**

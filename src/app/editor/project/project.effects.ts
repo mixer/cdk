@@ -124,7 +124,7 @@ export class ProjectEffects {
    * Updates the name of the project package.json.
    */
   @Effect()
-  public readonly renameProejct = this.actions
+  public readonly renameProject = this.actions
     .ofType<RenameProject>(ProjectActionTypes.RENAME_PROJECT)
     .pipe(
       withLatestDirectory(this.store),

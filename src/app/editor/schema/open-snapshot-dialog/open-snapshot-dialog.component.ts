@@ -28,7 +28,7 @@ export class OpenSnapshotDialogComponent {
 
   constructor(
     private readonly store: Store<fromRoot.IState>,
-    private readonly dialog: MatDialogRef<any>,
+    public readonly dialog: MatDialogRef<any>,
   ) {}
 
   /**
