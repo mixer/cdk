@@ -30,6 +30,7 @@ import {
   isRunning,
   IWebpackInstance,
   PromptLocateWebpackConfig,
+  RestartWebpack,
   SendControlPacket,
   SetWebpackInstance,
   StartWebpack,
@@ -230,7 +231,7 @@ export class ControlEffects {
       switchMap(([, directory]) =>
         this.electron
           .call(ControlsMethods.SetWebpackConfig, { directory })
-          .then(path => (path ? new StartWebpack() : null)),
+          .then(path => (path ? new RestartWebpack() : null)),
       ),
       truthy(),
     );
