@@ -8,7 +8,10 @@
 
   <mat-list *ngIf="games | async">
     <mat-list-item *ngFor="let game of (games | async)">
-      <h4 matLine>{{ game.name }}</h4>
+      <h4 matLine>
+        {{ game.name }}
+        <span class="shared" *ngIf="game.isShared" title="Shared with you">Shared</span>
+      </h4>
       <p matLine>Updated: {{ game.updatedAt | amTimeAgo }}</p>
       <button mat-raised-button color="primary" *ngIf="(linkedGame | async)?.id !== game.id "
         (click)="link(game)">Link</button>

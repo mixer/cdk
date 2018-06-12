@@ -18,6 +18,7 @@ import * as fromProject from '../project.reducer';
   selector: 'link-dialog',
   templateUrl: './link-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./link-dialog.component.scss'],
 })
 export class LinkProjectDialogComponent {
   /**

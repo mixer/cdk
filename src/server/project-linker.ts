@@ -2,7 +2,7 @@ import { IFullInteractiveVersion, IInteractiveGame } from '../app/editor/project
 import { IWorld } from '../app/editor/schema/schema.actions';
 import { UnexpectedHttpError } from './errors';
 import { Project } from './project';
-import { Fetcher } from './util';
+import { Fetcher, IRequester } from './util';
 
 const storageKey = 'linkedInteractiveGame';
 
@@ -20,22 +20,14 @@ export class ProjectLinker {
     const user = await this.project.profile.user();
     const fetcher = new Fetcher().with(await this.project.profile.tokens());
 
-    let output: IInteractiveGame[] = [];
-    for (let page = 0; true; page++) {
-      // tslint:disable-line
-      const next = await fetcher.json(
-        'get',
-        `/interactive/games/owned?user=${user.id}&page=${page}`,
-      );
-      const contents = await next.json();
-      if (!contents.length) {
-        break;
-      }
+    const [owned, shared] = await Promise.all([
+      this.enumerateUponEndpoint(fetcher, `/interactive/games/owned?user=${user.id}`),
+      this.enumerateUponEndpoint(fetcher, `/interactive/games/editor?user=${user.id}`),
+    ]);
 
-      output = output.concat(contents);
-    }
-
-    return output;
+    return owned
+      .map(g => ({ ...g, isShared: false }))
+      .concat(shared.map(g => ({ ...g, isShared: true })));
   }
 
   /**
@@ -98,5 +90,24 @@ export class ProjectLinker {
     if (response.status >= 400) {
       throw new UnexpectedHttpError(response, await response.text());
     }
+  }
+
+  private async enumerateUponEndpoint(
+    fetcher: IRequester,
+    endpoint: string,
+  ): Promise<IInteractiveGame[]> {
+    let output: IInteractiveGame[] = [];
+    for (let page = 0; true; page++) {
+      // tslint:disable-line
+      const next = await fetcher.json('get', `${endpoint}&page=${page}`);
+      const contents = await next.json();
+      if (!contents.length) {
+        break;
+      }
+
+      output = output.concat(contents);
+    }
+
+    return output;
   }
 }

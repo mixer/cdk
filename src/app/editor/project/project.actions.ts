@@ -27,6 +27,7 @@ export interface IInteractiveVersion {
 export interface IInteractiveGame {
   id: number;
   name: string;
+  isShared: boolean;
   versions: IInteractiveVersion[];
 }
 

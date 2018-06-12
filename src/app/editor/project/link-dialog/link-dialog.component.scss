@@ -1,0 +1,13 @@
+@import '../../../assets/styles/declarations';
+
+.shared {
+  $font-size: 0.7em;
+  $vertical-margin: 1em * (1em / $font-size - 1) / 2;
+
+  font-size: $font-size;
+  display: inline-block;
+  padding: $vertical-margin 0.3em;
+  background: $color-primary2;
+  border-radius: 2px;
+  margin: $vertical-margin 0;
+}
