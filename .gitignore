@@ -67,4 +67,3 @@ typings/
 /dist
 /.vscode
 /app
-/test/fixture/project-config/*
