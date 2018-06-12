@@ -42,12 +42,12 @@
 <menu-bar menuId="layout#help">
   <menu-bar-text>Help</menu-bar-text>
   <menu-bar-items>
-    <menu-bar-item openExternal="https://aka.ms/MixerCDKDocs" text="Custom Controls Documentation"></menu-bar-item>
-    <menu-bar-item openExternal="https://aka.ms/MixerCDKPreact" text="Getting Started with Preact"></menu-bar-item>
-    <menu-bar-item openExternal="https://aka.ms/MixerCDKHTML" text="Getting Started with HTML"></menu-bar-item>
-    <menu-bar-item openExternal="https://mixer.github.io/cdk-std/" text="CDK Standard Library Reference"></menu-bar-item>
-    <menu-bar-item openExternal="https://mixer.com/lab" text="Interactive Studio"></menu-bar-item>
-    <menu-bar-item openExternal="https://aka.ms/MixerSDKs" text="GameClient SDKs"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.customControlDocs" text="Custom Controls Documentation"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.gettingStarted.preact" text="Getting Started with Preact"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.gettingStarted.html" text="Getting Started with HTML"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.cdkStd" text="CDK Standard Library Reference"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.interactiveStudio" text="Interactive Studio"></menu-bar-item>
+    <menu-bar-item [openExternal]="links.sdks" text="GameClient SDKs"></menu-bar-item>
     <menu-bar-divider></menu-bar-divider>
     <menu-bar-item (click)="openIssue()" text="Report Issue"></menu-bar-item>
     <menu-bar-item (click)="openAbout()" text="About the CDK"></menu-bar-item>

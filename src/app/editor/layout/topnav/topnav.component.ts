@@ -20,6 +20,7 @@ import { isRemoteConnected } from '../../remote-connect/remote-connect.reducer';
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
 import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
+import { links } from '../../shared/links';
 import { OpenUploader } from '../../uploader/uploader.actions';
 import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
@@ -54,6 +55,11 @@ export class TopNavComponent {
    * Selects whether the editor screen is open.
    */
   public readonly hasRemoteConnection = this.store.select(isRemoteConnected);
+
+  /**
+   * Template hoist.
+   */
+  public readonly links = links;
 
   constructor(private readonly dialog: MatDialog, private readonly store: Store<fromRoot.IState>) {}
 

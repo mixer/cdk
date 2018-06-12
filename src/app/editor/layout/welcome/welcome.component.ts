@@ -3,8 +3,10 @@ import { MatDialog } from '@angular/material';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
+import { AboutModalComponent } from '../../about/about-modal/about-modal.component';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
 import { StartOpenProject, TryOpenProject } from '../../project/project.actions';
+import { links } from '../../shared/links';
 import { truthy } from '../../shared/operators';
 import { IState } from '../layout.reducer';
 import { getRecentProjects } from '../layout.reducer';
@@ -25,6 +27,11 @@ export class WelcomeComponent {
     .select(getRecentProjects)
     .pipe(truthy());
 
+  /**
+   * Template hoist.
+   */
+  public readonly links = links;
+
   constructor(private readonly dialog: MatDialog, private readonly store: Store<IState>) {}
 
   /**
@@ -41,7 +48,17 @@ export class WelcomeComponent {
     this.store.dispatch(new StartOpenProject());
   }
 
+  /**
+   * Opens a project from the given directory.
+   */
   public openRecentProject(directory: string) {
     this.store.dispatch(new TryOpenProject(directory));
+  }
+
+  /**
+   * Opens the about modal.
+   */
+  public openAbout() {
+    this.dialog.open(AboutModalComponent);
   }
 }
