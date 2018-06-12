@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { merge } from 'rxjs/observable/merge';
 import { of } from 'rxjs/observable/of';
-import { filter, map, mapTo, switchMap, take, tap } from 'rxjs/operators';
+import { delay, filter, map, mapTo, switchMap, take, tap } from 'rxjs/operators';
 
 import * as fromRoot from '../bedrock.reducers';
 import { ElectronService, RpcError } from '../electron.service';
@@ -25,7 +25,7 @@ import {
   UploaderMethods,
   UploaderScreen,
 } from './uploader.actions';
-import { selectUploadControls, selectUploadSchema } from './uploader.reducer';
+import { selectConsole, selectUploadControls, selectUploadSchema } from './uploader.reducer';
 
 /**
  * Effects module for account actions.
@@ -50,7 +50,7 @@ export class UploaderEffects {
                 uploadSchema ? UploaderScreen.UploadingSchema : UploaderScreen.LinkingGame,
               ),
           ),
-          catchErrorType(RpcError, err => new SetError(err)),
+          catchErrorType(RpcError, () => new SetScreen(UploaderScreen.CompilationError)),
         ),
       ),
     );
@@ -144,6 +144,28 @@ export class UploaderEffects {
   public readonly resetOnClose = this.actions
     .ofType(UploaderActionTypes.UPLOADER_CLOSED)
     .pipe(tap(() => this.console.clear()));
+
+  /**
+   * Resets state when the console is closed.
+   */
+  @Effect({ dispatch: false })
+  public readonly saveConsoleOutput = this.actions.ofType(UploaderActionTypes.SAVE_CONSOLE).pipe(
+    toLatestFrom(this.store.select(selectConsole)),
+    map(output => {
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(new Blob([output], { type: 'text' }));
+      link.href = url;
+      link.download = `webpack-output-${new Date().toISOString()}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      return link;
+    }),
+    delay(1),
+    tap(link => {
+      URL.revokeObjectURL(link.href);
+      document.body.removeChild(link);
+    }),
+  );
 
   constructor(
     private readonly actions: Actions,

@@ -13,7 +13,7 @@ import { selectUploadControls, selectUploadSchema } from '../uploader.reducer';
 @Component({
   selector: 'uploader-confirming',
   templateUrl: './uploader-confirming.component.html',
-  styleUrls: ['./uploader-confirming.component.scss'],
+  styles: [':host { max-width: 500px; display: block }'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UploaderConfirmingComponent {

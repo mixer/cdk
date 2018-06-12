@@ -16,6 +16,7 @@ import { StoreModule } from '@ngrx/store';
 import { SharedModule } from '../shared/shared.module';
 import { AdvancedToggleModule } from '../ui/advanced-toggle/advanced-toggle.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
+import { UploaderCompilationErrorComponent } from './uploader-compilation-error/uploader-compilation-error.component';
 import { UploaderCompletedComponent } from './uploader-completed/uploader-completed.component';
 import { UploaderConfirmingComponent } from './uploader-confirming/uploader-confirming.component';
 import { UploaderConsoleService } from './uploader-console.service';
@@ -52,6 +53,7 @@ const errorStateMatcher = { isErrorState: (ctrl: FormControl) => ctrl.invalid };
   entryComponents: [UploaderDialogComponent],
   providers: [UploaderConsoleService, { provide: ErrorStateMatcher, useValue: errorStateMatcher }],
   declarations: [
+    UploaderCompilationErrorComponent,
     UploaderCompletedComponent,
     UploaderConfirmingComponent,
     UploaderDialogComponent,

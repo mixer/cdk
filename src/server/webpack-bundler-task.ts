@@ -8,10 +8,11 @@ import {
 } from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { switchMap, take } from 'rxjs/operators';
+import { filter, merge, switchMap, take } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 import { WebpackState } from '../app/editor/controls/controls.actions';
+import { WebpackBundlerError } from './errors';
 import { spawnPackageScript } from './npm-exec';
 import { Uploader } from './publish/uploader';
 import { WebpackTask } from './webpack-task';
@@ -58,6 +59,14 @@ export class WebpackBundleTask extends WebpackTask<Promise<IBundleData>> {
             await uploader.upload(bundled.location, metadata);
             return { tarball: bundled.location, readme: bundled.readme, metadata };
           }),
+          merge(
+            this.state.pipe(
+              filter(s => s === WebpackState.Failed),
+              switchMap(async () => {
+                throw new WebpackBundlerError();
+              }),
+            ),
+          ),
           take(1),
         )
         .toPromise(),
