@@ -99,7 +99,7 @@
   position: absolute;
   z-index: 1;
 
-  &-video,
+  &-video > div,
   &-chat > div {
     background: rgba(#0f2144, 0.5);
     border: 2px solid #142b55;
@@ -112,10 +112,16 @@
     }
   }
 
-  &-video {
+  &-video > div {
     $play-button-size: 16px;
     $margin-side: 20px;
     $margin-bottom: 30px;
+
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
 
     &::before {
       border-style: solid;

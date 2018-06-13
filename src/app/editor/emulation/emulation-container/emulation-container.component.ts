@@ -15,13 +15,7 @@ import { Store } from '@ngrx/store';
 import { mapValues } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { combineLatest as combineLatestObs } from 'rxjs/observable/combineLatest';
-import {
-  combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  startWith,
-} from 'rxjs/operators';
+import { combineLatest, debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
 import { LayoutActionTypes } from '../../layout/layout.actions';
@@ -58,29 +52,41 @@ const defaultVideoPosition: { [key in keyof IVideoPositionOptions]: string } = {
 /**
  * Returns a ClientRect for a 16:9 video fitted inside the target rect.
  */
-function getFittedBounds(boundingRect: ClientRect, videoRatio: number = 16 / 9) {
-  const output = {
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-  };
+function getFittedBounds(boundingRect: ClientRect, videoRatio: number = 16 / 9): ClientRect {
+  let width = boundingRect.width;
+  let height = boundingRect.height;
 
-  if (boundingRect.width / boundingRect.height > videoRatio) {
-    const newWidth = boundingRect.height * videoRatio;
-    output.width = newWidth;
-    output.left = boundingRect.left + (boundingRect.width - newWidth) / 2;
-    output.height = boundingRect.height;
-    output.top = 0;
+  if (width / height > videoRatio) {
+    width = height * videoRatio;
   } else {
-    const newHeight = boundingRect.width / videoRatio;
-    output.width = boundingRect.width;
-    output.left = 0;
-    output.height = newHeight;
-    output.top = boundingRect.top + (boundingRect.height - newHeight) / 2;
+    height = width / videoRatio;
   }
 
-  return output;
+  const horDelta = (boundingRect.width - width) / 2;
+  const vertDelta = (boundingRect.height - height) / 2;
+
+  return {
+    left: boundingRect.left + horDelta,
+    right: boundingRect.right + horDelta,
+    top: boundingRect.top + vertDelta,
+    bottom: boundingRect.bottom + vertDelta,
+    width,
+    height,
+  };
+}
+
+/**
+ * Creates a new rectangle such that "b" is positioned as a relative child to "a".
+ */
+function subtractRect(a: ClientRect, b: ClientRect): ClientRect {
+  return {
+    left: b.left - a.left,
+    top: b.top - a.top,
+    width: b.width,
+    height: b.height,
+    right: a.width - (b.left - a.left + b.width),
+    bottom: a.height - (b.top - a.top + b.height),
+  };
 }
 
 /**
@@ -180,28 +186,55 @@ export class EmulationContainerComponent implements AfterViewInit, OnDestroy {
 
     this.store
       .select(selectedMovedVideo)
-      .pipe(
-        combineLatest(this.videoBlock.changes, this.layoutResized),
-        debounceTime(1),
-        filter(() => !!this.videoBlock.first),
-      )
+      .pipe(combineLatest(this.videoBlock.changes, this.layoutResized), debounceTime(1))
       .subscribe(([position]) => {
-        const container: HTMLElement = this.videoBlock.first.nativeElement;
-        const video = <HTMLElement>container.children[0];
-        Object.assign(container.style, videoOptionsToStyles(position));
-
-        const fittedVideoBounds = getFittedBounds(container.getBoundingClientRect());
-        Object.keys(fittedVideoBounds).forEach(
-          (key: keyof typeof fittedVideoBounds) =>
-            ((<any>video.style)[key] = `${fittedVideoBounds[key]}px`),
-        );
-
-        this.store.dispatch(new SetFittedVideoSize(<ClientRect>fittedVideoBounds));
+        if (this.hasStubbedVideo) {
+          this.applyStaticVideoPositioning();
+        } else {
+          this.applyResizableVideoPositioning(position);
+        }
       });
   }
 
   public ngOnDestroy() {
     /* noop */
+  }
+
+  private applyStaticVideoPositioning() {
+    const videoBlock: HTMLElement = this.el.nativeElement.querySelector('.block-video');
+    if (!videoBlock) {
+      return;
+    }
+
+    this.store.dispatch(
+      new SetFittedVideoSize(this.relativeToBackdrop(videoBlock.getBoundingClientRect())),
+    );
+  }
+
+  private applyResizableVideoPositioning(position: IVideoPositionOptions) {
+    if (!this.videoBlock.length) {
+      return;
+    }
+
+    const container: HTMLElement = this.videoBlock.first.nativeElement;
+    const video = <HTMLElement>container.children[0];
+    Object.assign(container.style, videoOptionsToStyles(position));
+
+    const containerRect = container.getBoundingClientRect();
+    const fittedVideoBounds = getFittedBounds(containerRect);
+    const videoBlockPosition = subtractRect(containerRect, fittedVideoBounds);
+
+    ['left', 'top', 'width', 'height'].forEach(
+      (key: keyof typeof videoBlockPosition) =>
+        ((<any>video.style)[key] = `${videoBlockPosition[key]}px`),
+    );
+
+    this.store.dispatch(new SetFittedVideoSize(this.relativeToBackdrop(fittedVideoBounds)));
+  }
+
+  private relativeToBackdrop(rect: ClientRect) {
+    const backdrop = this.el.nativeElement.querySelector('.frame-backdrop');
+    return subtractRect(backdrop.getBoundingClientRect(), rect);
   }
 
   private refreshBlocks({ device, orientation, effectiveDimensions }: IEmulationState) {
