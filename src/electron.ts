@@ -41,32 +41,32 @@ function setupWindow(window: BrowserWindow) {
   hasOpenWindow = true;
   windowState.watch(window).catch(() => undefined);
 
+  let rightClickPosition = { x: 0, y: 0 };
+
+  const menu = new Menu();
+  const menuItem = new MenuItem({
+    label: 'Inspect Element',
+    click: () => {
+      if (window) {
+        window.webContents.inspectElement(rightClickPosition.x, rightClickPosition.y);
+      }
+    },
+  });
+  menu.append(menuItem);
+
+  window.webContents.on('context-menu', (event, input) => {
+    event.preventDefault();
+    rightClickPosition = { x: input.x, y: input.y };
+    menu.popup(window || undefined);
+  });
+
   if (isDebug) {
     // tslint:disable-next-line
     require('devtron').install();
     window.webContents.openDevTools();
 
-    let rightClickPosition = { x: 0, y: 0 };
-
-    const menu = new Menu();
-    const menuItem = new MenuItem({
-      label: 'Inspect Element',
-      click: () => {
-        if (window) {
-          window.webContents.inspectElement(rightClickPosition.x, rightClickPosition.y);
-        }
-      },
-    });
-    menu.append(menuItem);
-
     // tslint:disable-next-line
     window.loadURL(`http://localhost:4200`);
-
-    window.webContents.on('context-menu', (event, input) => {
-      event.preventDefault();
-      rightClickPosition = { x: input.x, y: input.y };
-      menu.popup(window || undefined);
-    });
   } else {
     window.loadURL(
       url.format({
