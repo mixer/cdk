@@ -21,6 +21,7 @@
     "build:editor:dist:mac": "npm run -s build:editor:base && electron-builder --mac --x64",
     "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && marked changelog.md -o src/app/editor/about/changelog/changelog.component.html && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
+    "build:update-checksum": "node build/update-checksum.js",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
     "start:electron": "wait-on http-get://localhost:4200/ && electron dist/src/electron --serve --debug",
@@ -29,7 +30,7 @@
   "build": {
     "appId": "com.mixer.dev.cdk",
     "productName": "Control Development Kit",
-    "artifactName": "CDK-${version}.${ext}",
+    "artifactName": "Mixer-CDK.${ext}",
     "copyright": "Copyright Microsoft",
     "directories": {
       "output": "app",
@@ -39,7 +40,7 @@
       "target": "nsis"
     },
     "nsis": {
-      "include": "./installer.nsh"
+      "include": "./build/installer.nsh"
     },
     "files": [
       "./dist"

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SignConfigXML>
+  <job platform="" configuration="" dest="__OUTPATHROOT__" certSubject="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" jobname="Mixer.CDK" approvers="">
+    <file src="__INPATHROOT__\Mixer-CDK.exe" signType="402" dest="__OUTPATHROOT__\Mixer-CDK.exe" />
+  </job>
+  <job platform="" configuration="" dest="__OUTPATHROOT__" certSubject="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" jobname="Mixer.CDK" approvers="">
+    <file src="__INPATHROOT__\Mixer-CDK.zip" signType="8003" dest="__OUTPATHROOT__\Mixer-CDK.zip" />
+  </job>
+</SignConfigXML>
