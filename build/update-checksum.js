@@ -1,12 +1,13 @@
 const yaml = require('node-yaml');
 const crypto = require('crypto');
 const fs = require('fs');
+const { version } = require('../package.json');
 const sha512ForWin = crypto.createHash('sha512');
 const sha256ForWin = crypto.createHash('sha256');
 const sha512ForMac = crypto.createHash('sha512');
 const sha256ForMac = crypto.createHash('sha256');
-const fdExe = fs.createReadStream('signed_release/Mixer-Forge.exe');
-const fdZip = fs.createReadStream('signed_release/Mixer-Forge.zip');
+const fdExe = fs.createReadStream(`signed_release/CDK-${version}.exe`);
+const fdZip = fs.createReadStream(`signed_release/CDK-${version}.zip`);
 sha512ForWin.setEncoding('binary');
 sha512ForMac.setEncoding('binary');
 
