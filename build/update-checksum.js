@@ -6,13 +6,13 @@ const sha512ForWin = crypto.createHash('sha512');
 const sha256ForWin = crypto.createHash('sha256');
 const sha512ForMac = crypto.createHash('sha512');
 const sha256ForMac = crypto.createHash('sha256');
-const fdExe = fs.createReadStream(`signed_release/CDK-${version}.exe`);
-const fdZip = fs.createReadStream(`signed_release/CDK-${version}.zip`);
+const fdExe = fs.createReadStream(`signed/CDK-${version}.exe`);
+const fdZip = fs.createReadStream(`signed/CDK-${version}.zip`);
 sha512ForWin.setEncoding('binary');
 sha512ForMac.setEncoding('binary');
 
 console.log('Reading latest.yml');
-yaml.read('signed_release/latest.yml', function(err, data) {
+yaml.read('signed/latest.yml', function(err, data) {
   if (err) {
     console.log('Failed to read latest.yml');
     throw err;
@@ -29,7 +29,7 @@ yaml.read('signed_release/latest.yml', function(err, data) {
       file.sha512 = newSha512;
     });
     console.log('Updating latest.yml...');
-    yaml.write('signed_release/latest.yml', data, function(err) {
+    yaml.write('signed/latest.yml', data, function(err) {
       if (err) {
         console.log('Failed to write to latest.yml');
         throw err;
@@ -43,7 +43,7 @@ yaml.read('signed_release/latest.yml', function(err, data) {
 });
 
 console.log('Reading latest-mac.yml');
-yaml.read('signed_release/latest-mac.yml', function(err, data) {
+yaml.read('signed/latest-mac.yml', function(err, data) {
   if (err) {
     console.log('Failed to read latest-mac.yml, ignoring...');
     return;
@@ -60,7 +60,7 @@ yaml.read('signed_release/latest-mac.yml', function(err, data) {
       file.sha512 = newSha512;
     });
     console.log('Updating latest-mac.yml...');
-    yaml.write('signed_release/latest-mac.yml', data, function(err) {
+    yaml.write('signed/latest-mac.yml', data, function(err) {
       if (err) {
         console.log('Failed to write to latest-mac.yml');
         throw err;
