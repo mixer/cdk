@@ -39,8 +39,8 @@ function checksumFile(file, algorithms, callback) {
   stream.on('end', () => callback(null, hashes.map(h => h.digest())));
 }
 
-function rehashWindows(callback) {
-  checksumFile(`signed/CDK-${version}.exe`, ['sha256', 'sha512'], (err, hashes) => {
+function rehashWindows(baseDir, callback) {
+  checksumFile(path.resolve(baseDir, `CDK-${version}.exe`), ['sha256', 'sha512'], (err, hashes) => {
     if (err) {
       callback(err);
       return;
@@ -49,7 +49,7 @@ function rehashWindows(callback) {
     const sha256 = hashes[0];
     const sha512 = hashes[1];
     rewriteYaml(
-      'signed/latest.yml',
+      path.resolve(baseDir, 'latest.yml'),
       data => {
         data.sha512 = sha512.toString('base64');
         data.sha2 = sha256.toString('hex');
@@ -60,8 +60,8 @@ function rehashWindows(callback) {
   });
 }
 
-function rehashOSX(callback) {
-  checksumFile(`signed/CDK-${version}.zip`, ['sha256', 'sha512'], (err, hashes) => {
+function rehashOSX(baseDir, callback) {
+  checksumFile(path.resolve(baseDir, `CDK-${version}.zip`), ['sha256', 'sha512'], (err, hashes) => {
     if (err) {
       callback(err);
       return;
@@ -70,7 +70,7 @@ function rehashOSX(callback) {
     const sha256 = hashes[0];
     const sha512 = hashes[1];
     rewriteYaml(
-      'signed/latest-mac.yml',
+      path.resolve(baseDir, 'latest-mac.yml'),
       data => {
         data.sha512 = sha512.toString('base64');
         data.sha2 = sha256.toString('hex');
@@ -84,6 +84,6 @@ function rehashOSX(callback) {
 }
 
 if (require.main === module) {
-  rehashWindows(abortOnError());
-  rehashOSX(abortOnError());
+  rehashWindows(process.argv[2], abortOnError((() => console.log('Windows checksum completed'))));
+  rehashOSX(process.argv[2], abortOnError((() => console.log('OSX checksum completed'))));
 }
