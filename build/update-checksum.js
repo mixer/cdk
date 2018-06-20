@@ -84,6 +84,6 @@ function rehashOSX(callback) {
 }
 
 if (require.main === module) {
-  rehashWindows(abortOnError);
-  rehashOSX(abortOnError);
+  rehashWindows(abortOnError());
+  rehashOSX(abortOnError());
 }
