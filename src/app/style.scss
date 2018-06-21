@@ -19,14 +19,7 @@ body {
 }
 
 a.body-link {
-  color: $color-highlight;
-  cursor: pointer;
-  text-decoration: none;
-  border-bottom: 1px solid currentColor;
-
-  &:hover {
-    border-bottom-color: transparent;
-  }
+  @include body-link();
 }
 
 $scrollbars-size: 6px;

@@ -1,6 +1,6 @@
 {
   "name": "@mixer/cdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Command line tool for developing with Mixer Interactive",
   "main": "./dist/src/electron.js",
   "bin": {
