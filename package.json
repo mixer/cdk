@@ -21,6 +21,8 @@
     "build:editor:dist:mac": "npm run -s build:editor:base && electron-builder --mac --x64",
     "build:editor:dist": "npm run -s build:editor:base && electron-builder --win --mac --x64",
     "build:editor:base": "rimraf dist app && marked changelog.md -o src/app/editor/about/changelog/changelog.component.html && ts-node src/app/tools/setProfile.ts && tsc && ng build -prod",
+    "build:update-checksum": "node build/update-checksum.js",
+    "build:update-channel": "node build/update-channel.js",
     "start": "ts-node src/app/tools/setProfile.ts && tsc && npm-run-all -p start:ng start:electron",
     "start:ng": "ng serve",
     "start:electron": "wait-on http-get://localhost:4200/ && electron dist/src/electron --serve --debug",
@@ -39,7 +41,7 @@
       "target": "nsis"
     },
     "nsis": {
-      "include": "./installer.nsh"
+      "include": "./build/installer.nsh"
     },
     "files": [
       "./dist"
@@ -66,6 +68,7 @@
       "ts-node/register"
     ],
     "reporter": [
+      "cobertura",
       "text-summary",
       "html"
     ],
