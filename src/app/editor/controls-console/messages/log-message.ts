@@ -1,4 +1,4 @@
-import { ILogEntry } from '@mcph/miix-std/dist/internal';
+import { ILogEntry } from '@mixer/cdk-std/dist/internal';
 import * as hljs from 'highlight.js';
 import * as JSON5 from 'json5';
 import { IMessage, Message } from './message';

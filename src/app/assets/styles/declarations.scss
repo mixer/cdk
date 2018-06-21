@@ -122,3 +122,14 @@ $material-leave-timing-function: cubic-bezier(0.4, 0, 1, 1);
   outline: 0 !important;
   color: currentColor;
 }
+
+@mixin body-link() {
+  color: $color-highlight;
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+
+  &:hover {
+    border-bottom-color: transparent;
+  }
+}

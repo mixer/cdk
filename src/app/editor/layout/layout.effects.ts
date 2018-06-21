@@ -26,6 +26,7 @@ import {
   OpenPanel,
   OpenScreen,
   panelTitles,
+  RemoveRecentProject,
   SavePanels,
   SetGoldenLayout,
 } from './layout.actions';
@@ -65,6 +66,18 @@ export class LayoutEffects {
   public readonly closeProject = this.actions
     .ofType(ProjectActionTypes.CLOSE_PROJECT)
     .pipe(mapTo(new OpenScreen(LayoutScreen.Welcome)));
+
+  /**
+   * Goes back to the welcome screen when we close a project.
+   */
+  @Effect({ dispatch: false })
+  public readonly removeRecentProject = this.actions
+    .ofType<RemoveRecentProject>(LayoutActionTypes.REMOVE_RECENT_PROJECT)
+    .pipe(
+      switchMap(({ directory }) =>
+        this.electron.call(LayoutMethod.RemoveRecentProject, { directory }),
+      ),
+    );
 
   /**
    * Persists panel configuration to the server when it chamges.

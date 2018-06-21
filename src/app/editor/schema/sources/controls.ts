@@ -1,4 +1,4 @@
-import { IScene } from '@mcph/miix-std/dist/internal';
+import { IScene } from '@mixer/cdk-std/dist/internal';
 import { Selector } from '@ngrx/store';
 import { isEqual } from 'lodash';
 

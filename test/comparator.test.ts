@@ -1,4 +1,4 @@
-import { IScene } from '@mcph/miix-std/dist/internal';
+import { IScene } from '@mixer/cdk-std/dist/internal';
 import { expect } from 'chai';
 
 import { ControlsSource } from '../src/app/editor/schema/sources/controls';

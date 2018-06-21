@@ -62,6 +62,21 @@ export class AccountEffects {
       }),
     );
 
+  /**
+   * Runs an action that requires auth, see the RequireAuth action for details.
+   */
+  @Effect()
+  public readonly switchAccounts = this.actions
+    .ofType<RequireAuth>(AccountActionTypes.SWITCH_ACCOUNTS)
+    .pipe(
+      switchMap(action => {
+        return this.dialog
+          .open(LoginDialogComponent)
+          .afterClosed()
+          .pipe(map(u => (u ? action.successAction : action.failedAction)), filter(a => !!a));
+      }),
+    );
+
   constructor(
     private readonly actions: Actions,
     private readonly electron: ElectronService,

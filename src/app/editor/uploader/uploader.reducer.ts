@@ -1,4 +1,5 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
+import { BundleNameTakenError } from '../../../server/errors';
 
 import * as fromRoot from '../bedrock.reducers';
 import { WebpackState } from '../controls/controls.actions';
@@ -10,6 +11,7 @@ export interface IUploaderState {
   screen: UploaderScreen;
   uploadSchema: boolean;
   uploadControls: boolean;
+  consoleOutput: string;
   error?: RpcError;
 }
 
@@ -22,6 +24,7 @@ const initialState: IUploaderState = {
   screen: UploaderScreen.Confirming,
   uploadSchema: true,
   uploadControls: true,
+  consoleOutput: '',
 };
 
 export function uploaderReducer(
@@ -37,10 +40,14 @@ export function uploaderReducer(
       return { ...state, uploadSchema: action.shouldUpload };
     case UploaderActionTypes.SET_SCREEN:
       return { ...state, screen: action.screen };
+    case UploaderActionTypes.UPDATE_WEBPACK_CONSOLE:
+      return { ...state, consoleOutput: state.consoleOutput + action.data };
     case UploaderActionTypes.SET_ERROR:
-      return { ...state, error: action.error };
+      return action.error.originalName === BundleNameTakenError.name
+        ? { ...state, screen: UploaderScreen.Rename }
+        : { ...state, error: action.error };
     case UploaderActionTypes.UPLOADER_CLOSED:
-      return { ...state, screen: UploaderScreen.Confirming, error: undefined };
+      return { ...state, screen: UploaderScreen.Confirming, consoleOutput: '', error: undefined };
     default:
       return state;
   }
@@ -72,6 +79,11 @@ export const selectUploadControls = createSelector(uploaderState, s => s.uploadC
  * Selects whether to upload schema.
  */
 export const selectUploadSchema = createSelector(uploaderState, s => s.uploadSchema);
+
+/**
+ * Selects whether to upload schema.
+ */
+export const selectConsole = createSelector(uploaderState, s => s.consoleOutput);
 
 /**
  * Selects the rpc error that occurred during the process.

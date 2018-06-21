@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { RPC } from '@mcph/miix-std/dist/internal';
+import { RPC } from '@mixer/cdk-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { fromEvent } from 'rxjs/observable/fromEvent';
 import { merge as mergeObs } from 'rxjs/observable/merge';

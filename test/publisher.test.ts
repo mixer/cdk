@@ -1,4 +1,4 @@
-import { IPackageConfig } from '@mcph/miix-std/dist/internal';
+import { IPackageConfig } from '@mixer/cdk-std/dist/internal';
 import { expect } from 'chai';
 
 import { PublishPrivateError, UnexpectedHttpError } from '../src/server/errors';

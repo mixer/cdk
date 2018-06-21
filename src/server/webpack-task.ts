@@ -3,7 +3,7 @@ import {
   Notification,
   NotificationType,
   readNotification,
-} from '@mcph/miix-webpack-plugin/dist/src/notifier';
+} from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
@@ -11,6 +11,7 @@ import { WebpackState } from '../app/editor/controls/controls.actions';
 import { MissingWebpackConfig } from './errors';
 import { Project } from './project';
 import { ConsoleTask } from './tasks/console-task';
+import { NpmInstallTask } from './tasks/npm-install-task';
 import { exists } from './util';
 
 /**
@@ -41,6 +42,13 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
   }
 
   /**
+   * Returns the location of the webpack config for the given project.
+   */
+  public static async getWebpackConfig(project: Project): Promise<string> {
+    return project.baseDir(await project.loadSetting('webpackConfigFile', 'webpack.config.js'));
+  }
+
+  /**
    * Updates the webpack config file name to use.
    */
   public async setConfigFilename(name: string) {
@@ -56,13 +64,19 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
    * Boots the webpack dev server. Returns
    */
   protected async spawnChildProcess(): Promise<[T, ChildProcess]> {
-    const config = await this.project.loadSetting('webpackConfigFile', 'webpack.config.js');
-    if (!(await exists(this.project.baseDir(config)))) {
+    const config = await WebpackTask.getWebpackConfig(this.project);
+    if (!(await exists(config))) {
       throw new MissingWebpackConfig();
     }
 
-    const [out, process] = await this.startWebpack(config);
     this.state.next(WebpackState.Starting);
+
+    if (!(await exists(this.project.baseDir('node_modules')))) {
+      this.data.next('Node modules not found, starting installation. This may take a minute.\n');
+      await this.installNodeModules();
+    }
+
+    const [out, process] = await this.startWebpack(config);
 
     process.on('exit', code => {
       if (code === 0) {
@@ -80,6 +94,16 @@ export abstract class WebpackTask<T> extends ConsoleTask<T> {
    */
   protected beforeStop() {
     this.state.next(WebpackState.Stopping);
+  }
+
+  /**
+   * Runs npm install. This is called when starting webpack if we detect
+   * that the user doesn't have their modules installed.
+   */
+  protected async installNodeModules() {
+    const task = new NpmInstallTask(this.project.baseDir());
+    task.data.subscribe(data => this.data.next(data));
+    await this.awaitSubtask(task);
   }
 
   /**

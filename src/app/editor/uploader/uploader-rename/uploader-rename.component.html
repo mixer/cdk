@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>Rename Bundle</h1>
+<div mat-dialog-content>
+  <p>Darn, someone already took that bundle name! Try picking a different name or, if this bundle is yours, <a (click)="switchAccounts()" class="body-link">switch accounts</a>.</p>
+
+  <form (ngSubmit)="submit()" [formGroup]="form">
+    <mat-form-field style="display:block">
+      <input matInput #message maxlength="60" placeholder="Project Name*" formControlName="projectName">
+      <mat-hint align="start">Should be globally unique.</mat-hint>
+      <mat-error *ngIf="getInput('projectName').hasError('length')">
+        Your project name should be between 2 and 60 characters.
+      </mat-error>
+      <mat-error *ngIf="getInput('projectName').hasError('projectName')">
+        Your project name can only contain alphanumeric characters with dashes.
+      </mat-error>
+      <mat-error *ngIf="getInput('projectName').hasError('projectNameTaken')">
+        Shucks! That project name has already been taken.
+      </mat-error>
+      <mat-error *ngIf="getInput('projectName').hasError('required')">
+        The project name is required.
+      </mat-error>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="dialogRef.close()">Cancel</button>
+  <span class="flex-fill"></span>
+  <button mat-button (click)="submit()" cdkFocusInitial>Rename</button>
+</div>

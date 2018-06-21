@@ -3,7 +3,7 @@ import * as path from 'path';
 import { FileDataStore, IDataStore } from './datastore';
 import { BadPackageJsonError } from './errors';
 import { Profile } from './profile';
-import { readFile } from './util';
+import { readFile, writeFile } from './util';
 
 /**
  * Interface that generally describes a project package.
@@ -62,6 +62,13 @@ export class Project {
     } catch (e) {
       throw new BadPackageJsonError(e.message);
     }
+  }
+
+  /**
+   * Writes the package.json data to the folder.
+   */
+  public async putPackageJson(data: IPackageJson): Promise<void> {
+    await writeFile(this.baseDir('package.json'), JSON.stringify(data, null, 2));
   }
 
   /**

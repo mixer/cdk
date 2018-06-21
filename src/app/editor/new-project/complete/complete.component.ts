@@ -5,6 +5,7 @@ import { combineLatest, switchMap, take } from 'rxjs/operators';
 import * as fromRoot from '../../bedrock.reducers';
 import { ElectronService } from '../../electron.service';
 import { DirectoryOpener } from '../../shared/directory-opener';
+import { links } from '../../shared/links';
 import * as fromNewProject from '../new-project.reducer';
 import { NewProjectService } from '../new-project.service';
 
@@ -27,6 +28,11 @@ export class CompleteComponent {
    * Directory opener helper.
    */
   public readonly opener = new DirectoryOpener(this.electron);
+
+  /**
+   * Template hoist.
+   */
+  public readonly links = links;
 
   /**
    * Program to use for opening the directory.

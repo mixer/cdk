@@ -1,4 +1,4 @@
-import { IRPCMethod } from '@mcph/miix-std/dist/internal';
+import { IRPCMethod } from '@mixer/cdk-std/dist/internal';
 import * as hljs from 'highlight.js';
 import * as JSON5 from 'json5';
 

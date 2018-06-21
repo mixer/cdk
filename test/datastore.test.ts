@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { mkdirSync, unlinkSync } from 'fs';
+import { mkdirSync } from 'fs';
 import * as path from 'path';
 
 import { FileDataStore } from '../src/server/datastore';
@@ -9,54 +9,62 @@ import { exists, readFile } from '../src/server/util';
 const rimraf = require('rimraf');
 
 describe('FileDataStore', () => {
-  function homedir() {
-    return path.join(__dirname, 'fixture', 'project-config', 'homedir');
+  function homedir(...parts: string[]) {
+    return path.join(__dirname, 'fixture', 'project-config', 'homedir', ...parts);
   }
-  function projdir() {
-    return path.join(__dirname, 'fixture', 'project-config', 'projdir');
+  function projdir(...parts: string[]) {
+    return path.join(__dirname, 'fixture', 'project-config', 'projdir', ...parts);
   }
 
   beforeEach(() => {
-    mkdirSync(path.join(projdir(), '.git'));
+    mkdirSync(projdir());
+    mkdirSync(homedir());
+    mkdirSync(projdir('.git'));
   });
 
   afterEach(() => {
-    rimraf.sync(path.join(homedir(), '.miix'));
-    rimraf.sync(path.join(projdir(), '.miix'));
-    rimraf.sync(path.join(projdir(), '.git'));
-    try {
-      unlinkSync(path.join(projdir(), '.gitignore'));
-    } catch (e) {
-      // ignored
-    }
+    rimraf.sync(homedir());
+    rimraf.sync(projdir());
   });
 
   it('loads correctly when no files exist', async () => {
-    const store = new FileDataStore(path.join(__dirname, 'doesn-not-exist'));
+    const store = new FileDataStore(path.join(__dirname, 'does-not-exist'));
     expect(await store.loadGlobal('foo.json')).to.be.null;
     expect(await store.loadProject('foo.json', 'wut')).to.be.null;
   });
 
+  it('saves a loads legacy directories', async () => {
+    mkdirSync(homedir('.miix'));
+    const store = new FileDataStore(homedir());
+    await store.saveGlobal('foo', true);
+    expect(await readFile(homedir('.miix', 'foo.json'))).to.equal('true');
+    expect(await store.loadGlobal('foo')).to.be.true;
+  });
+
   it('saves global data correctly', async () => {
     const store = new FileDataStore(homedir());
-    expect(await exists(path.join(homedir(), '.miix', 'foo.json'))).to.be.false;
+    expect(await exists(homedir('.cdk', 'foo.json'))).to.be.false;
     await store.saveGlobal('foo', true);
-    expect(await readFile(path.join(homedir(), '.miix', 'foo.json'))).to.equal('true');
+    expect(await readFile(homedir('.cdk', 'foo.json'))).to.equal('true');
+    await store.saveGlobal('foo', undefined);
+    expect(await exists(homedir('.cdk', 'foo.json'))).to.be.false;
   });
 
   it('saves project data correctly', async () => {
     const store = new FileDataStore(homedir());
-    expect(await exists(path.join(projdir(), '.miix', 'foo.json'))).to.be.false;
+    expect(await exists(projdir('.cdk', 'foo.json'))).to.be.false;
     await store.saveProject('foo', projdir(), true);
-    expect(await readFile(path.join(projdir(), '.miix', 'foo.json'))).to.equal('true');
-    expect(await readFile(path.join(projdir(), '.gitignore'))).to.equal('\n/.miix\n');
+    expect(await readFile(projdir('.cdk', 'foo.json'))).to.equal('true');
+    expect(await readFile(projdir('.gitignore'))).to.equal('\n/.cdk\n');
+    await store.saveProject('foo', projdir(), undefined);
+    expect(await exists(projdir('.cdk', 'foo.json'))).to.be.false;
   });
 
   it('saves project data correctly', async () => {
     const store = new FileDataStore(homedir());
-    expect(await exists(path.join(projdir(), '.miix', 'foo.json'))).to.be.false;
+    expect(await exists(projdir('.cdk', 'foo.json'))).to.be.false;
     await store.saveProject('foo', projdir(), true);
-    expect(await readFile(path.join(projdir(), '.miix', 'foo.json'))).to.equal('true');
+    expect(await readFile(projdir('.cdk', 'foo.json'))).to.equal('true');
   });
 
   it('merges config between the stores', async () => {

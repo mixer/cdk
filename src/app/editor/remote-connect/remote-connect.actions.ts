@@ -1,4 +1,4 @@
-import { IStateDump } from '@mcph/miix-std/dist/internal';
+import { IStateDump } from '@mixer/cdk-std/dist/internal';
 import { Action } from '@ngrx/store';
 import { RpcError } from '../electron.service';
 import { IInteractiveVersion } from '../project/project.actions';

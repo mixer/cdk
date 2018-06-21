@@ -7,7 +7,7 @@ import { FileDataStore } from '../src/server/datastore';
 import { NoAuthenticationError, ShortCodeExpireError } from '../src/server/errors';
 import { GrantCancelledError, Profile } from '../src/server/profile';
 import { OAuthClient } from '../src/server/shortcode';
-import { api } from '../src/server/util';
+import { api, mkdir } from '../src/server/util';
 import { createExpiredOAuthTokens, createValidOAuthTokens, MockRequester } from './_setup';
 
 // tslint:disable-next-line
@@ -24,7 +24,7 @@ describe('profile', () => {
     isCancelled: () => false,
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockOAuth = { getCode: sinon.stub(), refresh: sinon.stub() };
     requester = new MockRequester();
 
@@ -43,16 +43,17 @@ describe('profile', () => {
       }),
     });
 
-    profileDir = path.join(__dirname, 'fixture');
+    profileDir = path.join(__dirname, 'fixture', 'project-config', 'homedir');
+    await mkdir(profileDir);
     profile = new Profile(new FileDataStore(profileDir), <any>mockOAuth, requester);
   });
 
   afterEach(() => {
-    rimraf.sync(path.join(profileDir, '.miix'));
+    rimraf.sync(profileDir);
   });
 
   function expectProfileFile() {
-    return expect(fs.readFileSync(path.join(profileDir, '.miix', 'profile.json'), 'utf-8'));
+    return expect(fs.readFileSync(path.join(profileDir, '.cdk', 'profile.json'), 'utf-8'));
   }
 
   describe('granting', () => {

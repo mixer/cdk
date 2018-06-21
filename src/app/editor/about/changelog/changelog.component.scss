@@ -8,3 +8,7 @@
   box-shadow: inset 0 3px 8px rgba(#000, 0.2);
   font-size: 0.8em;
 }
+
+a {
+  @include body-link();
+}

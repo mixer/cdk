@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
-import { ISettings, IVideoPositionOptions, RPC } from '@mcph/miix-std/dist/internal';
+import { ISettings, IVideoPositionOptions, RPC } from '@mixer/cdk-std/dist/internal';
 import { Store } from '@ngrx/store';
 import { isEqual, once } from 'lodash';
 import { Observable } from 'rxjs/Observable';

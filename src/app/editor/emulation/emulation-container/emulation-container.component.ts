@@ -1,27 +1,21 @@
 import {
-  AfterContentInit,
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
+  QueryList,
+  ViewChildren,
 } from '@angular/core';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
-import { IVideoPositionOptions } from '@mcph/miix-std/dist/internal';
+import { IVideoPositionOptions } from '@mixer/cdk-std/dist/internal';
 import { Actions } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import { mapValues } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { combineLatest as combineLatestObs } from 'rxjs/observable/combineLatest';
-import {
-  combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  publishReplay,
-  refCount,
-  startWith,
-} from 'rxjs/operators';
+import { combineLatest, debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 import * as fromRoot from '../../bedrock.reducers';
 import { LayoutActionTypes } from '../../layout/layout.actions';
@@ -46,6 +40,66 @@ const backgrounds = [
   'https://mixer.com/_latest/assets/img/backgrounds/generic-coding-001.jpg',
 ];
 
+const defaultVideoPosition: { [key in keyof IVideoPositionOptions]: string } = {
+  width: 'auto',
+  height: 'auto',
+  left: 'auto',
+  right: 'auto',
+  top: 'auto',
+  bottom: 'auto',
+};
+
+/**
+ * Returns a ClientRect for a 16:9 video fitted inside the target rect.
+ */
+function getFittedBounds(boundingRect: ClientRect, videoRatio: number = 16 / 9): ClientRect {
+  let width = boundingRect.width;
+  let height = boundingRect.height;
+
+  if (width / height > videoRatio) {
+    width = height * videoRatio;
+  } else {
+    height = width / videoRatio;
+  }
+
+  const horDelta = (boundingRect.width - width) / 2;
+  const vertDelta = (boundingRect.height - height) / 2;
+
+  return {
+    left: boundingRect.left + horDelta,
+    right: boundingRect.right + horDelta,
+    top: boundingRect.top + vertDelta,
+    bottom: boundingRect.bottom + vertDelta,
+    width,
+    height,
+  };
+}
+
+/**
+ * Creates a new rectangle such that "b" is positioned as a relative child to "a".
+ */
+function subtractRect(a: ClientRect, b: ClientRect): ClientRect {
+  return {
+    left: b.left - a.left,
+    top: b.top - a.top,
+    width: b.width,
+    height: b.height,
+    right: a.width - (b.left - a.left + b.width),
+    bottom: a.height - (b.top - a.top + b.height),
+  };
+}
+
+/**
+ * Normalizes the CDK IVideoPositionOptions to style strings that can
+ * be applied to an element.
+ */
+function videoOptionsToStyles(position: IVideoPositionOptions) {
+  return mapValues(
+    { ...defaultVideoPosition, ...position },
+    value => (typeof value === 'number' && value !== -1 ? `${value}px` : String(value)),
+  );
+}
+
 /**
  * The EmulationContainerComponent hosts the frame containing the developer's controls.
  */
@@ -55,16 +109,11 @@ const backgrounds = [
   styleUrls: ['./emulation-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmulationContainerComponent implements AfterContentInit, OnDestroy {
+export class EmulationContainerComponent implements AfterViewInit, OnDestroy {
   /**
    * Padding in all directions within the frame.
    */
   public static readonly padding = 32;
-
-  /**
-   * Aspect ratio of the fitted, virtual video.
-   */
-  public static readonly videoRatio = 16 / 9;
 
   /**
    * Background to display behind the frame.
@@ -118,19 +167,9 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
   );
 
   /**
-   * Observable for the computed video position, fitted with a 16:9 ratio into
-   * the bounds provided by the controls.
+   * Container for the video
    */
-  public videoFilledSize = this.store
-    .select(selectedMovedVideo)
-    .pipe(
-      combineLatest(this.layoutResized),
-      debounceTime(1),
-      map(([rect]) => this.getFittedVideo(rect)),
-      filter(rect => !!rect),
-      publishReplay(1),
-      refCount(),
-    );
+  @ViewChildren('videoBlock') public videoBlock: QueryList<ElementRef>;
 
   constructor(
     private readonly actions: Actions,
@@ -140,28 +179,76 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     private readonly sanitizer: DomSanitizer,
   ) {}
 
-  public ngAfterContentInit() {
+  public ngAfterViewInit() {
     this.layoutResized
       .pipe(debounceTime(1), untilDestroyed(this))
       .subscribe(state => this.refreshBlocks(state));
 
-    this.videoFilledSize
-      .pipe(untilDestroyed(this))
-      .subscribe(rect => this.store.dispatch(new SetFittedVideoSize(rect)));
+    this.store
+      .select(selectedMovedVideo)
+      .pipe(combineLatest(this.videoBlock.changes, this.layoutResized), debounceTime(1))
+      .subscribe(([position]) => {
+        if (this.hasStubbedVideo) {
+          this.applyStaticVideoPositioning();
+        } else {
+          this.applyResizableVideoPositioning(position);
+        }
+      });
   }
 
   public ngOnDestroy() {
     /* noop */
   }
 
-  private refreshBlocks({ device, orientation, effectiveDimensions }: IEmulationState) {
-    const el = (<HTMLElement>this.el.nativeElement).getBoundingClientRect();
-    const blocks = device.display(
-      el.width - 2 * EmulationContainerComponent.padding,
-      el.height - 2 * EmulationContainerComponent.padding,
-      orientation,
+  private applyStaticVideoPositioning() {
+    const videoBlock: HTMLElement = this.el.nativeElement.querySelector('.block-video');
+    if (!videoBlock) {
+      return;
+    }
+
+    this.store.dispatch(
+      new SetFittedVideoSize(this.relativeToBackdrop(videoBlock.getBoundingClientRect())),
+    );
+  }
+
+  private applyResizableVideoPositioning(position: IVideoPositionOptions) {
+    if (!this.videoBlock.length) {
+      return;
+    }
+
+    const container: HTMLElement = this.videoBlock.first.nativeElement;
+    const video = <HTMLElement>container.children[0];
+    Object.assign(container.style, videoOptionsToStyles(position));
+
+    const containerRect = container.getBoundingClientRect();
+    const fittedVideoBounds = getFittedBounds(containerRect);
+    const videoBlockPosition = subtractRect(containerRect, fittedVideoBounds);
+
+    ['left', 'top', 'width', 'height'].forEach(
+      (key: keyof typeof videoBlockPosition) =>
+        ((<any>video.style)[key] = `${videoBlockPosition[key]}px`),
     );
 
+    this.store.dispatch(new SetFittedVideoSize(this.relativeToBackdrop(fittedVideoBounds)));
+  }
+
+  private relativeToBackdrop(rect: ClientRect) {
+    const backdrop = this.el.nativeElement.querySelector('.frame-backdrop');
+    return subtractRect(backdrop.getBoundingClientRect(), rect);
+  }
+
+  private refreshBlocks({ device, orientation, effectiveDimensions }: IEmulationState) {
+    const wasManual = !!effectiveDimensions && effectiveDimensions.wasManual;
+    let { width, height } = (<HTMLElement>this.el.nativeElement).getBoundingClientRect();
+    if (wasManual) {
+      width = effectiveDimensions!.width;
+      height = effectiveDimensions!.height;
+    } else {
+      width -= 2 * EmulationContainerComponent.padding;
+      height -= 2 * EmulationContainerComponent.padding;
+    }
+
+    const blocks = device.display(width, height, wasManual, orientation);
     if (!effectiveDimensions || !effectiveDimensions.wasManual) {
       this.store.dispatch(
         new SetEffectiveDimensions({
@@ -182,49 +269,5 @@ export class EmulationContainerComponent implements AfterContentInit, OnDestroy 
     this.controlsBlock = controlBlock;
     this.cdRef.markForCheck();
     this.cdRef.detectChanges();
-  }
-
-  private getFittedVideo(rect: IVideoPositionOptions): ClientRect | null {
-    const videoBlock = (<HTMLElement>this.el.nativeElement).querySelector('.frame-backdrop');
-    if (!videoBlock) {
-      return null;
-    }
-
-    const backdropRect = videoBlock.getBoundingClientRect();
-    const out = {
-      left: 0,
-      right: 0,
-      bottom: 0,
-      top: 0,
-      width: 0,
-      height: 0,
-      ...rect,
-    };
-
-    // Normalize any bottom/right bounds to width/height to make things easier.
-
-    if (!out.width) {
-      out.width = Math.max(1, backdropRect.width - out.left - out.right);
-      delete out.right;
-    }
-    if (!rect.height) {
-      out.height = Math.max(1, backdropRect.height - out.top - out.bottom);
-      delete out.bottom;
-    }
-
-    if (out.width / out.height > EmulationContainerComponent.videoRatio) {
-      const newWidth = out.height * EmulationContainerComponent.videoRatio;
-      out.left = out.left + (out.width - newWidth) / 2;
-      out.width = newWidth;
-    } else {
-      const newHeight = out.width / EmulationContainerComponent.videoRatio;
-      out.top = out.top + (out.height - newHeight) / 2;
-      out.height = newHeight;
-    }
-
-    out.right = backdropRect.width - backdropRect.left;
-    out.bottom = backdropRect.height - backdropRect.top;
-
-    return out;
   }
 }

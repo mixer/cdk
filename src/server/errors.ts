@@ -365,3 +365,13 @@ export class MissingWebpackConfig extends Error {
     super('Webpack config not found.');
   }
 }
+
+/**
+ * ProjectNotFoundError is thrown when trying to operate on a Project which
+ * doesn't exist on the filesystem.
+ */
+export class ProjectNotFoundError extends Error {
+  constructor() {
+    super('Project not found. It may have been moved or deleted.');
+  }
+}

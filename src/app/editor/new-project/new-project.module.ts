@@ -11,6 +11,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 
 import { ProjectModule } from '../project/project.module';
+import { SharedModule } from '../shared/shared.module';
 import { AdvancedToggleModule } from '../ui/advanced-toggle/advanced-toggle.module';
 import { ConsoleModule } from '../ui/console-display/console-display.module';
 import { RadioIconsModule } from '../ui/radio-icons/radio-icons.module';
@@ -40,9 +41,10 @@ const errorStateMatcher = { isErrorState: (ctrl: FormControl) => ctrl.invalid };
     MatButtonModule,
     MatDialogModule,
     MatInputModule,
+    ProjectModule,
     RadioIconsModule,
     ReactiveFormsModule,
-    ProjectModule,
+    SharedModule,
     StoreModule.forFeature('newProject', newProjectReducer),
   ],
   entryComponents: [NewProjectDialogComponent],

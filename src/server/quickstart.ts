@@ -90,8 +90,8 @@ export class Quickstarter extends Task<void> {
    * consumers upon initial release.
    */
   private async updateWebpackPlugin(pkg: any) {
-    const oldPackage = '@mcph/miix-cli';
-    const newPackage = '@mcph/miix-webpack-plugin';
+    const oldPackage = '@mixer/cdk-cli';
+    const newPackage = '@mixer/cdk-webpack-plugin';
     if (!pkg.devDependencies || newPackage in pkg.devDependencies) {
       return;
     }

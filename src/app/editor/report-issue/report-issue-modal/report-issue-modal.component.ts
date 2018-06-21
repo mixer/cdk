@@ -16,7 +16,10 @@ import * as fromRoot from '../../bedrock.reducers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ReportIssueModalComponent {
-  constructor(private readonly dialog: MatDialogRef<void>, private readonly store: Store<fromRoot.IState>) {}
+  constructor(
+    public readonly dialog: MatDialogRef<void>,
+    private readonly store: Store<fromRoot.IState>,
+  ) {}
 
   public reportIssue() {
     this.store.dispatch(new ReportGenericError('My Error Report', 'Enter your details here'));

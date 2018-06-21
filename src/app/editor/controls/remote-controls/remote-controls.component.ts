@@ -7,7 +7,7 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
-import { ICloseData, Participant } from '@mcph/miix-std/dist/participant';
+import { ICloseData, Participant } from '@mixer/cdk-std/dist/participant';
 import { Store } from '@ngrx/store';
 import { throttle } from 'lodash';
 import {

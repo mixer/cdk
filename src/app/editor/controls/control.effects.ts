@@ -19,6 +19,7 @@ import {
 import * as fromLayout from '../layout/layout.reducer';
 import { ProjectActionTypes, SetOpenProject } from '../project/project.actions';
 import { withLatestDirectory } from '../project/project.reducer';
+import { DirectoryOpener } from '../shared/directory-opener';
 import { truthy } from '../shared/operators';
 import { ControlsWebpackConsoleService } from './controls-webpack-console.service';
 import {
@@ -29,6 +30,7 @@ import {
   isRunning,
   IWebpackInstance,
   PromptLocateWebpackConfig,
+  RestartWebpack,
   SendControlPacket,
   SetWebpackInstance,
   StartWebpack,
@@ -196,6 +198,29 @@ export class ControlEffects {
     .pipe(tap(() => this.dialog.open(WebpackConfigLocatorModalComponent)));
 
   /**
+   * Opens the current webpack config on disk.
+   */
+  @Effect()
+  public readonly openWebpackConfig = this.actions
+    .ofType(ControlsActionTypes.OPEN_WEBPACK_CONFIG)
+    .pipe(
+      switchMap(() => new DirectoryOpener(this.electron).findProgram()),
+      filter(Boolean),
+      withLatestDirectory(this.store),
+      switchMap(([program, directory]) =>
+        this.electron
+          .call<string>(ControlsMethods.GetWebpackConfig, { directory })
+          .then(location => new DirectoryOpener(this.electron).open(location, program))
+          .return()
+          .catch(
+            err => err instanceof RpcError && err.originalName === 'MissingWebpackConfig',
+            () => new PromptLocateWebpackConfig(),
+          ),
+      ),
+      filter(Boolean),
+    );
+
+  /**
    * Triggers a refresh of the controls when the relevant action is dispatched.
    */
   @Effect()
@@ -206,7 +231,7 @@ export class ControlEffects {
       switchMap(([, directory]) =>
         this.electron
           .call(ControlsMethods.SetWebpackConfig, { directory })
-          .then(path => (path ? new StartWebpack() : null)),
+          .then(path => (path ? new RestartWebpack() : null)),
       ),
       truthy(),
     );

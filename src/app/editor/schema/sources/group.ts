@@ -1,4 +1,4 @@
-import { IGroup } from '@mcph/miix-std/dist/internal';
+import { IGroup } from '@mixer/cdk-std/dist/internal';
 import { Selector } from '@ngrx/store';
 
 import { selectGroups } from '../schema.reducer';

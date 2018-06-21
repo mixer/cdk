@@ -64,6 +64,9 @@ typings/
 
 # End of https://www.gitignore.io/api/node
 
+# OSX
+.DS_Store
+
 /dist
 /.vscode
 /app

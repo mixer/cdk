@@ -6,7 +6,11 @@ import { map, take } from 'rxjs/operators';
 import { AboutModalComponent } from '../../about/about-modal/about-modal.component';
 import { RequireAuth } from '../../account/account.actions';
 import * as fromRoot from '../../bedrock.reducers';
-import { LocateWebpackConfig, RestartWebpack } from '../../controls/controls.actions';
+import {
+  LocateWebpackConfig,
+  OpenWebpackConfig,
+  RestartWebpack,
+} from '../../controls/controls.actions';
 import { NewProjectDialogComponent } from '../../new-project/new-project-dialog/new-project-dialog.component';
 import { CloseProject, RequireLink, StartOpenProject } from '../../project/project.actions';
 import { RemoteConnectionDialogComponent } from '../../remote-connect/dialog/dialog.component';
@@ -16,6 +20,7 @@ import { ReportIssueModalComponent } from '../../report-issue/report-issue-modal
 import { OpenSnapshotDialogComponent } from '../../schema/open-snapshot-dialog/open-snapshot-dialog.component';
 import { SaveSnapshotDialogComponent } from '../../schema/save-snapshot-dialog/save-snapshot-dialog.component';
 import { CopyWorldSchema, QuickUploadWorldSchema } from '../../schema/schema.actions';
+import { links } from '../../shared/links';
 import { OpenUploader } from '../../uploader/uploader.actions';
 import { ClosePanel, GoldenPanel, OpenPanel, panelTitles } from '../layout.actions';
 import { isOnEditor, panelIsOpen } from '../layout.reducer';
@@ -50,6 +55,11 @@ export class TopNavComponent {
    * Selects whether the editor screen is open.
    */
   public readonly hasRemoteConnection = this.store.select(isRemoteConnected);
+
+  /**
+   * Template hoist.
+   */
+  public readonly links = links;
 
   constructor(private readonly dialog: MatDialog, private readonly store: Store<fromRoot.IState>) {}
 
@@ -128,6 +138,13 @@ export class TopNavComponent {
    */
   public setWebpackConfig() {
     this.store.dispatch(new LocateWebpackConfig());
+  }
+
+  /**
+   * Asks the user to point to the webpack config.
+   */
+  public openWebpackConfig() {
+    this.store.dispatch(new OpenWebpackConfig());
   }
 
   /**

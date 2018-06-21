@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { MatDialogRef } from '@angular/material';
 import * as fromAccount from '../../account/account.reducer';
 import * as fromRoot from '../../bedrock.reducers';
+import * as forUploader from '../uploader.actions';
 
 /**
  * Presented after uploading has compelted.
@@ -13,6 +14,7 @@ import * as fromRoot from '../../bedrock.reducers';
   selector: 'uploader-completed',
   templateUrl: './uploader-completed.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [':host { max-width: 500px; display: block }'],
 })
 export class UploaderCompletedComponent {
   /**
@@ -26,4 +28,11 @@ export class UploaderCompletedComponent {
     private readonly store: Store<fromRoot.IState>,
     public readonly dialogRef: MatDialogRef<any>,
   ) {}
+
+  /**
+   * Saves the data the webpack console emitted.
+   */
+  public saveConsole() {
+    this.store.dispatch(new forUploader.SaveConsoleOutput());
+  }
 }

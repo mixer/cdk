@@ -159,7 +159,7 @@ export abstract class Task<T> {
   /**
    * Runs the subtask and waits for it to complete.
    */
-  protected async awaitSubtask(task: Task<T>): Promise<T> {
+  protected async awaitSubtask<R>(task: Task<R>): Promise<R> {
     this.subtasks.add(task);
     const retValue = await task.start();
     await task.untilStopped;

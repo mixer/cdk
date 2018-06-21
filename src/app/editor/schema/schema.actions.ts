@@ -1,4 +1,4 @@
-import { IGroup, IParticipant, IScene } from '@mcph/miix-std/dist/internal';
+import { IGroup, IParticipant, IScene } from '@mixer/cdk-std/dist/internal';
 import { Action } from '@ngrx/store';
 import { RpcError } from '../electron.service';
 import { IInteractiveGame } from '../project/project.actions';

@@ -13,6 +13,7 @@ export const enum UploaderActionTypes {
   SET_UPLOAD_SCHEMA = '[Uploader] Set whether to upload schema',
   SET_UPLOAD_CONTROLS = '[Uploader] Set whether to upload controls',
   SET_ERROR = '[Uploader] Set Error',
+  SAVE_CONSOLE = '[Uploader] Save console output',
 }
 
 export const enum UploaderMethods {
@@ -22,9 +23,11 @@ export const enum UploaderMethods {
 
 export enum UploaderScreen {
   Confirming,
+  Rename,
   UploadingSchema,
   UploadingControls,
   LinkingGame,
+  CompilationError,
   Completed,
 }
 
@@ -42,6 +45,13 @@ export class SetUploadSchema implements Action {
   public readonly type = UploaderActionTypes.SET_UPLOAD_SCHEMA;
 
   constructor(public readonly shouldUpload: boolean) {}
+}
+
+/**
+ * Prompts the user to download a text file of the webpack console output/
+ */
+export class SaveConsoleOutput implements Action {
+  public readonly type = UploaderActionTypes.SAVE_CONSOLE;
 }
 
 /**

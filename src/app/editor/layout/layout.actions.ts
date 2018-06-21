@@ -31,6 +31,7 @@ export const enum LayoutActionTypes {
   SET_GOLDEN_LAYOUT = '[Layout] Set the golden layout instance',
   CLEAR_GOLDEN_LAYOUT = '[Layout] Unsets the golden layout component',
   GET_RECENT_PROJECTS = '[Layout] Gets the recent projects',
+  REMOVE_RECENT_PROJECT = '[Layout] Removes a recent project',
 }
 
 export const enum LayoutMethod {
@@ -38,6 +39,7 @@ export const enum LayoutMethod {
   LoadPanels = '[Layout] Load panels',
   GetRecentProjects = '[Layout] Get recent projects',
   UpdateRecentProjects = '[Layout] Update recent projects',
+  RemoveRecentProject = '[Layout] Remove recent project',
 }
 
 /**
@@ -195,6 +197,15 @@ export class GetRecentProjects implements Action {
   constructor(public readonly projects?: IRecentProject[]) {}
 }
 
+/**
+ * Fired to remove a recent project from the list.
+ */
+export class RemoveRecentProject implements Action {
+  public readonly type = LayoutActionTypes.REMOVE_RECENT_PROJECT;
+
+  constructor(public readonly directory: string) {}
+}
+
 export type LayoutActions =
   | OpenScreen
   | SavePanels
@@ -202,4 +213,5 @@ export type LayoutActions =
   | ClosePanel
   | SetGoldenLayout
   | ClearGoldenLayout
-  | GetRecentProjects;
+  | GetRecentProjects
+  | RemoveRecentProject;

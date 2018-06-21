@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
 
-import { IGroup, IParticipant } from '@mcph/miix-std/dist/internal';
+import { IGroup, IParticipant } from '@mixer/cdk-std/dist/internal';
 import * as fromRoot from '../bedrock.reducers';
 import {
   initialGroups,

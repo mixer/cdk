@@ -1,4 +1,4 @@
-import { IStateDump } from '@mcph/miix-std/dist/internal';
+import { IStateDump } from '@mixer/cdk-std/dist/internal';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import * as fromRoot from '../bedrock.reducers';
