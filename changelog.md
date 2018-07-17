@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.0.2 - 2018-07-17
+
+ - [ [`c0925f8`](https://github.com/mixer/cdk/commit/c0925f8) ] **chore**: update cdk-std
+
 ### v1.0.1 - 2018-06-21
 
  - [ [`200ddda`](https://github.com/mixer/cdk/commit/200ddda) ] **feat**: add button for reloading linked projects (#122)
