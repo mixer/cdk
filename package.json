@@ -107,7 +107,7 @@
     "@angular/material": "^5.2.4",
     "@angular/platform-browser": "^5.2.8",
     "@angular/platform-browser-dynamic": "^5.2.8",
-    "@mixer/cdk-std": "^0.2.17",
+    "@mixer/cdk-std": "^0.2.20",
     "@ngrx/effects": "^5.2.0",
     "@ngrx/entity": "^5.2.0",
     "@ngrx/store": "^5.2.0",
