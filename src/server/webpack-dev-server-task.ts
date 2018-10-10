@@ -2,6 +2,7 @@ import { notificationEnv } from '@mixer/cdk-webpack-plugin/dist/src/notifier';
 import { ChildProcess } from 'child_process';
 import * as portfinder from 'portfinder';
 import { filter } from 'rxjs/operators';
+import { quote } from 'shell-quote';
 
 import { IWebpackInstance, WebpackState } from '../app/editor/controls/controls.actions';
 import { spawnPackageScript } from './npm-exec';
@@ -25,10 +26,11 @@ export class WebpackDevServer extends WebpackTask<IWebpackInstance> {
    */
   protected async startWebpack(config: string): Promise<[IWebpackInstance, ChildProcess]> {
     const port: number = await portfinder.getPortPromise({ port: 13370 });
+    const parsedConfig: string = quote([config]);
     const process = spawnPackageScript(
       this.project.baseDir(),
       'webpack-dev-server',
-      [`--port`, String(port), '--config', config, '--color'],
+      [`--port`, String(port), '--config', `"${parsedConfig.slice(1, -1)}"`, '--color'],
       {
         cwd: this.project.baseDir(),
         env: {

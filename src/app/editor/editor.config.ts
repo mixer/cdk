@@ -4,7 +4,7 @@ import { CONF_PROD } from '../environments/environment.prod';
 // tslint:disable
 
 const ENV: string = 'dev';
-const VERSION: string = '1.0.1';
+const VERSION: string = '1.0.2';
 
 export let AppConfig: {
   production: boolean;
