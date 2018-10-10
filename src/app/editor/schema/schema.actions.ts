@@ -66,7 +66,7 @@ export const initialWorld: IWorld = <any>{
           text: 'My First Button',
           cost: 100,
           progress: 0.5,
-          disabled: true,
+          disabled: false,
           position: [
             {
               width: 10,
