@@ -28,7 +28,7 @@ export class WebpackDevServer extends WebpackTask<IWebpackInstance> {
     const process = spawnPackageScript(
       this.project.baseDir(),
       'webpack-dev-server',
-      [`--port`, String(port), '--config', config, '--color'],
+      [`--port`, String(port), '--config', `"${config}"`, '--color'],
       {
         cwd: this.project.baseDir(),
         env: {
