@@ -167,6 +167,7 @@
   },
   "dependencies": {
     "@mixer/cdk-webpack-plugin": "^0.1.4",
+    "@types/shell-quote": "^1.6.0",
     "chalk": "^2.3.0",
     "command-exists": "^1.2.2",
     "electron-updater": "^2.21.4",
@@ -180,6 +181,7 @@
     "portfinder": "^1.0.13",
     "raygun": "^0.9.1",
     "rxjs": "5.5.8",
+    "shell-quote": "^1.6.1",
     "tar": "^4.0.1",
     "tree-kill": "^1.2.0",
     "yargs": "^8.0.2"
